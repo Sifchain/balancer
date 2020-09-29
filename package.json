@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Sifchain/balancer/issues"
   },
-  "homepage": "https://github.com/Sifchain/balancer#readme"
+  "homepage": "https://github.com/Sifchain/balancer#readme",
+  "dependencies": {
+    "ganache-cli": "^6.11.0"
+  }
 }
