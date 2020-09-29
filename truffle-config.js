@@ -6,6 +6,12 @@ module.exports = {
             network_id: '*', // Any network (default: none)
         }
     },
+
+    mocha: {
+        enableTimeouts: false,
+        before_timeout: 12000,
+        useColors: true
+    },
     compilers: {
         solc: {
             version: '0.5.12',
