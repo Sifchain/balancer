@@ -1,6 +1,6 @@
 # Balancer
 ## Run backend
 ```
-export PATH=./node_modules/.bin:$PATH
+export PATH=$(npm bin):$PATH
 ganache-cli
 ```
