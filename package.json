@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Sifchain/balancer#readme",
   "dependencies": {
+    "decimal.js": "^10.2.1",
     "ganache-cli": "^6.11.0",
     "truffle-assertions": "^0.9.2"
   }
