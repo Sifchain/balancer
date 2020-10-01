@@ -9,6 +9,7 @@ const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 1;
 const swap_fee = 0.0;
+const verbose = true;
 
 contract('Our use case', (accounts) => {
     const admin = accounts[0];
@@ -21,6 +22,21 @@ contract('Our use case', (accounts) => {
     let USDT;
     let rowan;
     let usdt;
+
+    async function logState(){
+        const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+        console.log(`Rowan price: ${fromWei(RowanPrice)}`);
+        const RowanBalance = await pool.getBalance(ROWAN);
+        console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
+        const userRowanBalance = await rowan.balanceOf(user);
+        console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
+
+        const userUsdtBalance = await usdt.balanceOf(user);
+        console.log(`USDT User Balance: ${fromWei(userUsdtBalance)}`);
+        const UsdtBalance = await pool.getBalance(USDT);
+        console.log(`USDT amount in pool : ${fromWei(UsdtBalance)}`);
+        console.log('');
+    }
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
@@ -57,10 +73,11 @@ contract('Our use case', (accounts) => {
 
     it('Swap iteration', async () => {
         const expected = calcOutGivenIn(45000, weightUsdt, 15000000, weightRowan, 1, swap_fee);
-        let RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Rowan price before transaction : ${fromWei(RowanPrice)}`);
-        let userUsdtBalance = await usdt.balanceOf(user);
-        console.log(`USDT User Balance before transaction : ${fromWei(userUsdtBalance)}`);
+
+        if(verbose) {
+            console.log('Before swap:');
+            await logState();
+        }
 
         const txr = await pool.swapExactAmountIn(
             USDT,
@@ -71,22 +88,10 @@ contract('Our use case', (accounts) => {
             { from: user },
         );
 
-        userUsdtBalance = await usdt.balanceOf(user);
-        console.log(`USDT User Balance after transaction : ${fromWei(userUsdtBalance)}`);
-
-        const userRowanBalance = await rowan.balanceOf(user);
-        console.log(`Rowan User Balance after transaction : ${fromWei(userRowanBalance)}`);
-
-        RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Rowan price after transaction : ${fromWei(RowanPrice)}`);
-
-        const usdtNormWeight = await pool.getNormalizedWeight(USDT);
-        assert.equal(0.5, fromWei(usdtNormWeight));
-
-        const UsdtBalance = await pool.getBalance(USDT);
-        console.log(`Usd amount in pool : ${fromWei(UsdtBalance)}`);
-        const RowanBalance = await pool.getBalance(ROWAN);
-        console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
+        if(verbose) {
+            console.log('After swap:');
+            await logState();
+        }
 
         const log = txr.logs[0];
         assert.equal(log.event, 'LOG_SWAP');
@@ -94,18 +99,17 @@ contract('Our use case', (accounts) => {
         const actual = fromWei(log.args.tokenAmountOut);
         const relDif = calcRelativeDiff(expected, actual);
 
-        console.log(`expected: ${expected})`);
-        console.log(`actual : ${actual})`);
-        console.log(`relDif : ${relDif})`);
+        const userRowanBalance = await rowan.balanceOf(user);
         assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
-
 
         assert.isAtMost(relDif.toNumber(), errorDelta);
     });
 
     it('Liquidity iteration', async () => {
         await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0);
-        const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Rowan price after transaction : ${fromWei(RowanPrice)}`);
+        if(verbose) {
+            console.log('After adding liquidity:');
+            await logState();
+        }
     });
 });
