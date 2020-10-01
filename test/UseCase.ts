@@ -50,7 +50,7 @@ contract('Our use case', (accounts) => {
         await pool.finalize();
     });
 
-    it('Exchainge', async () => {
+    it('Swap iteration', async () => {
         const expected = calcOutGivenIn(45000, 10, 15000000, 1, 1.0, 0.0);
         let RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`Rowan price before transaction : ${fromWei(RowanPrice)}`);
@@ -93,6 +93,8 @@ contract('Our use case', (accounts) => {
     });
 
     it('Liquidity iteration', async () => {
-        await pool.joinPool(toWei('10'), [MAX, MAX], { from: admin });
+        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0);
+        const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+        console.log(`Rowan price after transaction : ${fromWei(RowanPrice)}`);
     });
 });
