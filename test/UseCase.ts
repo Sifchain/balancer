@@ -6,6 +6,8 @@ const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
+const weightUsdt = 1;
+const weightRowan = 1;
 
 contract('Our use case', (accounts) => {
     const admin = accounts[0];
@@ -44,14 +46,14 @@ contract('Our use case', (accounts) => {
         await rowan.approve(POOL, MAX, { from: user });
         await usdt.approve(POOL, MAX, { from: user });
 
-        await pool.bind(ROWAN, toWei('15000000'), toWei('1'));
-        await pool.bind(USDT, toWei('45000'), toWei('1'));
+        await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()));
+        await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()));
 
         await pool.finalize();
     });
 
     it('Swap iteration', async () => {
-        const expected = calcOutGivenIn(45000, 10, 15000000, 1, 1.0, 0.0);
+        const expected = calcOutGivenIn(45000, weightUsdt, 15000000, weightRowan, 1, 0.0);
         let RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`Rowan price before transaction : ${fromWei(RowanPrice)}`);
         let userUsdtBalance = await usdt.balanceOf(user);
