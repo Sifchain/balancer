@@ -64,8 +64,8 @@ contract('Our use case', (accounts) => {
             USDT,
             toWei('1'),
             ROWAN,
-            toWei('100'),
-            toWei('1000'),
+            0,
+            MAX,
             { from: user },
         );
 
