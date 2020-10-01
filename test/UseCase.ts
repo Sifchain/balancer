@@ -8,7 +8,7 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 1;
-const swap_fee = 0.000001;
+const swap_fee = 0.0;
 
 contract('Our use case', (accounts) => {
     const admin = accounts[0];
@@ -49,6 +49,8 @@ contract('Our use case', (accounts) => {
 
         await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()));
         await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()));
+
+        await pool.setSwapFee(swap_fee);
 
         await pool.finalize();
     });
