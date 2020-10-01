@@ -5,7 +5,7 @@ const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
-
+const errorDelta = 10 ** -8;
 
 contract('Our use case', (accounts) => {
     const admin = accounts[0];
@@ -78,18 +78,24 @@ contract('Our use case', (accounts) => {
         const usdtNormWeight = await pool.getNormalizedWeight(USDT);
         assert.equal(0.5, fromWei(usdtNormWeight));
 
-        /*
+        const UsdtBalance = await pool.getBalance(USDT);
+        console.log(`Usd amount in pool : ${fromWei(UsdtBalance)}`);
+        const RowanBalance = await pool.getBalance(ROWAN);
+        console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
+
         const log = txr.logs[0];
         assert.equal(log.event, 'LOG_SWAP');
 
-        const actual = fromWei(log.args[4]);
+        const actual = fromWei(log.args.tokenAmountOut);
         const relDif = calcRelativeDiff(expected, actual);
 
         console.log(`expected: ${expected})`);
         console.log(`actual : ${actual})`);
         console.log(`relDif : ${relDif})`);
-        assert.equal(fromWei(userUsdtBalance), Number(fromWei(log.args[4])));
-        */
+        assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
+
+
+        assert.isAtMost(relDif.toNumber(), errorDelta);
     });
 
     it('Liquidity iteration', async () => {
