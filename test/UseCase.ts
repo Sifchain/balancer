@@ -73,7 +73,7 @@ contract('Our use case', (accounts) => {
         console.log(`Rowan User Balance after transaction : ${fromWei(userRowanBalance)}`);
 
         RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Rowan price before transaction : ${fromWei(RowanPrice)}`);
+        console.log(`Rowan price after transaction : ${fromWei(RowanPrice)}`);
 
         const usdtNormWeight = await pool.getNormalizedWeight(USDT);
         assert.equal(0.5, fromWei(usdtNormWeight));
