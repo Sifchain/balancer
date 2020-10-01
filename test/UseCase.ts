@@ -72,7 +72,9 @@ contract('Our use case', (accounts) => {
     });
 
     it('Swap iteration', async () => {
-        const expected = calcOutGivenIn(45000, weightUsdt, 15000000, weightRowan, 1, swap_fee);
+        const UsdtPoolBalance = await pool.getBalance(USDT);
+        const RowanPoolBalance = await pool.getBalance(ROWAN);
+        const expected = calcOutGivenIn(fromWei(UsdtPoolBalance), weightUsdt, fromWei(RowanPoolBalance), weightRowan, 1, swap_fee);
 
         if(verbose) {
             console.log('Before swap:');
