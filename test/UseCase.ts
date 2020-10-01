@@ -8,6 +8,7 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 1;
+const swap_fee = 0.000001;
 
 contract('Our use case', (accounts) => {
     const admin = accounts[0];
@@ -53,7 +54,7 @@ contract('Our use case', (accounts) => {
     });
 
     it('Swap iteration', async () => {
-        const expected = calcOutGivenIn(45000, weightUsdt, 15000000, weightRowan, 1, 0.0);
+        const expected = calcOutGivenIn(45000, weightUsdt, 15000000, weightRowan, 1, swap_fee);
         let RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`Rowan price before transaction : ${fromWei(RowanPrice)}`);
         let userUsdtBalance = await usdt.balanceOf(user);
