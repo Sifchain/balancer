@@ -7,7 +7,7 @@ const MAX = web3.utils.toTwosComplement(-1);
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
-const weightRowan = 1;
+const weightRowan = 10;
 const swap_fee = 0.0;
 const verbose = true;
 
