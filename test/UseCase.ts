@@ -24,10 +24,14 @@ contract('Our use case', (accounts) => {
     let usdt;
 
     async function logState(){
-        const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Rowan price: ${fromWei(RowanPrice)}`);
         const RowanBalance = await pool.getBalance(ROWAN);
         console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
+
+        if(parseInt(fromWei(RowanBalance))) {
+            const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+            console.log(`Rowan price: ${fromWei(RowanPrice)}`);
+        }
+
         const userRowanBalance = await rowan.balanceOf(user);
         console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
         const adminRowanBalance = await rowan.balanceOf(admin);
