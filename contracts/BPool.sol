@@ -15,6 +15,8 @@ pragma solidity 0.5.12;
 
 import "./BToken.sol";
 import "./BMath.sol";
+import "./OwnableWhitelist.sol";
+import "./OwnableWhitelist.sol";
 
 contract BPool is BBronze, BToken, BMath {
 
@@ -68,6 +70,15 @@ contract BPool is BBronze, BToken, BMath {
         _;
     }
 
+    modifier onlyWhitelisted(address _user) {
+        require(
+            OwnableWhitelist(_whiteListContract)
+                .isWhitelisted(_user) == true,
+            "!whitelisted"
+        );
+        _;
+    }
+
     bool private _mutex;
 
     address private _factory;    // BFactory address to push token exitFee to
@@ -83,7 +94,10 @@ contract BPool is BBronze, BToken, BMath {
     mapping(address=>Record) private  _records;
     uint private _totalWeight;
 
-    constructor() public {
+    address private _whiteListContract;
+
+    constructor(address _whitelist) public {
+        _whiteListContract = _whitelist;
         _controller = msg.sender;
         _factory = msg.sender;
         _swapFee = MIN_FEE;
@@ -209,6 +223,7 @@ contract BPool is BBronze, BToken, BMath {
     {
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         _controller = manager;
+        // OwnableWhitelist.init(manager);
     }
 
     function setPublicSwap(bool public_)
@@ -430,6 +445,7 @@ contract BPool is BBronze, BToken, BMath {
         external
         _logs_
         _lock_
+        onlyWhitelisted(msg.sender)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
 

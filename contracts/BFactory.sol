@@ -40,7 +40,7 @@ contract BFactory is BBronze {
         external
         returns (BPool)
     {
-        BPool bpool = new BPool();
+        BPool bpool = new BPool(_whiteListContract);
         _isBPool[address(bpool)] = true;
         emit LOG_NEW_POOL(msg.sender, address(bpool));
         bpool.setController(msg.sender);
@@ -48,9 +48,11 @@ contract BFactory is BBronze {
     }
 
     address private _blabs;
+    address private _whiteListContract;
 
-    constructor() public {
+    constructor(address _whitelist) public {
         _blabs = msg.sender;
+        _whiteListContract = _whitelist;
     }
 
     function getBLabs()
