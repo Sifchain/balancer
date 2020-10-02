@@ -3,10 +3,9 @@ const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 module.exports = async function (deployer) {
     try {
-        const whitelist = await deployer.deploy(OwnableWhitelist)
-        console.log("whitelist: ", OwnableWhitelist.address)
+        await deployer.deploy(OwnableWhitelist)
         await deployer.deploy(BFactory, OwnableWhitelist.address);
     } catch (error) {
-        console.log("\n\n\n\n\nError deploying:::: ", error)   
+        console.log("Error deploying:::: ", error)   
     }
 };

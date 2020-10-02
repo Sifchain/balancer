@@ -223,7 +223,6 @@ contract BPool is BBronze, BToken, BMath {
     {
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         _controller = manager;
-        // OwnableWhitelist.init(manager);
     }
 
     function setPublicSwap(bool public_)
