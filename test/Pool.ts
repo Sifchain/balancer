@@ -381,7 +381,14 @@ contract('Full pool test', (accounts) => {
             pool.swapExactAmountIn(WETH, toWei('2.5'), XXX, toWei('100'), toWei('200'), { from: user2 }),
             '!whitelisted',
         );
+    });
+
+    it('Whitelist user for poolswap', async () => {
         await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
     });
 
     it('Fail swapExactAmountIn unbound or over min max ratios', async () => {

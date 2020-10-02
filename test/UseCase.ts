@@ -89,7 +89,15 @@ contract('Our use case', (accounts) => {
             '!whitelisted',
         );
 
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            false
+        );
         await whitelist.whitelistUser(user, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            true
+        );
 
         const txr = await pool.swapExactAmountIn(
             USDT,
