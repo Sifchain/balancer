@@ -30,9 +30,12 @@ contract('Our use case', (accounts) => {
         console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
         const userRowanBalance = await rowan.balanceOf(user);
         console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
-
+        const adminRowanBalance = await rowan.balanceOf(admin);
+        console.log(`Rowan Admin Balance: ${fromWei(adminRowanBalance)}`);
         const userUsdtBalance = await usdt.balanceOf(user);
         console.log(`USDT User Balance: ${fromWei(userUsdtBalance)}`);
+        const adminUsdtBalance = await usdt.balanceOf(admin);
+        console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance)}`);
         const UsdtBalance = await pool.getBalance(USDT);
         console.log(`USDT amount in pool : ${fromWei(UsdtBalance)}`);
         console.log('');
