@@ -72,8 +72,7 @@ contract BPool is BBronze, BToken, BMath {
 
     modifier onlyWhitelisted(address _user) {
         require(
-            OwnableWhitelist(_whiteListContract)
-                .isWhitelisted(_user) == true,
+            OwnableWhitelist(_whiteListContract).isWhitelisted(_user) == true,
             "!whitelisted"
         );
         _;
