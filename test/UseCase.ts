@@ -114,4 +114,13 @@ contract('Our use case', (accounts) => {
             await logState();
         }
     });
+
+    it('Exit pool', async () => {
+        const adminBal = await pool.balanceOf(admin);
+        await pool.exitPool(adminBal, [0, 0]);
+        if(verbose) {
+            console.log('After exiting pool:');
+            await logState();
+        }
+    });
 });
