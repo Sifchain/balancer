@@ -391,6 +391,20 @@ contract('Full pool test', (accounts) => {
         );
     });
 
+    it('Remove user from Whitelist for poolswap, then re-add them', async () => {
+        await whitelist.removeWhitelistedUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            false
+        );
+    
+        await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
+    });
+
     it('Fail swapExactAmountIn unbound or over min max ratios', async () => {
         await truffleAssert.reverts(
             pool.swapExactAmountIn(WETH, toWei('2.5'), XXX, toWei('100'), toWei('200'), { from: user2 }),

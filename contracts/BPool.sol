@@ -16,7 +16,6 @@ pragma solidity 0.5.12;
 import "./BToken.sol";
 import "./BMath.sol";
 import "./OwnableWhitelist.sol";
-import "./OwnableWhitelist.sol";
 
 contract BPool is BBronze, BToken, BMath {
 
