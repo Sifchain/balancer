@@ -1,10 +1,7 @@
 pragma solidity 0.5.12;
 
-//import "./Ownable.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts/access/Roles.sol";
-
-// import "./Whitelist.sol";
 
 contract OwnableWhitelist is Ownable {
     using Roles for Roles.Role;
