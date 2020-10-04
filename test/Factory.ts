@@ -1,6 +1,6 @@
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const TToken = artifacts.require('TToken');
+const ERC20MintableOwnable = artifacts.require('ERC20MintableOwnable');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 
@@ -17,8 +17,8 @@ contract('Factory test', (accounts) => {
     let DAI;
     it('pool init', async () => {
         factory = await BFactory.deployed();
-        const weth = await TToken.new('Wrapped Ether', 'WETH', 18);
-        const dai = await TToken.new('Dai Stablecoin', 'DAI', 18);
+        const weth = await ERC20MintableOwnable.new('Wrapped Ether', 'WETH', 18);
+        const dai = await ERC20MintableOwnable.new('Dai Stablecoin', 'DAI', 18);
 
         WETH = weth.address;
         DAI = dai.address;

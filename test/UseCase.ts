@@ -1,6 +1,6 @@
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const TToken = artifacts.require('TToken');
+const ERC20MintableOwnable = artifacts.require('ERC20MintableOwnable');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
@@ -47,8 +47,8 @@ contract('Our use case', (accounts) => {
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
-        rowan = await TToken.new('Rowan.eth', 'ROWAN', 18);
-        usdt = await TToken.new('USDT Stablecoin', 'USDT', 18);
+        rowan = await ERC20MintableOwnable.new('Rowan.eth', 'ROWAN', 18);
+        usdt = await ERC20MintableOwnable.new('USDT Stablecoin', 'USDT', 18);
 
         ROWAN = rowan.address;
         USDT = usdt.address;
@@ -77,6 +77,13 @@ contract('Our use case', (accounts) => {
 
         await pool.finalize();
     });
+
+    it('Should not be able to mint if the minter is not admin', async () => {
+        await truffleAssert.reverts(
+            usdt.mint(user, toWei('100'), { from: user }),
+            "Ownable: caller is not the owner"
+        );
+    })
 
     it('Swap iteration', async () => {
         const UsdtPoolBalance = await pool.getBalance(USDT);
