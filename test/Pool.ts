@@ -249,6 +249,13 @@ contract('Full pool test', (accounts) => {
         await truffleAssert.reverts(pool.setPublicSwap(true, { from: user1 }), 'ERR_NOT_CONTROLLER');
     });
 
+    it('Fails setting negative swap fees', async () => {
+        await truffleAssert.reverts(
+            pool.setSwapFee(toWei('-0.0000001')),
+            'ERR_MAX_FEE',
+        );
+    });
+
     it('Fails setting high swap fees', async () => {
         await truffleAssert.reverts(
             pool.setSwapFee(toWei('0.11')),
