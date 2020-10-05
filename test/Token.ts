@@ -7,20 +7,21 @@ contract('TestToken', accounts => {
     let rowan;
 
     describe('token attributes', function() {
-        it('Has correct name', async () => {
+        it('Init token', async () => {
             rowan = await TToken.new(_name, _symbol, _decimals);
+        });
+
+        it('Has correct name', async () => {
             const name = await rowan.name();
             assert.equal(name, _name);
         });
 
         it('Has correct symbol', async  () => {
-            rowan = await TToken.new(_name, _symbol, _decimals);
             const symbol = await rowan.symbol();
             assert.equal(symbol, _symbol);
         });
 
         it('Has correct decimals', async () => {
-            rowan = await TToken.new(_name, _symbol, _decimals);
             const decimals = await rowan.decimals();
             assert.equal(decimals, _decimals);
         });
