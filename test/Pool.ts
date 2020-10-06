@@ -1,9 +1,8 @@
 const truffleAssert = require('truffle-assertions');
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
-
+const fs = require('fs');
 const BPool = artifacts.require('BPool');
-const BFactory = artifacts.require('BFactory');
-const RowanToken = artifacts.require('RowanToken');
+const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const verbose = process.env.VERBOSE;
@@ -19,23 +18,23 @@ contract('Full pool test', (accounts) => {
 
     let WETH; let MKR; let DAI; let XXX; // addresses
     let weth; let mkr; let dai; let xxx; // TTokens
-    let factory; // BPool factory
     let pool; // first pool w/ defaults
     let POOL; //   pool address
     let whitelist;
 
     it('pool init', async () => {
-        factory = await BFactory.deployed();
+        pool = await BPool.deployed();
         whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
-        POOL = await factory.newBPool.call();
-        await factory.newBPool();
-        pool = await BPool.at(POOL);
+        const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
+        await pool.setController(admin, {from: controller});
 
-        weth = await RowanToken.new('Wrapped Ether', 'WETH', 18);
-        mkr = await RowanToken.new('Maker', 'MKR', 18);
-        dai = await RowanToken.new('Dai Stablecoin', 'DAI', 18);
-        xxx = await RowanToken.new('XXX', 'XXX', 18);
+        POOL = pool.address;
+
+        weth = await ERC20MintableBurnableOwnable.new('Wrapped Ether', 'WETH', 18);
+        mkr = await ERC20MintableBurnableOwnable.new('Maker', 'MKR', 18);
+        dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
+        xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
 
         WETH = weth.address;
         MKR = mkr.address;
