@@ -3,8 +3,9 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
+const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
-const TToken = artifacts.require('TToken');
+
 const verbose = process.env.VERBOSE;
 
 const { toWei, fromWei } = web3.utils;
@@ -31,10 +32,10 @@ contract('Full pool test', (accounts) => {
         await factory.newBPool();
         pool = await BPool.at(POOL);
 
-        weth = await TToken.new('Wrapped Ether', 'WETH', 18);
-        mkr = await TToken.new('Maker', 'MKR', 18);
-        dai = await TToken.new('Dai Stablecoin', 'DAI', 18);
-        xxx = await TToken.new('XXX', 'XXX', 18);
+        weth = await ERC20MintableBurnableOwnable.new('Wrapped Ether', 'WETH', 18);
+        mkr = await ERC20MintableBurnableOwnable.new('Maker', 'MKR', 18);
+        dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
+        xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
 
         WETH = weth.address;
         MKR = mkr.address;
@@ -83,7 +84,7 @@ contract('Full pool test', (accounts) => {
     it('Fails binding tokens that are not approved', async () => {
         await truffleAssert.reverts(
             pool.bind(MKR, toWei('10'), toWei('2.5')),
-            'ERR_BTOKEN_BAD_CALLER',
+            'ERC20: transfer amount exceeds allowance',
         );
     });
 
@@ -97,7 +98,7 @@ contract('Full pool test', (accounts) => {
     it('Fails binding weights and balances outside MIX MAX', async () => {
         await truffleAssert.reverts(
             pool.bind(WETH, toWei('51'), toWei('1')),
-            'ERR_INSUFFICIENT_BAL',
+            'ERC20: transfer amount exceeds balance',
         );
         await truffleAssert.reverts(
             pool.bind(MKR, toWei('0.0000000000001'), toWei('1')),
