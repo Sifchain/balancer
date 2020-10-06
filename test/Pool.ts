@@ -37,8 +37,6 @@ contract('Full pool test', (accounts) => {
         dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
         xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
 
-
-        console.log("Admin starting balance: ", await mkr.balanceOf(admin))
         WETH = weth.address;
         MKR = mkr.address;
         DAI = dai.address;
@@ -55,7 +53,6 @@ contract('Full pool test', (accounts) => {
         // Admin balances
         await weth.mint(admin, toWei('50'));
         await mkr.mint(admin, toWei('20'));
-        console.log("Admin starting balance: ", await mkr.balanceOf(admin))
         await dai.mint(admin, toWei('10000'));
         await xxx.mint(admin, toWei('10'));
 
