@@ -3,7 +3,7 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
+const RowanToken = artifacts.require('RowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const verbose = process.env.VERBOSE;
@@ -32,10 +32,10 @@ contract('Full pool test', (accounts) => {
         await factory.newBPool();
         pool = await BPool.at(POOL);
 
-        weth = await ERC20MintableBurnableOwnable.new('Wrapped Ether', 'WETH', 18);
-        mkr = await ERC20MintableBurnableOwnable.new('Maker', 'MKR', 18);
-        dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
-        xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
+        weth = await RowanToken.new('Wrapped Ether', 'WETH', 18);
+        mkr = await RowanToken.new('Maker', 'MKR', 18);
+        dai = await RowanToken.new('Dai Stablecoin', 'DAI', 18);
+        xxx = await RowanToken.new('XXX', 'XXX', 18);
 
         WETH = weth.address;
         MKR = mkr.address;
@@ -398,7 +398,7 @@ contract('Full pool test', (accounts) => {
             await whitelist.isWhitelisted(user2, { from: admin }),
             false
         );
-    
+
         await whitelist.whitelistUser(user2, { from: admin })
         assert.equal(
             await whitelist.isWhitelisted(user2, { from: admin }),

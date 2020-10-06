@@ -1,16 +1,16 @@
-const TToken = artifacts.require('TToken');
+const RowanToken = artifacts.require('RowanToken');
 
-contract('TestToken', accounts => {
+contract('RowanToken', accounts => {
     const _name = 'Rowan.eth';
     const _symbol = 'ROWAN';
     const _decimals = 18;
     let rowan;
 
-    describe('token attributes', function() {
-        it('Init token', async () => {
-            rowan = await TToken.new(_name, _symbol, _decimals);
-        });
+    it('Init token', async () => {
+        rowan = await RowanToken.new(_name, _symbol, _decimals);
+    });
 
+    describe('Token attributes', () => {
         it('Has correct name', async () => {
             const name = await rowan.name();
             assert.equal(name, _name);
