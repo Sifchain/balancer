@@ -99,12 +99,13 @@ contract('Our use case', (accounts) => {
     })
 
     it('Should be able to burn if the burner is the admin', async () => {
-        await usdt.mint(admin, toWei('100'), { from: admin })
         const balanceOfOwner = await usdt.balanceOf(admin);
+        await usdt.mint(admin, '100', { from: admin })
+        assert.equal((await usdt.balanceOf(admin)) > 0, true);
 
-        usdt.burn(admin, toWei('100'), { from: admin })
+        usdt.burn(admin, '100', { from: admin })
 
-        assert.equal(await usdt.balanceOf(admin) < balanceOfOwner, true);
+        assert.equal((await usdt.balanceOf(admin)) < 1, true);
     })
 
     it('Swap iteration', async () => {
