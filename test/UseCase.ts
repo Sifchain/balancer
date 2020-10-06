@@ -1,6 +1,6 @@
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const ERC20MintableOwnable = artifacts.require('ERC20MintableOwnable');
+const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
@@ -51,8 +51,8 @@ contract('Our use case', (accounts) => {
     it('pool init', async () => {
         factory = await BFactory.deployed();
 
-        rowan = await ERC20MintableOwnable.new('Rowan.eth', 'ROWAN', 18);
-        usdt = await ERC20MintableOwnable.new('USDT Stablecoin', 'USDT', 18);
+        rowan = await ERC20MintableBurnableOwnable.new('Rowan.eth', 'ROWAN', 18);
+        usdt = await ERC20MintableBurnableOwnable.new('USDT Stablecoin', 'USDT', 18);
         
         whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
@@ -89,6 +89,22 @@ contract('Our use case', (accounts) => {
             usdt.mint(user, toWei('100'), { from: user }),
             "Ownable: caller is not the owner"
         );
+    })
+
+    it('Should not be able to burn if the burner is not admin', async () => {
+        await truffleAssert.reverts(
+            usdt.burn(user, toWei('100'), { from: user }),
+            "Ownable: caller is not the owner"
+        );
+    })
+
+    it('Should be able to burn if the burner is the admin', async () => {
+        await usdt.mint(admin, toWei('100'), { from: admin })
+        const balanceOfOwner = await usdt.balanceOf(admin);
+
+        usdt.burn(admin, toWei('100'), { from: admin })
+
+        assert.equal(await usdt.balanceOf(admin) < balanceOfOwner, true);
     })
 
     it('Swap iteration', async () => {
