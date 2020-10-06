@@ -37,6 +37,8 @@ contract('Full pool test', (accounts) => {
         dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
         xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
 
+
+        console.log("Admin starting balance: ", await mkr.balanceOf(admin))
         WETH = weth.address;
         MKR = mkr.address;
         DAI = dai.address;
@@ -53,6 +55,7 @@ contract('Full pool test', (accounts) => {
         // Admin balances
         await weth.mint(admin, toWei('50'));
         await mkr.mint(admin, toWei('20'));
+        console.log("Admin starting balance: ", await mkr.balanceOf(admin))
         await dai.mint(admin, toWei('10000'));
         await xxx.mint(admin, toWei('10'));
 
@@ -83,8 +86,8 @@ contract('Full pool test', (accounts) => {
 
     it('Fails binding tokens that are not approved', async () => {
         await truffleAssert.reverts(
-            pool.bind(MKR, toWei('10'), toWei('2.5')),
-            'ERC20: transfer amount exceeds allowance',
+            pool.bind(MKR, toWei('1'), toWei('2.5')),
+            'SafeMath: subtraction overflow',
         );
     });
 
@@ -98,7 +101,7 @@ contract('Full pool test', (accounts) => {
     it('Fails binding weights and balances outside MIX MAX', async () => {
         await truffleAssert.reverts(
             pool.bind(WETH, toWei('51'), toWei('1')),
-            'ERC20: transfer amount exceeds balance',
+            'SafeMath: subtraction overflow',
         );
         await truffleAssert.reverts(
             pool.bind(MKR, toWei('0.0000000000001'), toWei('1')),
