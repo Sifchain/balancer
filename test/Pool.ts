@@ -4,6 +4,8 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
 const ERC20MintableOwnable = artifacts.require('ERC20MintableOwnable');
+const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+
 const verbose = process.env.VERBOSE;
 
 const { toWei, fromWei } = web3.utils;
@@ -20,9 +22,11 @@ contract('Full pool test', (accounts) => {
     let factory; // BPool factory
     let pool; // first pool w/ defaults
     let POOL; //   pool address
+    let whitelist;
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
+        whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
         POOL = await factory.newBPool.call();
         await factory.newBPool();
@@ -371,6 +375,35 @@ contract('Full pool test', (accounts) => {
         const wethPriceFeeCheck = ((10500 / 5) / (52.5 / 5)) * (1 / (1 - 0.003));
         // 200.6018054162487462
         assert.equal(fromWei(wethPriceFee), wethPriceFeeCheck);
+    });
+
+    it('Fail swapExactAmountIn when not whitelisted', async () => {
+        await truffleAssert.reverts(
+            pool.swapExactAmountIn(WETH, toWei('2.5'), XXX, toWei('100'), toWei('200'), { from: user2 }),
+            '!whitelisted',
+        );
+    });
+
+    it('Whitelist user for poolswap', async () => {
+        await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
+    });
+
+    it('Remove user from Whitelist for poolswap, then re-add them', async () => {
+        await whitelist.removeWhitelistedUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            false
+        );
+    
+        await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
     });
 
     it('Fail swapExactAmountIn unbound or over min max ratios', async () => {

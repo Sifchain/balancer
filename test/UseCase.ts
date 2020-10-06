@@ -1,6 +1,8 @@
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
 const ERC20MintableOwnable = artifacts.require('ERC20MintableOwnable');
+const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
@@ -22,6 +24,7 @@ contract('Our use case', (accounts) => {
     let USDT;
     let rowan;
     let usdt;
+    let whitelist;
 
     async function logState(){
         const RowanBalance = await pool.getBalance(ROWAN);
@@ -47,8 +50,11 @@ contract('Our use case', (accounts) => {
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
+
         rowan = await ERC20MintableOwnable.new('Rowan.eth', 'ROWAN', 18);
         usdt = await ERC20MintableOwnable.new('USDT Stablecoin', 'USDT', 18);
+        
+        whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
         ROWAN = rowan.address;
         USDT = usdt.address;
@@ -94,6 +100,21 @@ contract('Our use case', (accounts) => {
             console.log('Before swap:');
             await logState();
         }
+
+        await truffleAssert.reverts(
+            pool.swapExactAmountIn(USDT, toWei('1'), ROWAN, 0, MAX, { from: user }),
+            '!whitelisted',
+        );
+
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            false
+        );
+        await whitelist.whitelistUser(user, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            true
+        );
 
         const txr = await pool.swapExactAmountIn(
             USDT,
