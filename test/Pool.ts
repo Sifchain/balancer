@@ -3,7 +3,9 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_
 
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const TToken = artifacts.require('TToken');
+const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
+const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+
 const verbose = process.env.VERBOSE;
 
 const { toWei, fromWei } = web3.utils;
@@ -20,18 +22,20 @@ contract('Full pool test', (accounts) => {
     let factory; // BPool factory
     let pool; // first pool w/ defaults
     let POOL; //   pool address
+    let whitelist;
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
+        whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
         POOL = await factory.newBPool.call();
         await factory.newBPool();
         pool = await BPool.at(POOL);
 
-        weth = await TToken.new('Wrapped Ether', 'WETH', 18);
-        mkr = await TToken.new('Maker', 'MKR', 18);
-        dai = await TToken.new('Dai Stablecoin', 'DAI', 18);
-        xxx = await TToken.new('XXX', 'XXX', 18);
+        weth = await ERC20MintableBurnableOwnable.new('Wrapped Ether', 'WETH', 18);
+        mkr = await ERC20MintableBurnableOwnable.new('Maker', 'MKR', 18);
+        dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
+        xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
 
         WETH = weth.address;
         MKR = mkr.address;
@@ -80,7 +84,7 @@ contract('Full pool test', (accounts) => {
     it('Fails binding tokens that are not approved', async () => {
         await truffleAssert.reverts(
             pool.bind(MKR, toWei('10'), toWei('2.5')),
-            'ERR_BTOKEN_BAD_CALLER',
+            'ERC20: transfer amount exceeds allowance',
         );
     });
 
@@ -94,7 +98,7 @@ contract('Full pool test', (accounts) => {
     it('Fails binding weights and balances outside MIX MAX', async () => {
         await truffleAssert.reverts(
             pool.bind(WETH, toWei('51'), toWei('1')),
-            'ERR_INSUFFICIENT_BAL',
+            'ERC20: transfer amount exceeds balance',
         );
         await truffleAssert.reverts(
             pool.bind(MKR, toWei('0.0000000000001'), toWei('1')),
@@ -371,6 +375,35 @@ contract('Full pool test', (accounts) => {
         const wethPriceFeeCheck = ((10500 / 5) / (52.5 / 5)) * (1 / (1 - 0.003));
         // 200.6018054162487462
         assert.equal(fromWei(wethPriceFee), wethPriceFeeCheck);
+    });
+
+    it('Fail swapExactAmountIn when not whitelisted', async () => {
+        await truffleAssert.reverts(
+            pool.swapExactAmountIn(WETH, toWei('2.5'), XXX, toWei('100'), toWei('200'), { from: user2 }),
+            '!whitelisted',
+        );
+    });
+
+    it('Whitelist user for poolswap', async () => {
+        await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
+    });
+
+    it('Remove user from Whitelist for poolswap, then re-add them', async () => {
+        await whitelist.removeWhitelistedUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            false
+        );
+    
+        await whitelist.whitelistUser(user2, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user2, { from: admin }),
+            true
+        );
     });
 
     it('Fail swapExactAmountIn unbound or over min max ratios', async () => {

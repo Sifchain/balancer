@@ -1,6 +1,8 @@
 const BPool = artifacts.require('BPool');
 const BFactory = artifacts.require('BFactory');
-const TToken = artifacts.require('TToken');
+const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
+const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
@@ -22,6 +24,7 @@ contract('Our use case', (accounts) => {
     let USDT;
     let rowan;
     let usdt;
+    let whitelist;
 
     async function logState(){
         const RowanBalance = await pool.getBalance(ROWAN);
@@ -47,8 +50,11 @@ contract('Our use case', (accounts) => {
 
     it('pool init', async () => {
         factory = await BFactory.deployed();
-        rowan = await TToken.new('Rowan.eth', 'ROWAN', 18);
-        usdt = await TToken.new('USDT Stablecoin', 'USDT', 18);
+
+        rowan = await ERC20MintableBurnableOwnable.new('Rowan.eth', 'ROWAN', 18);
+        usdt = await ERC20MintableBurnableOwnable.new('USDT Stablecoin', 'USDT', 18);
+        
+        whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
         ROWAN = rowan.address;
         USDT = usdt.address;
@@ -78,6 +84,30 @@ contract('Our use case', (accounts) => {
         await pool.finalize();
     });
 
+    it('Should not be able to mint if the minter is not admin', async () => {
+        await truffleAssert.reverts(
+            usdt.mint(user, toWei('100'), { from: user }),
+            "Ownable: caller is not the owner"
+        );
+    })
+
+    it('Should not be able to burn if the burner is not admin', async () => {
+        await truffleAssert.reverts(
+            usdt.burn(user, toWei('100'), { from: user }),
+            "Ownable: caller is not the owner"
+        );
+    })
+
+    it('Should be able to burn if the burner is the admin', async () => {
+        const balanceOfOwner = await usdt.balanceOf(admin);
+        await usdt.mint(admin, '100', { from: admin })
+        assert.equal((await usdt.balanceOf(admin)) > 0, true);
+
+        usdt.burn(admin, '100', { from: admin })
+
+        assert.equal((await usdt.balanceOf(admin)) < 1, true);
+    })
+
     it('Swap iteration', async () => {
         const UsdtPoolBalance = await pool.getBalance(USDT);
         const RowanPoolBalance = await pool.getBalance(ROWAN);
@@ -87,6 +117,21 @@ contract('Our use case', (accounts) => {
             console.log('Before swap:');
             await logState();
         }
+
+        await truffleAssert.reverts(
+            pool.swapExactAmountIn(USDT, toWei('1'), ROWAN, 0, MAX, { from: user }),
+            '!whitelisted',
+        );
+
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            false
+        );
+        await whitelist.whitelistUser(user, { from: admin })
+        assert.equal(
+            await whitelist.isWhitelisted(user, { from: admin }),
+            true
+        );
 
         const txr = await pool.swapExactAmountIn(
             USDT,
