@@ -222,15 +222,6 @@ contract BPool is BBronze, BToken, BMath {
         _controller = manager;
     }
 
-    function setCollector(address c)
-        external
-        _logs_
-        _lock_
-    {
-        require(msg.sender == _factory, "ERR_NOT_COLLECTOR");
-        _factory = c;
-    }
-
     function setPublicSwap(bool public_)
         external
         _logs_
