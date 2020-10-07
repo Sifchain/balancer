@@ -2,5 +2,5 @@
 ## Run backend
 ```
 export PATH=$(npm bin):$PATH
-ganache-cli
+ganache-cli -d
 ```
