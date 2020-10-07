@@ -16,12 +16,15 @@ contract RowanToken is ERC20, Ownable {
 
     // Only allow the owner to mint
     function mint(address account, uint256 amount) public onlyOwner returns (bool) {
+        require(amount > 0, "ERR_LOW_MINT_AMOUNT");
         _mint(account, amount);
         return true;
     }
 
     // Only allow the owner to burn
     function burn(address account, uint256 amount) public onlyOwner returns (bool) {
+        require(amount > 0, "ERR_LOW_BURN_AMOUNT");
+        require(balanceOf(account) >= amount, "ERR_INSUFFICIENT_BAL");
         _burn(account, amount);
         return true;
     }
@@ -36,5 +39,12 @@ contract RowanToken is ERC20, Ownable {
 
     function decimals() public view returns (uint8) {
         return _decimals;
+    }
+
+    function transfer(address recipient, uint256 amount) public returns (bool) {
+        require(amount != 0);
+        require(balanceOf(msg.sender) >= amount, "ERR_INSUFFICIENT_BAL");
+        _transfer(msg.sender, recipient, amount);
+        return true;
     }
 }
