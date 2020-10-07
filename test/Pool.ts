@@ -83,7 +83,7 @@ contract('Full pool test', (accounts) => {
 
     it('Fails binding tokens that are not approved', async () => {
         await truffleAssert.reverts(
-            pool.bind(MKR, toWei('10'), toWei('2.5')),
+            pool.bind(MKR, toWei('1'), toWei('2.5')),
             'SafeMath: subtraction overflow',
         );
     });
