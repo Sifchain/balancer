@@ -212,28 +212,40 @@ contract('Our use case', (accounts) => {
     });
   });
 
-
   describe('Pool Operations', () => {
+    it('Fails to swap if user is not in the whitelist', async () => {
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(USDT, toWei('500'), ROWAN, 0, MAX, { from: user }),
+        'ERR_NOT_WHITELISTED',
+      );
+    });
+
+    it('Fails to swap less than min swap amount', async () => {
+      await whitelist.whitelistUser(user, { from: admin });
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(USDT, toWei('100'), ROWAN, 0, MAX, { from: user }),
+        'ERR_MIN_SWAP_AMOUNT',
+      );
+    });
+
     it('Swap iteration', async () => {
-      const UsdtPoolBalance = await pool.getBalance(USDT);
-      const RowanPoolBalance = await pool.getBalance(ROWAN);
-      const expected = calcOutGivenIn(fromWei(UsdtPoolBalance), weightUsdt, fromWei(RowanPoolBalance), weightRowan, 1, swap_fee);
+      const usdtPoolBalance = await pool.getBalance(USDT);
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      const expected = calcOutGivenIn(
+        fromWei(usdtPoolBalance),
+        weightUsdt,
+        fromWei(rowanPoolBalance),
+        weightRowan,
+        500,
+        swap_fee
+      );
 
       if(verbose) {
         console.log('Before swap:');
         await logState();
       }
 
-      await truffleAssert.reverts(
-        pool.swapExactAmountIn(USDT, toWei('1'), ROWAN, 0, MAX, { from: user }),
-        '!whitelisted',
-      );
-
-      assert.equal(
-        await whitelist.isWhitelisted(user, { from: admin }),
-        false
-      );
-      await whitelist.whitelistUser(user, { from: admin });
       assert.equal(
         await whitelist.isWhitelisted(user, { from: admin }),
         true
@@ -241,7 +253,7 @@ contract('Our use case', (accounts) => {
 
       const txr = await pool.swapExactAmountIn(
         USDT,
-        toWei('1'),
+        toWei('500'),
         ROWAN,
         0,
         MAX,
