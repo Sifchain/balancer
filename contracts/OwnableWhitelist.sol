@@ -10,13 +10,13 @@ contract OwnableWhitelist is Ownable {
     event UserRemoved(address indexed account);
 
     Roles.Role private _whitelist;
-    
+
     constructor() Ownable() public {
         _whitelist.add(msg.sender);
     }
 
-    function isWhitelisted(address user) public view returns (bool) {
-        return _whitelist.has(user);
+    function isWhitelisted(address _user) public view returns (bool) {
+        return _whitelist.has(_user);
     }
 
     function whitelistUser(address _user) external onlyOwner {

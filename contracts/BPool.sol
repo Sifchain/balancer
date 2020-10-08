@@ -446,7 +446,6 @@ contract BPool is BBronze, BToken, BMath {
         onlyWhitelisted(msg.sender)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
-        require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
         require(_records[tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
         require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
@@ -455,6 +454,7 @@ contract BPool is BBronze, BToken, BMath {
         Record storage outRecord = _records[address(tokenOut)];
 
         require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
+        require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
         uint spotPriceBefore = calcSpotPrice(
                                     inRecord.balance,
