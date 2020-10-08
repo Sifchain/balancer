@@ -3,12 +3,19 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract RowanToken is ERC20, Ownable {
+import "./BalancerTracker.sol";
+
+contract RowanToken is ERC20, Ownable, BalancerTracker {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
 
-    constructor (string memory name, string memory symbol, uint8 decimals) public {
+    constructor (
+        string memory name,
+        string memory symbol,
+        uint8 decimals,
+        address bPool
+    ) public BalancerTracker(bPool) {
         _name = name;
         _symbol = symbol;
         _decimals = decimals;
@@ -20,8 +27,11 @@ contract RowanToken is ERC20, Ownable {
         return true;
     }
 
-    // Only allow the owner to burn
-    function burn(address account, uint256 amount) public onlyOwner returns (bool) {
+    // Only allow the owner to burn tokens in the balancer pool
+    function burn(
+        address account,
+        uint256 amount
+    ) public onlyOwner onlyBalancerPool(account) returns (bool) {
         _burn(account, amount);
         return true;
     }
