@@ -21,6 +21,9 @@ contract BConst is BBronze {
     uint public constant MIN_BOUND_TOKENS  = 2;
     uint public constant MAX_BOUND_TOKENS  = 8;
 
+    // Min investment amount is 500 USDT
+    uint public constant MIN_SWAP_AMOUNT   = BONE * 500;
+
     uint public constant MIN_FEE           = 0;
     uint public constant MAX_FEE           = BONE / 10;
     uint public constant EXIT_FEE          = 0;
