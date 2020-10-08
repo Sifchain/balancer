@@ -5,7 +5,7 @@ const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const { calcOutGivenIn, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -39,11 +39,11 @@ contract('Our use case', (accounts) => {
     const adminRowanBalance = await rowan.balanceOf(admin);
     console.log(`Rowan Admin Balance: ${fromWei(adminRowanBalance)}`);
     const userUsdtBalance = await usdt.balanceOf(user);
-    console.log(`USDT User Balance: ${fromWei(userUsdtBalance)}`);
+    console.log(`USDT User Balance: ${fromWei(userUsdtBalance, 'mwei')}`);
     const adminUsdtBalance = await usdt.balanceOf(admin);
-    console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance)}`);
+    console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance, 'mwei')}`);
     const usdtBalance = await pool.getBalance(USDT);
-    console.log(`USDT amount in pool : ${fromWei(usdtBalance)}`);
+    console.log(`USDT amount in pool : ${fromWei(usdtBalance, 'mwei')}`);
     console.log('');
   }
 
@@ -59,10 +59,10 @@ contract('Our use case', (accounts) => {
 
     // admin balances
     await rowan.mint(admin, toWei('120000000'));
-    await usdt.mint(admin, toWei('45000'));
+    await usdt.mint(admin, toWei('45000', 'mwei'));
 
     // user balances
-    await usdt.mint(user, toWei('500'), { from: admin });
+    await usdt.mint(user, toWei('500', 'mwei'), { from: admin });
 
     await rowan.approve(POOL, MAX);
     await usdt.approve(POOL, MAX);
@@ -71,7 +71,7 @@ contract('Our use case', (accounts) => {
     await usdt.approve(POOL, MAX, { from: user });
 
     await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()));
-    await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()));
+    await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()));
 
     await pool.setSwapFee(swap_fee);
     await pool.finalize();
@@ -79,62 +79,62 @@ contract('Our use case', (accounts) => {
 
   describe('Minting Tokens', () => {
     it('Should not be able to mint if the minter is not admin', async () => {
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
       await truffleAssert.reverts(
-        usdt.mint(user, toWei('100'), { from: user }),
+        usdt.mint(user, toWei('1500', 'mwei'), { from: user }),
         'Ownable: caller is not the owner'
       );
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
     });
 
     it('Should not be able to mint if mint amount is 0', async () => {
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
       await truffleAssert.reverts(
-        usdt.mint(user, toWei('0'), { from: admin }),
+        usdt.mint(user, toWei('0', 'mwei'), { from: admin }),
         'ERR_LOW_MINT_AMOUNT'
       );
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
     });
 
     it('Should be able to mint if the minter is the admin', async () => {
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
-      usdt.mint(user, toWei('500'), { from: admin });
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
+      usdt.mint(user, toWei('500', 'mwei'), { from: admin });
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
     });
   });
 
   describe('Burning Tokens', () => {
     it('Should not be able to burn if the burner is not admin', async () => {
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
       await truffleAssert.reverts(
-        usdt.burn(user, toWei('100'), { from: user }),
+        usdt.burn(user, toWei('100', 'mwei'), { from: user }),
         'Ownable: caller is not the owner'
       );
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
     });
 
     it('Should not be able to burn if burn amount is 0', async () => {
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
       await truffleAssert.reverts(
-        usdt.burn(user, toWei('0'), { from: admin }),
+        usdt.burn(user, toWei('0', 'mwei'), { from: admin }),
         'ERR_LOW_BURN_AMOUNT'
       );
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
     });
 
     it('Should not be able to burn if account balance is insufficient', async () => {
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
       await truffleAssert.reverts(
-        usdt.burn(user, toWei('1001'), { from: admin }),
+        usdt.burn(user, toWei('1001', 'mwei'), { from: admin }),
         'ERR_INSUFFICIENT_BAL'
       );
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
     });
 
     it('Should be able to burn if the burner is the admin', async () => {
-      assert.equal(toWei('1000'), (await usdt.balanceOf(user)));
-      usdt.burn(user, toWei('500'), { from: admin });
-      assert.equal(toWei('500'), (await usdt.balanceOf(user)));
+      assert.equal(toWei('1000', 'mwei'), (await usdt.balanceOf(user)));
+      usdt.burn(user, toWei('500', 'mwei'), { from: admin });
+      assert.equal(toWei('500', 'mwei'), (await usdt.balanceOf(user)));
     });
   });
 
@@ -215,7 +215,7 @@ contract('Our use case', (accounts) => {
   describe('Pool Operations', () => {
     it('Fails to swap if user is not in the whitelist', async () => {
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(USDT, toWei('500'), ROWAN, 0, MAX, { from: user }),
+        pool.swapExactAmountIn(USDT, toWei('500', 'mwei'), ROWAN, 0, MAX, { from: user }),
         'ERR_NOT_WHITELISTED',
       );
     });
@@ -224,7 +224,7 @@ contract('Our use case', (accounts) => {
       await whitelist.whitelistUser(user, { from: admin });
 
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(USDT, toWei('100'), ROWAN, 0, MAX, { from: user }),
+        pool.swapExactAmountIn(USDT, toWei('100', 'mwei'), ROWAN, 0, MAX, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
@@ -233,7 +233,7 @@ contract('Our use case', (accounts) => {
       const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        fromWei(usdtPoolBalance),
+        fromWei(usdtPoolBalance, 'mwei'),
         weightUsdt,
         fromWei(rowanPoolBalance),
         weightRowan,
@@ -253,7 +253,7 @@ contract('Our use case', (accounts) => {
 
       const txr = await pool.swapExactAmountIn(
         USDT,
-        toWei('500'),
+        toWei('500', 'mwei'),
         ROWAN,
         0,
         MAX,
@@ -272,7 +272,7 @@ contract('Our use case', (accounts) => {
       const relDif = calcRelativeDiff(expected, actual);
 
       const userRowanBalance = await rowan.balanceOf(user);
-      assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
+      assert.equal(fromWei(userRowanBalance, 'mwei'), Number(fromWei(log.args.tokenAmountOut, 'mwei')));
 
       assert.isAtMost(relDif.toNumber(), errorDelta);
     });
