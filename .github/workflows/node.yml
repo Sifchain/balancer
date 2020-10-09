@@ -1,0 +1,26 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [develop, master]
+    paths: ['**.js', '**.ts', '**.sol']
+  pull_request:
+    branches: [develop, master]
+    paths: ['**.js', '**.ts', '**.sol']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '12.x'
+      - run: npm install
+      - run: npm install -g ganache-cli
+      - run: ganache-cli &
+      - run: truffle compile
+      - run: truffle test
+        env:
+          CI: true
