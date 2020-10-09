@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const fs = require('fs');
 const BPool = artifacts.require('BPool');
-const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
+const RowanToken = artifacts.require('RowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const verbose = process.env.VERBOSE;
@@ -31,10 +31,10 @@ contract('Full pool test', (accounts) => {
 
         POOL = pool.address;
 
-        weth = await ERC20MintableBurnableOwnable.new('Wrapped Ether', 'WETH', 18);
-        mkr = await ERC20MintableBurnableOwnable.new('Maker', 'MKR', 18);
-        dai = await ERC20MintableBurnableOwnable.new('Dai Stablecoin', 'DAI', 18);
-        xxx = await ERC20MintableBurnableOwnable.new('XXX', 'XXX', 18);
+        weth = await RowanToken.new('Wrapped Ether', 'WETH', 18);
+        mkr = await RowanToken.new('Maker', 'MKR', 18);
+        dai = await RowanToken.new('Dai Stablecoin', 'DAI', 18);
+        xxx = await RowanToken.new('XXX', 'XXX', 18);
 
         WETH = weth.address;
         MKR = mkr.address;

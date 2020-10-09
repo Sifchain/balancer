@@ -1,5 +1,5 @@
 const BPool = artifacts.require('BPool');
-const ERC20MintableBurnableOwnable = artifacts.require('ERC20MintableBurnableOwnable');
+const RowanToken = artifacts.require('RowanToken');
 const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
@@ -47,8 +47,8 @@ contract('Our use case', (accounts) => {
     }
 
     it('pool init', async () => {
-        rowan = await ERC20MintableBurnableOwnable.new('Rowan.eth', 'ROWAN', 18);
-        usdt = await ERC20MintableBurnableOwnable.new('USDT Stablecoin', 'USDT', 18);
+        rowan = await RowanToken.new('Rowan.eth', 'ROWAN', 18);
+        usdt = await RowanToken.new('USDT Stablecoin', 'USDT', 18);
 
         pool = await BPool.deployed();
 
