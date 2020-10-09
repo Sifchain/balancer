@@ -1,6 +1,6 @@
 const truffleAssert = require('truffle-assertions');
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
-
+const fs = require('fs');
 const BPool = artifacts.require('BPool');
 const RowanToken = artifacts.require('RowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
@@ -26,6 +26,9 @@ contract('Full pool test', (accounts) => {
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
+    const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
+    await pool.setController(admin, {from: controller});
+    
     POOL = pool.address;
 
     weth = await RowanToken.new('Wrapped Ether', 'WETH', 18);

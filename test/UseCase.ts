@@ -1,5 +1,6 @@
 const BPool = artifacts.require('BPool');
 const RowanToken = artifacts.require('RowanToken');
+const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
@@ -13,6 +14,7 @@ const swap_fee = 0.0;
 const verbose = true;
 
 contract('Our use case', (accounts) => {
+  const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
   const admin = accounts[0];
   const user = accounts[1];
   const user2 = accounts[2];
@@ -58,23 +60,23 @@ contract('Our use case', (accounts) => {
     POOL = pool.address;
 
     // admin balances
-    await rowan.mint(admin, toWei('120000000'));
-    await usdt.mint(admin, toWei('45000', 'mwei'));
+    await rowan.mint(controller, toWei('120000000'));
+    await usdt.mint(controller, toWei('45000', 'mwei'));
 
     // user balances
-    await usdt.mint(user, toWei('500', 'mwei'), { from: admin });
-
-    await rowan.approve(POOL, MAX);
-    await usdt.approve(POOL, MAX);
+    await usdt.mint(user, toWei('500', 'mwei'));
 
     await rowan.approve(POOL, MAX, { from: user });
     await usdt.approve(POOL, MAX, { from: user });
 
-    await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()));
-    await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()));
+    await rowan.approve(POOL, MAX, { from: controller });
+    await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.setSwapFee(swap_fee);
-    await pool.finalize();
+    await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
+    await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
+
+    await pool.setSwapFee(swap_fee, { from: controller });
+    await pool.finalize({ from: controller });
   });
 
   describe('Minting Tokens', () => {
@@ -272,13 +274,13 @@ contract('Our use case', (accounts) => {
       const relDif = calcRelativeDiff(expected, actual);
 
       const userRowanBalance = await rowan.balanceOf(user);
-      assert.equal(fromWei(userRowanBalance, 'mwei'), Number(fromWei(log.args.tokenAmountOut, 'mwei')));
+      assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
 
       assert.isAtMost(relDif.toNumber(), errorDelta);
     });
 
     it('Liquidity iteration', async () => {
-      await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0);
+      await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0, { from: controller });
       if(verbose) {
         console.log('After adding liquidity:');
         await logState();
@@ -286,8 +288,8 @@ contract('Our use case', (accounts) => {
     });
 
     it('Exit pool', async () => {
-      const adminBal = await pool.balanceOf(admin);
-      await pool.exitPool(adminBal, [0, 0]);
+      const adminBal = await pool.balanceOf(controller);
+      await pool.exitPool(adminBal, [0, 0], { from: controller });
       if(verbose) {
         console.log('After exiting pool:');
         await logState();
