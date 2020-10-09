@@ -17,7 +17,7 @@ import "./BMath.sol";
 import "./OwnableWhitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract BPool is BBronze, BMath {
+contract BPool is BMath {
 
     struct Record {
         bool bound;   // is token bound to pool
