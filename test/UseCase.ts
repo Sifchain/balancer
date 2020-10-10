@@ -92,16 +92,6 @@ contract('Our use case', (accounts) => {
         );
     })
 
-    it('Should be able to burn if the burner is the admin', async () => {
-        const balanceOfOwner = await usdt.balanceOf(admin);
-        await usdt.mint(admin, '100', { from: admin })
-        assert.equal((await usdt.balanceOf(admin)) > 0, true);
-
-        usdt.burn(admin, '100', { from: admin })
-
-        assert.equal((await usdt.balanceOf(admin)) < 1, true);
-    })
-
     it('Swap iteration', async () => {
         const UsdtPoolBalance = await pool.getBalance(USDT);
         const RowanPoolBalance = await pool.getBalance(ROWAN);
