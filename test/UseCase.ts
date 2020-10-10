@@ -6,7 +6,7 @@ const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const { calcOutGivenIn, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -83,24 +83,24 @@ contract('Our use case', (accounts) => {
             usdt.mint(user, toWei('100'), { from: user }),
             "Ownable: caller is not the owner"
         );
-    })
+    });
 
     it('Should not be able to burn if the burner is not admin', async () => {
         await truffleAssert.reverts(
             usdt.burn(user, toWei('100'), { from: user }),
             "Ownable: caller is not the owner"
         );
-    })
+    });
 
     it('Should be able to burn if the burner is the admin', async () => {
-        const balanceOfOwner = await usdt.balanceOf(admin);
-        await usdt.mint(admin, '100', { from: admin })
-        assert.equal((await usdt.balanceOf(admin)) > 0, true);
+        const balanceOfOwner = await usdt.balanceOf(accounts[0]);
+        await usdt.mint(accounts[0], '100', { from: accounts[0] });
+        assert.equal((await usdt.balanceOf(accounts[0])) > 0, true);
 
-        usdt.burn(admin, '100', { from: admin })
+        usdt.burn(accounts[0], '100', { from: accounts[0] });
 
-        assert.equal((await usdt.balanceOf(admin)) < 1, true);
-    })
+        assert.equal((await usdt.balanceOf(accounts[0])) < 1, true);
+    });
 
     it('Swap iteration', async () => {
         const UsdtPoolBalance = await pool.getBalance(USDT);
