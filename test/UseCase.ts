@@ -1,12 +1,12 @@
 const BPool = artifacts.require('BPool');
-const BFactory = artifacts.require('BFactory');
 const RowanToken = artifacts.require('RowanToken');
+const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const { calcOutGivenIn, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -14,12 +14,10 @@ const swap_fee = 0.0;
 const verbose = true;
 
 contract('Our use case', (accounts) => {
-    const admin = accounts[0];
     const user = accounts[1];
+    const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
 
-    let factory;
     let pool;
-    let POOL;
     let ROWAN;
     let USDT;
     let rowan;
@@ -37,11 +35,11 @@ contract('Our use case', (accounts) => {
 
         const userRowanBalance = await rowan.balanceOf(user);
         console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
-        const adminRowanBalance = await rowan.balanceOf(admin);
+        const adminRowanBalance = await rowan.balanceOf(controller);
         console.log(`Rowan Admin Balance: ${fromWei(adminRowanBalance)}`);
         const userUsdtBalance = await usdt.balanceOf(user);
         console.log(`USDT User Balance: ${fromWei(userUsdtBalance)}`);
-        const adminUsdtBalance = await usdt.balanceOf(admin);
+        const adminUsdtBalance = await usdt.balanceOf(controller);
         console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance)}`);
         const UsdtBalance = await pool.getBalance(USDT);
         console.log(`USDT amount in pool : ${fromWei(UsdtBalance)}`);
@@ -49,10 +47,10 @@ contract('Our use case', (accounts) => {
     }
 
     it('pool init', async () => {
-        factory = await BFactory.deployed();
-
         rowan = await RowanToken.new('Rowan.eth', 'ROWAN', 18);
         usdt = await RowanToken.new('USDT Stablecoin', 'USDT', 18);
+
+        pool = await BPool.deployed();
 
         whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
@@ -60,28 +58,24 @@ contract('Our use case', (accounts) => {
         USDT = usdt.address;
 
         // admin balances
-        await rowan.mint(admin, toWei('120000000'));
-        await usdt.mint(admin, toWei('45000'));
+        await rowan.mint(controller, toWei('120000000'));
+        await usdt.mint(controller, toWei('45000'));
 
         // user balances
-        await usdt.mint(user, toWei('100'), { from: admin });
+        await usdt.mint(user, toWei('100'));
 
-        POOL = await factory.newBPool.call(); // this works fine in clean room
-        await factory.newBPool();
-        pool = await BPool.at(POOL);
+        await rowan.approve(pool.address, MAX, { from: user });
+        await usdt.approve(pool.address, MAX, { from: user });
 
-        await rowan.approve(POOL, MAX);
-        await usdt.approve(POOL, MAX);
+        await rowan.approve(pool.address, MAX, { from: controller });
+        await usdt.approve(pool.address, MAX, { from: controller });
 
-        await rowan.approve(POOL, MAX, { from: user });
-        await usdt.approve(POOL, MAX, { from: user });
+        await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
+        await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()), { from: controller });
 
-        await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()));
-        await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()));
+        await pool.setSwapFee(swap_fee, { from: controller });
 
-        await pool.setSwapFee(swap_fee);
-
-        await pool.finalize();
+        await pool.finalize({ from: controller });
     });
 
     it('Should not be able to mint if the minter is not admin', async () => {
@@ -89,24 +83,24 @@ contract('Our use case', (accounts) => {
             usdt.mint(user, toWei('100'), { from: user }),
             "Ownable: caller is not the owner"
         );
-    })
+    });
 
     it('Should not be able to burn if the burner is not admin', async () => {
         await truffleAssert.reverts(
             usdt.burn(user, toWei('100'), { from: user }),
             "Ownable: caller is not the owner"
         );
-    })
+    });
 
     it('Should be able to burn if the burner is the admin', async () => {
-        const balanceOfOwner = await usdt.balanceOf(admin);
-        await usdt.mint(admin, '100', { from: admin })
-        assert.equal((await usdt.balanceOf(admin)) > 0, true);
+        const balanceOfOwner = await usdt.balanceOf(accounts[0]);
+        await usdt.mint(accounts[0], '100', { from: accounts[0] });
+        assert.equal((await usdt.balanceOf(accounts[0])) > 0, true);
 
-        usdt.burn(admin, '100', { from: admin })
+        usdt.burn(accounts[0], '100', { from: accounts[0] });
 
-        assert.equal((await usdt.balanceOf(admin)) < 1, true);
-    })
+        assert.equal((await usdt.balanceOf(accounts[0])) < 1, true);
+    });
 
     it('Swap iteration', async () => {
         const UsdtPoolBalance = await pool.getBalance(USDT);
@@ -124,12 +118,12 @@ contract('Our use case', (accounts) => {
         );
 
         assert.equal(
-            await whitelist.isWhitelisted(user, { from: admin }),
+            await whitelist.isWhitelisted(user, { from: accounts[0] }),
             false
         );
-        await whitelist.whitelistUser(user, { from: admin })
+        await whitelist.whitelistUser(user, { from: accounts[0] })
         assert.equal(
-            await whitelist.isWhitelisted(user, { from: admin }),
+            await whitelist.isWhitelisted(user, { from: accounts[0] }),
             true
         );
 
@@ -160,7 +154,7 @@ contract('Our use case', (accounts) => {
     });
 
     it('Liquidity iteration', async () => {
-        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0);
+        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0, { from: controller });
         if(verbose) {
             console.log('After adding liquidity:');
             await logState();
@@ -168,8 +162,8 @@ contract('Our use case', (accounts) => {
     });
 
     it('Exit pool', async () => {
-        const adminBal = await pool.balanceOf(admin);
-        await pool.exitPool(adminBal, [0, 0]);
+        const adminBal = await pool.balanceOf(controller);
+        await pool.exitPool(adminBal, [0, 0], { from: controller });
         if(verbose) {
             console.log('After exiting pool:');
             await logState();

@@ -1,8 +1,7 @@
 const truffleAssert = require('truffle-assertions');
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
-
+const fs = require('fs');
 const BPool = artifacts.require('BPool');
-const BFactory = artifacts.require('BFactory');
 const RowanToken = artifacts.require('RowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
@@ -19,18 +18,18 @@ contract('Full pool test', (accounts) => {
 
     let WETH; let MKR; let DAI; let XXX; // addresses
     let weth; let mkr; let dai; let xxx; // TTokens
-    let factory; // BPool factory
     let pool; // first pool w/ defaults
     let POOL; //   pool address
     let whitelist;
 
     it('pool init', async () => {
-        factory = await BFactory.deployed();
+        pool = await BPool.deployed();
         whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
-        POOL = await factory.newBPool.call();
-        await factory.newBPool();
-        pool = await BPool.at(POOL);
+        const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
+        await pool.setController(admin, {from: controller});
+
+        POOL = pool.address;
 
         weth = await RowanToken.new('Wrapped Ether', 'WETH', 18);
         mkr = await RowanToken.new('Maker', 'MKR', 18);
@@ -251,13 +250,6 @@ contract('Full pool test', (accounts) => {
         const publicSwap = pool.isPublicSwap();
         assert(publicSwap);
         await truffleAssert.reverts(pool.setPublicSwap(true, { from: user1 }), 'ERR_NOT_CONTROLLER');
-    });
-
-    it('Fails setting negative swap fees', async () => {
-        await truffleAssert.reverts(
-            pool.setSwapFee(toWei('-0.0000001')),
-            'ERR_MAX_FEE',
-        );
     });
 
     it('Fails setting high swap fees', async () => {

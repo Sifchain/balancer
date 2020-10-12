@@ -93,11 +93,10 @@ contract BPool is BBronze, BToken, BMath {
     uint private _totalWeight;
 
     address private _whiteListContract;
-
-    constructor(address _whitelist) public {
+    constructor(address _whitelist, address controller) public {
         _whiteListContract = _whitelist;
-        _controller = msg.sender;
-        _factory = msg.sender;
+        _controller = controller;
+        _factory = controller;
         _swapFee = MIN_FEE;
         _publicSwap = false;
         _finalized = false;
@@ -221,6 +220,7 @@ contract BPool is BBronze, BToken, BMath {
     {
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         _controller = manager;
+        _factory = manager;
     }
 
     function setPublicSwap(bool public_)
