@@ -380,13 +380,11 @@ contract('Full pool test', (accounts) => {
         assert.equal(0.333333333333333333, fromWei(daiNormWeight));
     });
 
-    it('Fails joins exits with limits', async () => {
-
+    it('Fails exit pool with limits', async () => {
         await truffleAssert.reverts(
             pool.exitPool([toWei('30'), toWei('30'), toWei('30')]),
             'ERR_LIMIT_OUT',
         );
-
     });
 
     it('Fails calling any swap on unbound token', async () => {
