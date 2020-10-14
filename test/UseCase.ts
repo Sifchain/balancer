@@ -154,7 +154,7 @@ contract('Our use case', (accounts) => {
     });
 
     it('Liquidity iteration', async () => {
-        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), 0, { from: controller });
+        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), { from: controller });
         if(verbose) {
             console.log('After adding liquidity:');
             await logState();
@@ -162,8 +162,7 @@ contract('Our use case', (accounts) => {
     });
 
     it('Exit pool', async () => {
-        const adminBal = await pool.balanceOf(controller);
-        await pool.exitPool(adminBal, [0, 0], { from: controller });
+        await pool.exitPool([0, 0], { from: controller });
         if(verbose) {
             console.log('After exiting pool:');
             await logState();
