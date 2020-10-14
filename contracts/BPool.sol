@@ -402,7 +402,7 @@ contract BPool is BMath {
                                 outRecord.denorm,
                                 _swapFee
                             );
-        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
+        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");     
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 

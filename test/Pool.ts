@@ -13,15 +13,14 @@ const MAX = web3.utils.toTwosComplement(-1);
 
 contract('Full pool test', (accounts) => {
   const admin = accounts[0];
-  const user1 = accounts[1];
+  const user1 = accounts[1]
   const user2 = accounts[2];
-
   let WETH; let MKR; let DAI; let XXX; // addresses
   let weth; let mkr; let dai; let xxx; // TTokens
   let pool; // first pool w/ defaults
   let POOL; //   pool address
   let whitelist;
-
+  
   before(async () => {
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
