@@ -15,9 +15,13 @@ pragma solidity 0.5.12;
 
 contract BConst {
     uint public constant BONE              = 10**18;
+    uint public constant USDT_BONE         = 10**6;
 
     uint public constant MIN_BOUND_TOKENS  = 2;
     uint public constant MAX_BOUND_TOKENS  = 8;
+
+    // Min investment amount is 500 USDT
+    uint public constant MIN_SWAP_AMOUNT   = USDT_BONE * 500;
 
     uint public constant MIN_FEE           = 0;
     uint public constant MAX_FEE           = BONE / 10;

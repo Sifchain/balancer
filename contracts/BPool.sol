@@ -72,7 +72,7 @@ contract BPool is BMath {
     modifier onlyWhitelisted(address _user) {
         require(
             OwnableWhitelist(_whiteListContract).isWhitelisted(_user) == true,
-            "!whitelisted"
+            "ERR_NOT_WHITELISTED"
         );
         _;
     }
@@ -125,7 +125,7 @@ contract BPool is BMath {
 
     function getNumTokens()
         external view
-        returns (uint) 
+        returns (uint)
     {
         return _tokens.length;
     }
@@ -205,7 +205,7 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
-    { 
+    {
         require(!_finalized, "ERR_IS_FINALIZED");
         require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(swapFee >= MIN_FEE, "ERR_MIN_FEE");
@@ -279,7 +279,7 @@ contract BPool is BMath {
             require(_totalWeight <= MAX_TOTAL_WEIGHT, "ERR_MAX_TOTAL_WEIGHT");
         } else if (denorm < oldWeight) {
             _totalWeight = bsub(_totalWeight, bsub(oldWeight, denorm));
-        }        
+        }
         _records[token].denorm = denorm;
 
         // Adjust the balance record and actual token balance
@@ -363,7 +363,6 @@ contract BPool is BMath {
         onlyWhitelisted(msg.sender)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
-
         require(_records[tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
         require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
@@ -372,6 +371,7 @@ contract BPool is BMath {
         Record storage outRecord = _records[address(tokenOut)];
 
         require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
+        require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
         uint spotPriceBefore = calcSpotPrice(
                                     inRecord.balance,

@@ -16,6 +16,6 @@ module.exports = async function (deployer) {
         let data = JSON.stringify(obj);
         fs.writeFileSync('BalancerABI.json', data);
     } catch (error) {
-        console.log("Error deploying:::: ", error)   
+        console.log("Error deploying:::: ", error);
     }
 };
