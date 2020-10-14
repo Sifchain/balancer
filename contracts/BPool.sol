@@ -79,6 +79,9 @@ contract BPool is BMath {
 
     bool private _mutex;
 
+    address private _tokenIn;
+    address private _tokenOut;
+
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
@@ -223,6 +226,16 @@ contract BPool is BMath {
         _factory = manager;
     }
 
+    function setTokenIntOut(address tokenIn, address tokenOut)
+        external
+        _logs_
+        _lock_
+    {
+        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
+        _tokenIn = tokenIn;
+        _tokenOut = tokenOut;
+    }
+
     function finalize()
         external
         _logs_
@@ -351,9 +364,7 @@ contract BPool is BMath {
     }
 
     function swapExactAmountIn(
-        address tokenIn,
         uint tokenAmountIn,
-        address tokenOut,
         uint minAmountOut,
         uint maxPrice
     )
@@ -363,6 +374,10 @@ contract BPool is BMath {
         onlyWhitelisted(msg.sender)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
+
+        address tokenIn = _tokenIn;
+        address tokenOut = _tokenOut;
+
         require(_records[tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
         require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
@@ -414,11 +429,12 @@ contract BPool is BMath {
         return (tokenAmountOut, spotPriceAfter);
     }
 
-    function joinswapExternAmountIn(address tokenIn, uint tokenAmountIn)
+    function joinswapExternAmountIn(uint tokenAmountIn)
         external
         _logs_
         _lock_
-    {        
+    {
+        address tokenIn = _tokenOut;
         require(_finalized, "ERR_NOT_FINALIZED");
         require(_records[tokenIn].bound, "ERR_NOT_BOUND");
         require(tokenAmountIn <= bmul(_records[tokenIn].balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
