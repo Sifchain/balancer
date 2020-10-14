@@ -20,7 +20,7 @@ jobs:
       - run: npm install
       - run: npm install -g truffle
       - run: npm install -g ganache-cli
-      - run: cp Accounts.example Accounts
+      - run: cat env.example >> .env
       - run: ganache-cli -d &
       - run: truffle compile
       - run: truffle test
