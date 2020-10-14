@@ -1,6 +1,5 @@
 const BPool = artifacts.require('BPool');
 const RowanToken = artifacts.require('RowanToken');
-const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
@@ -14,7 +13,7 @@ const swap_fee = 0.0;
 const verbose = true;
 
 contract('Our use case', (accounts) => {
-  const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
+  const controller = process.env.CONTROLLER;
   const admin = accounts[0];
   const user = accounts[1];
   const user2 = accounts[2];

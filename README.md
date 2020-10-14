@@ -2,6 +2,6 @@
 ## Run backend
 ```
 export PATH=$(npm bin):$PATH
-cp Accounts.example Accounts
+cat env.example >> .env
 ganache-cli -d
 ```
