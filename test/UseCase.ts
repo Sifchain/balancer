@@ -1,6 +1,5 @@
 const BPool = artifacts.require('BPool');
 const MockRowanToken = artifacts.require('MockRowanToken');
-const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
