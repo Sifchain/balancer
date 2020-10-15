@@ -1,5 +1,6 @@
 const RowanToken = artifacts.require('RowanToken');
 const BN = require('bn.js');
+const { toWei, fromWei } = web3.utils;
 
 contract('RowanToken', accounts => {
     const admin = accounts[0]
@@ -29,24 +30,21 @@ contract('RowanToken', accounts => {
         });
 
         it('Admin has correct token balance', async () => {
-            let expected = new BN('6342fd08f00f6378000000', 16)
             const balance = await rowan.balanceOf(admin);
-            assert.equal(expected.eq(balance), true);
+            assert.equal(balance, toWei('120', 'mether'));
         });
 
         it('Token contract has correct totalSupply', async () => {
-            let expected = new BN('6342fd08f00f6378000000', 16)
             const tokenSupply = await rowan.totalSupply();
-            assert.equal(tokenSupply.eq(expected), true);
+            assert.equal(tokenSupply, toWei('120', 'mether'));
         });
 
         it('Token contract should be able to burn tokens by sending to address 1', async () => {
-            await rowan.transfer('0x0000000000000000000000000000000000000001', '120000000000000000000000000', { from: admin });
-            let expected = new BN('6342fd08f00f6378000000', 16)
+            await rowan.transfer('0x0000000000000000000000000000000000000001', toWei('120', 'mether'), { from: admin });
             const balance = await rowan.balanceOf('0x0000000000000000000000000000000000000001');
 
             // make sure that address 1 has all of the tokens
-            assert.equal(expected.eq(balance), true);
+            assert.equal(balance, toWei('120', 'mether'));
 
             // make sure that the admin now has 0 balance after burning their tokens
             const adminBalance = await rowan.balanceOf(admin);
