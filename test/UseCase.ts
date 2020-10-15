@@ -277,6 +277,13 @@ contract('Our use case', (accounts) => {
       assert.isAtMost(relDif.toNumber(), errorDelta);
     });
 
+    it('Fails to provide liquidity if it is not controller', async () => {
+      await truffleAssert.reverts(
+        pool.joinswapExternAmountIn(toWei('625000'), { from: user }),
+        'ERR_NOT_CONTROLLER',
+      );
+    });
+
     it('Liquidity iteration', async () => {
         await pool.joinswapExternAmountIn(toWei('625000'), { from: controller });
         if(verbose) {
