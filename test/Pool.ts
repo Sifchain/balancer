@@ -177,10 +177,13 @@ contract('Full pool test', (accounts) => {
         pool.rebind(WETH, toWei('5'), toWei('5'), {from: user1}),
         'ERR_NOT_CONTROLLER',
       );
+      const oldController = await pool.getController();
+      await pool.setController(user1, {from: oldController});
       await truffleAssert.reverts(
         pool.exitPool([toWei('0'), toWei('0')], {from: user1}),
         'ERR_NOT_FINALIZED',
       );
+      await pool.setController(oldController, {from: user1});
     });
 
     it('Fails calling any swap before finalizing', async () => {
@@ -283,16 +286,18 @@ contract('Full pool test', (accounts) => {
     });
     it('User1 joins pool', async () => {
       const controller = await pool.getController();
-      await pool.setTokenIntOut(XXX, WETH, {from: controller});
+      await pool.setController(user1, {from: controller});
+      await pool.setTokenIntOut(XXX, WETH, {from: user1});
       await pool.joinswapExternAmountIn(toWei('2.5'), {from: user1});
-      await pool.setTokenIntOut(XXX, MKR, {from: controller});
+      await pool.setTokenIntOut(XXX, MKR, {from: user1});
       await pool.joinswapExternAmountIn(toWei('1'), {from: user1});
-      await pool.setTokenIntOut(XXX, DAI, {from: controller});
+      await pool.setTokenIntOut(XXX, DAI, {from: user1});
       await pool.joinswapExternAmountIn(toWei('500'), {from: user1});
       const daiBalance = await pool.getBalance(DAI);
       assert.equal(10500, fromWei(daiBalance));
       const userWethBalance = await weth.balanceOf(user1);
       assert.equal(22.5, fromWei(userWethBalance));
+      await pool.setController(controller, {from: user1});
     });
     /*
       Current pool balances
