@@ -375,15 +375,12 @@ contract BPool is BMath {
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
 
-        address tokenIn = _tokenIn;
-        address tokenOut = _tokenOut;
-
-        require(_records[tokenIn].bound, "ERR_NOT_BOUND");
-        require(_records[tokenOut].bound, "ERR_NOT_BOUND");
+        require(_records[_tokenIn].bound, "ERR_NOT_BOUND");
+        require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
         require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
 
-        Record storage inRecord = _records[address(tokenIn)];
-        Record storage outRecord = _records[address(tokenOut)];
+        Record storage inRecord = _records[address(_tokenIn)];
+        Record storage outRecord = _records[address(_tokenOut)];
 
         require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
         require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
@@ -421,10 +418,10 @@ contract BPool is BMath {
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 
-        emit LOG_SWAP(msg.sender, tokenIn, tokenOut, tokenAmountIn, tokenAmountOut);
+        emit LOG_SWAP(msg.sender, _tokenIn, _tokenOut, tokenAmountIn, tokenAmountOut);
 
-        _pullUnderlying(tokenIn, msg.sender, tokenAmountIn);
-        _pushUnderlying(tokenOut, msg.sender, tokenAmountOut);
+        _pullUnderlying(_tokenIn, msg.sender, tokenAmountIn);
+        _pushUnderlying(_tokenOut, msg.sender, tokenAmountOut);
 
         return (tokenAmountOut, spotPriceAfter);
     }
@@ -434,18 +431,17 @@ contract BPool is BMath {
         _logs_
         _lock_
     {
-        address tokenIn = _tokenOut;
         require(_finalized, "ERR_NOT_FINALIZED");
-        require(_records[tokenIn].bound, "ERR_NOT_BOUND");
-        require(tokenAmountIn <= bmul(_records[tokenIn].balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
+        require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
+        require(tokenAmountIn <= bmul(_records[_tokenOut].balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
 
-        Record storage inRecord = _records[tokenIn];
+        Record storage inRecord = _records[_tokenOut];
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
 
-        emit LOG_JOIN(msg.sender, tokenIn, tokenAmountIn);
+        emit LOG_JOIN(msg.sender, _tokenOut, tokenAmountIn);
 
-        _pullUnderlying(tokenIn, msg.sender, tokenAmountIn);
+        _pullUnderlying(_tokenOut, msg.sender, tokenAmountIn);
     }
 
     // ==
