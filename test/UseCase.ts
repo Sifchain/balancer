@@ -75,6 +75,7 @@ contract('Our use case', (accounts) => {
     await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
 
     await pool.setSwapFee(swap_fee, { from: controller });
+    await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
     await pool.finalize({ from: controller });
   });
 
@@ -216,7 +217,7 @@ contract('Our use case', (accounts) => {
   describe('Pool Operations', () => {
     it('Fails to swap if user is not in the whitelist', async () => {
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(USDT, toWei('500', 'mwei'), ROWAN, 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei('500', 'mwei'), 0, MAX, { from: user }),
         'ERR_NOT_WHITELISTED',
       );
     });
@@ -225,7 +226,7 @@ contract('Our use case', (accounts) => {
       await whitelist.whitelistUser(user, { from: admin });
 
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(USDT, toWei('100', 'mwei'), ROWAN, 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei('100', 'mwei'), 0, MAX, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
@@ -253,9 +254,7 @@ contract('Our use case', (accounts) => {
       );
 
       const txr = await pool.swapExactAmountIn(
-        USDT,
         toWei('500', 'mwei'),
-        ROWAN,
         0,
         MAX,
         { from: user },
@@ -279,7 +278,7 @@ contract('Our use case', (accounts) => {
     });
 
     it('Liquidity iteration', async () => {
-        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), { from: controller });
+        await pool.joinswapExternAmountIn(toWei('625000'), { from: controller });
         if(verbose) {
             console.log('After adding liquidity:');
             await logState();

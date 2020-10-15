@@ -184,19 +184,22 @@ contract('Full pool test', (accounts) => {
     });
 
     it('Fails calling any swap before finalizing', async () => {
+      const controller = await pool.getController();
+      await pool.setTokenIntOut(WETH, DAI, {from: controller});
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(WETH, toWei('2.5'), DAI, toWei('475'), toWei('200')),
+        pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_SWAP_NOT_PUBLIC',
       );
+      await pool.setTokenIntOut(DAI, WETH, {from: controller});
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(DAI, toWei('2.5'), WETH, toWei('475'), toWei('200')),
+        pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_SWAP_NOT_PUBLIC',
       );
     });
 
     it('Fails calling any join exit swap before finalizing', async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(WETH, toWei('2.5')),
+        pool.joinswapExternAmountIn(toWei('2.5')),
         'ERR_NOT_FINALIZED',
       );
     });
@@ -279,9 +282,13 @@ contract('Full pool test', (accounts) => {
       await xxx.approve(POOL, MAX, {from: user2});
     });
     it('User1 joins pool', async () => {
-      await pool.joinswapExternAmountIn(WETH, toWei('2.5'), {from: user1});
-      await pool.joinswapExternAmountIn(MKR, toWei('1'), {from: user1});
-      await pool.joinswapExternAmountIn(DAI, toWei('500'), {from: user1});
+      const controller = await pool.getController();
+      await pool.setTokenIntOut(XXX, WETH, {from: controller});
+      await pool.joinswapExternAmountIn(toWei('2.5'), {from: user1});
+      await pool.setTokenIntOut(XXX, MKR, {from: controller});
+      await pool.joinswapExternAmountIn(toWei('1'), {from: user1});
+      await pool.setTokenIntOut(XXX, DAI, {from: controller});
+      await pool.joinswapExternAmountIn(toWei('500'), {from: user1});
       const daiBalance = await pool.getBalance(DAI);
       assert.equal(10500, fromWei(daiBalance));
       const userWethBalance = await weth.balanceOf(user1);
@@ -306,13 +313,16 @@ contract('Full pool test', (accounts) => {
     });
 
     it('Fail swapExactAmountIn unbound or over min max ratios', async () => {
+      const controller = await pool.getController();
       await whitelist.whitelistUser(user2, {from: admin});
+      await pool.setTokenIntOut(WETH, XXX, {from: controller});
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(WETH, toWei('2.5'), XXX, toWei('100'), toWei('200'), {from: user2}),
+        pool.swapExactAmountIn(toWei('2.5'), toWei('100'), toWei('200'), {from: user2}),
         'ERR_NOT_BOUND',
       );
+      await pool.setTokenIntOut(WETH, DAI, {from: controller});
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(WETH, toWei('26.5'), DAI, toWei('5000'), toWei('200'), {from: user2}),
+        pool.swapExactAmountIn(toWei('26.5'), toWei('5000'), toWei('200'), {from: user2}),
         'ERR_MAX_IN_RATIO',
       );
     });
@@ -322,9 +332,7 @@ contract('Full pool test', (accounts) => {
       const initialUserDaiBalance = await dai.balanceOf(user2);
       const expected = calcOutGivenIn(52.5, 5, 10500, 5, 2.5, 0.003);
       const txr = await pool.swapExactAmountIn(
-        WETH,
         toWei('2.5'),
-        DAI,
         toWei('475'),
         toWei('200'),
         {from: user2},
@@ -363,16 +371,20 @@ contract('Full pool test', (accounts) => {
     });
 
     it('Fails calling any swap on unbound token', async () => {
+      const controller = await pool.getController();
+      await pool.setTokenIntOut(XXX, DAI, {from: controller});
+
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(XXX, toWei('2.5'), DAI, toWei('475'), toWei('200')),
+        pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
+        'ERR_NOT_BOUND',
+      );
+      await pool.setTokenIntOut(DAI, XXX, {from: controller});
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_NOT_BOUND',
       );
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(DAI, toWei('2.5'), XXX, toWei('475'), toWei('200')),
-        'ERR_NOT_BOUND',
-      );
-      await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(XXX, toWei('2.5')),
+        pool.joinswapExternAmountIn(toWei('2.5')),
         'ERR_NOT_BOUND',
       );
     });
