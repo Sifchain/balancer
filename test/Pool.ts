@@ -24,7 +24,7 @@ contract('Full pool test', (accounts) => {
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
-    const controller = JSON.parse(fs.readFileSync('Accounts', "utf8"))['account'];
+    const controller = process.env.CONTROLLER;
     await pool.setController(admin, {from: controller});
 
     POOL = pool.address;
