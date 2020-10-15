@@ -1,5 +1,5 @@
 const BPool = artifacts.require('BPool');
-const RowanToken = artifacts.require('RowanToken');
+const MockRowanToken = artifacts.require('MockRowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const truffleAssert = require('truffle-assertions');
@@ -49,8 +49,8 @@ contract('Our use case', (accounts) => {
   }
 
   before(async () => {
-    rowan = await RowanToken.new('Rowan.eth', 'ROWAN', 18);
-    usdt = await RowanToken.new('USDT Stablecoin', 'USDT', 18);
+    rowan = await MockRowanToken.new('Rowan.eth', 'ROWAN', 18);
+    usdt = await MockRowanToken.new('USDT Stablecoin', 'USDT', 18);
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 

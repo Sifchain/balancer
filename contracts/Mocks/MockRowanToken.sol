@@ -3,7 +3,7 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/ownership/Ownable.sol";
 
-contract RowanToken is ERC20, Ownable {
+contract MockRowanToken is ERC20, Ownable {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
