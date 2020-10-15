@@ -1,5 +1,5 @@
 const BPool = artifacts.require('BPool');
-const RowanToken = artifacts.require('RowanToken');
+const RowanToken = artifacts.require('MockRowanToken');
 const fs = require('fs');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 

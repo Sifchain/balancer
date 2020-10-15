@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const fs = require('fs');
 const BPool = artifacts.require('BPool');
-const RowanToken = artifacts.require('RowanToken');
+const RowanToken = artifacts.require('MockRowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 
 const verbose = process.env.VERBOSE;
