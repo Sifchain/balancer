@@ -75,7 +75,6 @@ contract('Our use case', (accounts) => {
     await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
 
     await pool.setSwapFee(swap_fee, { from: controller });
-    await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
     await pool.finalize({ from: controller });
   });
 
@@ -222,8 +221,24 @@ contract('Our use case', (accounts) => {
       );
     });
 
-    it('Fails to swap less than min swap amount', async () => {
+    it('Fails to swap when in/out tokens have not set', async () => {
       await whitelist.whitelistUser(user, { from: admin });
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei('500', 'mwei'), 0, MAX, { from: user }),
+        'ERR_NOT_BOUND',
+      );
+    });
+
+    it('Fails to provide liquidity when in/out tokens have not set', async () => {
+      await truffleAssert.reverts(
+        pool.joinswapExternAmountIn(toWei('625000'), { from: controller }),
+        'ERR_NOT_BOUND',
+      );
+    });
+
+    it('Fails to swap less than min swap amount', async () => {
+      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
 
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('100', 'mwei'), 0, MAX, { from: user }),
@@ -275,6 +290,13 @@ contract('Our use case', (accounts) => {
       assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
 
       assert.isAtMost(relDif.toNumber(), errorDelta);
+    });
+
+    it('Fails to provide liquidity if it is not controller', async () => {
+      await truffleAssert.reverts(
+        pool.joinswapExternAmountIn(toWei('625000'), { from: user }),
+        'ERR_NOT_CONTROLLER',
+      );
     });
 
     it('Liquidity iteration', async () => {

@@ -77,6 +77,11 @@ contract BPool is BMath {
         _;
     }
 
+    modifier onlyController() {
+        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
+        _;
+    }
+
     bool private _mutex;
 
     address private _tokenIn;
@@ -208,9 +213,9 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
         require(!_finalized, "ERR_IS_FINALIZED");
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(swapFee >= MIN_FEE, "ERR_MIN_FEE");
         require(swapFee <= MAX_FEE, "ERR_MAX_FEE");
         _swapFee = swapFee;
@@ -220,8 +225,8 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         _controller = manager;
         _factory = manager;
     }
@@ -230,8 +235,8 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         _tokenIn = tokenIn;
         _tokenOut = tokenOut;
     }
@@ -240,8 +245,8 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(!_finalized, "ERR_IS_FINALIZED");
         require(_tokens.length >= MIN_BOUND_TOKENS, "ERR_MIN_TOKENS");
 
@@ -253,9 +258,9 @@ contract BPool is BMath {
     function bind(address token, uint balance, uint denorm)
         external
         _logs_
+        onlyController
         // _lock_  Bind does not lock because it jumps to `rebind`, which does
     {
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(!_records[token].bound, "ERR_IS_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
 
@@ -275,9 +280,9 @@ contract BPool is BMath {
         public
         _logs_
         _lock_
+        onlyController
     {
 
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
         require(_records[token].bound, "ERR_NOT_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
 
@@ -347,9 +352,9 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
         require(_finalized, "ERR_NOT_FINALIZED");
-        require(msg.sender == _controller, "ERR_NOT_CONTROLLER");
 
         for (uint i = 0; i < _tokens.length; i++) {
             address t = _tokens[i];
@@ -430,6 +435,7 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
         require(_finalized, "ERR_NOT_FINALIZED");
         require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
