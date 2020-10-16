@@ -24,6 +24,15 @@ contract OwnableWhitelist is Ownable {
         emit UserAdded(_user);
     }
 
+    function bulkWhitelistUsers(address[] calldata _users) external onlyOwner {
+        for (uint256 i = 0; i < _users.length; i++) {
+            address _user = _users[i];
+
+            _whitelist.add(_user);
+            emit UserAdded(_user);
+        }
+    }
+
     function removeWhitelistedUser(address _user) external onlyOwner {
         _whitelist.remove(_user);
         emit UserRemoved(_user);
