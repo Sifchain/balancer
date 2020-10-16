@@ -198,6 +198,16 @@ contract('Full pool test', (accounts) => {
         pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_SWAP_NOT_PUBLIC',
       );
+      await pool.setTokenIntOut(WETH, DAI, {from: controller});
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(toWei('2.5'), toWei('475'), toWei('200')),
+        'ERR_SWAP_NOT_PUBLIC',
+      );
+      await pool.setTokenIntOut(DAI, WETH, {from: controller});
+      await truffleAssert.reverts(
+          pool.swapExactAmountOut(toWei('2.5'), toWei('475'), toWei('200')),
+          'ERR_SWAP_NOT_PUBLIC',
+      );
     });
 
     it('Fails calling any join exit swap before finalizing', async () => {
@@ -368,6 +378,34 @@ contract('Full pool test', (accounts) => {
       assert.equal(0.333333333333333333, fromWei(daiNormWeight));
     });
 
+    it('swapExactAmountOut', async () => {
+      const controller = await pool.getController();
+      await pool.setTokenIntOut(WETH, MKR, {from: controller});
+      // ETH -> 1 MKR
+      // const amountIn = (55 * (((21 / (21 - 1)) ** (5 / 5)) - 1)) / (1 - 0.003);
+      const expected = calcInGivenOut(55, 5, 21, 5, 1, 0.003);
+      const txr = await pool.swapExactAmountOut(
+          toWei('3'),
+          toWei('1.0'),
+          toWei('500'),
+          { from: user2 },
+      );
+      const log = txr.logs[0];
+      assert.equal(log.event, 'LOG_SWAP');
+      // 2.758274824473420261
+
+      const actual = fromWei(log.args[3]);
+      const relDif = calcRelativeDiff(expected, actual);
+      if (verbose) {
+          console.log('swapExactAmountOut');
+          console.log(`expected: ${expected})`);
+          console.log(`actual  : ${actual})`);
+          console.log(`relDif  : ${relDif})`);
+      }
+
+      assert.isAtMost(relDif.toNumber(), errorDelta);
+    });
+
     it('Fails exit pool with limits', async () => {
       await truffleAssert.reverts(
         pool.exitPool([toWei('30'), toWei('30'), toWei('30')]),
@@ -378,7 +416,6 @@ contract('Full pool test', (accounts) => {
     it('Fails calling any swap on unbound token', async () => {
       const controller = await pool.getController();
       await pool.setTokenIntOut(XXX, DAI, {from: controller});
-
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_NOT_BOUND',
@@ -387,6 +424,16 @@ contract('Full pool test', (accounts) => {
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('2.5'), toWei('475'), toWei('200')),
         'ERR_NOT_BOUND',
+      );
+      await pool.setTokenIntOut(XXX, DAI, {from: controller});
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(toWei('2.5'), toWei('475'), toWei('200')),
+        'ERR_NOT_BOUND',
+      );
+      await pool.setTokenIntOut(DAI, XXX, {from: controller});
+      await truffleAssert.reverts(
+          pool.swapExactAmountOut(toWei('2.5'), toWei('475'), toWei('200')),
+          'ERR_NOT_BOUND',
       );
       await truffleAssert.reverts(
         pool.joinswapExternAmountIn(toWei('2.5')),
