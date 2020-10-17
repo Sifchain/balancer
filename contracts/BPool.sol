@@ -368,15 +368,12 @@ contract BPool is BMath {
 
     }
 
-    function swapExactAmountOut(
+    function getEstimationExactAmountOut(
         uint maxAmountIn,
         uint tokenAmountOut,
         uint maxPrice
     )
-        external
-        _logs_
-        _lock_
-        onlyWhitelisted(msg.sender)
+        external view
         returns (uint tokenAmountIn, uint spotPriceAfter)
     {
         require(_records[_tokenIn].bound, "ERR_NOT_BOUND");
@@ -418,6 +415,22 @@ contract BPool is BMath {
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 
+
+        return (tokenAmountIn, spotPriceAfter);
+    }
+
+    function swapExactAmountOut(
+        uint maxAmountIn,
+        uint tokenAmountOut,
+        uint maxPrice
+    )
+        external
+        _logs_
+        _lock_
+        onlyWhitelisted(msg.sender)
+        returns (uint tokenAmountIn, uint spotPriceAfter)
+    {
+        (tokenAmountIn, spotPriceAfter) = this.getEstimationExactAmountOut(maxAmountIn, tokenAmountOut, maxPrice);
         _actualTransfer(tokenAmountIn, tokenAmountOut);
 
         return (tokenAmountIn, spotPriceAfter);
@@ -432,6 +445,20 @@ contract BPool is BMath {
         _logs_
         _lock_
         onlyWhitelisted(msg.sender)
+        returns (uint tokenAmountOut, uint spotPriceAfter)
+    {
+        (tokenAmountOut, spotPriceAfter) = this.getEstimationExactAmountIn(tokenAmountIn, minAmountOut, maxPrice);
+        _actualTransfer(tokenAmountIn, tokenAmountOut);
+
+        return (tokenAmountOut, spotPriceAfter);
+    }
+
+        function getEstimationExactAmountIn(
+        uint tokenAmountIn,
+        uint minAmountOut,
+        uint maxPrice
+    )
+        external view
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
 
@@ -474,8 +501,6 @@ contract BPool is BMath {
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");     
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
-
-        _actualTransfer(tokenAmountIn, tokenAmountOut);
 
         return (tokenAmountOut, spotPriceAfter);
     }
