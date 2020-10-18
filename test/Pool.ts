@@ -340,6 +340,18 @@ contract('Full pool test', (accounts) => {
         pool.swapExactAmountIn(toWei('26.5'), toWei('5000'), toWei('200'), {from: user2}),
         'ERR_MAX_IN_RATIO',
       );
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei('5.3'), toWei('1000'), toWei('200'), {from: user2}),
+        'ERR_LIMIT_OUT.',
+      );
+    });
+
+    it('Fail swapExactAmountIn over max swap ratio', async () => {
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei('6.3'), toWei('1100'), toWei('200'), {from: user2}),
+        'ERR_MAX_SWAP_AMOUNT',
+      );
     });
 
     it('swapExactAmountIn', async () => {
