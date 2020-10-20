@@ -356,7 +356,7 @@ contract('Full pool test', (accounts) => {
       assert.equal((await pool.getBalance(DAI)), toWei('10500'));
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('6'), toWei('1074'), toWei('200'), {from: user2}),
-        'ERR_MAX_SWAP_AMOUNT',
+        'ERR_MAX_OUT_RATIO',
       );
       assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
       assert.equal((await pool.getBalance(DAI)), toWei('10500'));
