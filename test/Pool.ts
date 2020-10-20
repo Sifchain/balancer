@@ -217,26 +217,14 @@ contract('Full pool test', (accounts) => {
       );
     });
 
-    it('Fails setting high swap fees', async () => {
-      await truffleAssert.reverts(
-        pool.setSwapFee(toWei('0.11')),
-        'ERR_MAX_FEE',
-      );
-    });
-
-    it('Fails nonadmin sets fees or controller', async () => {
-      await truffleAssert.reverts(
-        pool.setSwapFee(toWei('0.003'), {from: user1}),
-        'ERR_NOT_CONTROLLER',
-      );
+    it('Fails nonadmin sets controller', async () => {
       await truffleAssert.reverts(
         pool.setController(user1, {from: user1}),
         'ERR_NOT_CONTROLLER',
       );
     });
 
-    it('Admin sets swap fees', async () => {
-      await pool.setSwapFee(toWei('0'));
+    it('Pool swap fee is 0', async () => {
       const swapFee = await pool.getSwapFee();
       assert.equal(0, fromWei(swapFee));
     });
@@ -259,10 +247,6 @@ contract('Full pool test', (accounts) => {
         pool.finalize(),
         'ERR_IS_FINALIZED',
       );
-    });
-
-    it('Cant setPublicSwap, setSwapFee when finalized', async () => {
-      await truffleAssert.reverts(pool.setSwapFee(toWei('0.01')), 'ERR_IS_FINALIZED');
     });
 
     it('Fails binding new token after finalized', async () => {
