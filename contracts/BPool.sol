@@ -406,6 +406,7 @@ contract BPool is BMath {
                             _swapFee
                         );
         require(tokenAmountIn <= maxAmountIn, "ERR_LIMIT_IN");
+        require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
@@ -469,6 +470,7 @@ contract BPool is BMath {
                             _swapFee
                         );
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
+        require(tokenAmountOut <= bmul(outRecord.balance, MAX_OUT_RATIO), "ERR_MAX_OUT_RATIO");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
@@ -480,7 +482,7 @@ contract BPool is BMath {
                                 outRecord.denorm,
                                 _swapFee
                             );
-        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");     
+        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 
