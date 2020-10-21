@@ -5,7 +5,7 @@ const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const { calcOutGivenIn, calcRelativeDiff, calcInGivenOut } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -246,7 +246,7 @@ contract('Our use case', (accounts) => {
       );
     });
 
-    it('Swap iteration', async () => {
+    it('Swap iteration giving in', async () => {
       const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
@@ -288,6 +288,50 @@ contract('Our use case', (accounts) => {
 
       const userRowanBalance = await rowan.balanceOf(user);
       assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
+
+      assert.isAtMost(relDif.toNumber(), errorDelta);
+    });
+    it('Swap iteration giving out', async () => {
+      await usdt.mint(user, toWei('500', 'mwei'));
+      const usdtPoolBalance = await pool.getBalance(USDT);
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+
+      const expected = calcInGivenOut(
+        fromWei(usdtPoolBalance, 'mwei'),
+        weightUsdt,
+        fromWei(rowanPoolBalance),
+        weightRowan,
+        16000,
+        swap_fee
+      );
+
+      if(verbose) {
+        console.log('Before swap:');
+        await logState();
+      }
+
+      assert.equal(
+        await whitelist.isWhitelisted(user, { from: admin }),
+        true
+      );
+
+      const txr = await pool.swapExactAmountOut(
+        MAX,
+        toWei('16000'),
+        MAX,
+        { from: user },
+      );
+
+      if(verbose) {
+        console.log('After swap:');
+        await logState();
+      }
+
+      const log = txr.logs[0];
+      assert.equal(log.event, 'LOG_SWAP');
+
+      const actual = fromWei(log.args.tokenAmountIn, 'mwei');
+      const relDif = calcRelativeDiff(expected, actual);
 
       assert.isAtMost(relDif.toNumber(), errorDelta);
     });
