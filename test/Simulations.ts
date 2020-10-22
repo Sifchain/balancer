@@ -10,6 +10,37 @@ const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
 const swap_fee = 0.0;
+const buyers_number = 10;
+
+async function swapIteration(pool, rowan, usdt, ROWAN, USDT, user, controller) {
+  const usdtPoolBalance = await pool.getBalance(USDT);
+  const rowanPoolBalance = await pool.getBalance(ROWAN);
+  const expected = calcOutGivenIn(
+    fromWei(usdtPoolBalance, 'mwei'),
+    weightUsdt,
+    fromWei(rowanPoolBalance),
+    weightRowan,
+    1000,
+    swap_fee
+  );
+
+  const txr = await pool.swapExactAmountIn(
+    toWei('1000', 'mwei'),
+    0,
+    MAX,
+    { from: user },
+  );
+
+  await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+
+  const log = txr.logs[0];
+  assert.equal(log.event, 'LOG_SWAP');
+
+  const actual = fromWei(log.args.tokenAmountOut);
+  const relDif = calcRelativeDiff(expected, actual);
+
+  assert.isAtMost(relDif.toNumber(), errorDelta);
+}
 
 contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
@@ -39,7 +70,7 @@ contract('Our use case', (accounts) => {
     await usdt.mint(controller, toWei('45000', 'mwei'));
 
     // user balances
-    await usdt.mint(user, toWei('1000000', 'mwei'));
+    await usdt.mint(user, toWei('100000', 'mwei'));
 
     await rowan.approve(POOL, MAX, { from: user });
     await usdt.approve(POOL, MAX, { from: user });
@@ -58,47 +89,16 @@ contract('Our use case', (accounts) => {
   });
 
   describe('Pool Operations', () => {
-    it('Swap iteration', async () => {
-      // Attempt to spend 500 USDT should succeed.
-      const usdtPoolBalance = await pool.getBalance(USDT);
-      const rowanPoolBalance = await pool.getBalance(ROWAN);
-      const expected = calcOutGivenIn(
-        fromWei(usdtPoolBalance, 'mwei'),
-        weightUsdt,
-        fromWei(rowanPoolBalance),
-        weightRowan,
-        500,
-        swap_fee
-      );
-
-      console.log('Before swap:');
-      await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
-
+    it('Iterations cycle', async () => {
       assert.equal(
         await whitelist.isWhitelisted(user, { from: admin }),
         true
       );
 
-      const txr = await pool.swapExactAmountIn(
-        toWei('500', 'mwei'),
-        0,
-        MAX,
-        { from: user },
-      );
-
-      console.log('After swap:');
-      await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
-
-      const log = txr.logs[0];
-      assert.equal(log.event, 'LOG_SWAP');
-
-      const actual = fromWei(log.args.tokenAmountOut);
-      const relDif = calcRelativeDiff(expected, actual);
-
-      const userRowanBalance = await rowan.balanceOf(user);
-      assert.equal(Number(fromWei(userRowanBalance)), Number(fromWei(log.args.tokenAmountOut)));
-
-      assert.isAtMost(relDif.toNumber(), errorDelta);
+      for (let i = 0; i < buyers_number; i++) {
+        console.log(`Swap Interation ${i + 1}:`);
+        await swapIteration(pool, rowan, usdt, ROWAN, USDT, user, controller);
+      }
     });
 
     it('Liquidity iteration', async () => {
