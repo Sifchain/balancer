@@ -23,8 +23,7 @@ contract BConst {
     // Min investment amount is 500 USDT
     uint public constant MIN_SWAP_AMOUNT   = USDT_BONE * 500;
 
-    uint public constant MIN_FEE           = 0;
-    uint public constant MAX_FEE           = BONE / 10;
+    uint public constant SWAP_FEE          = 0;
     uint public constant EXIT_FEE          = 0;
 
     uint public constant MIN_WEIGHT        = BONE;

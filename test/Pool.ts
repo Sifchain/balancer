@@ -217,28 +217,16 @@ contract('Full pool test', (accounts) => {
       );
     });
 
-    it('Fails setting high swap fees', async () => {
-      await truffleAssert.reverts(
-        pool.setSwapFee(toWei('0.11')),
-        'ERR_MAX_FEE',
-      );
-    });
-
-    it('Fails nonadmin sets fees or controller', async () => {
-      await truffleAssert.reverts(
-        pool.setSwapFee(toWei('0.003'), {from: user1}),
-        'ERR_NOT_CONTROLLER',
-      );
+    it('Fails nonadmin sets controller', async () => {
       await truffleAssert.reverts(
         pool.setController(user1, {from: user1}),
         'ERR_NOT_CONTROLLER',
       );
     });
 
-    it('Admin sets swap fees', async () => {
-      await pool.setSwapFee(toWei('0.003'));
+    it('Pool swap fee is 0', async () => {
       const swapFee = await pool.getSwapFee();
-      assert.equal(0.003, fromWei(swapFee));
+      assert.equal(0, fromWei(swapFee));
     });
 
     it('Fails nonadmin finalizes pool', async () => {
@@ -259,10 +247,6 @@ contract('Full pool test', (accounts) => {
         pool.finalize(),
         'ERR_IS_FINALIZED',
       );
-    });
-
-    it('Cant setPublicSwap, setSwapFee when finalized', async () => {
-      await truffleAssert.reverts(pool.setSwapFee(toWei('0.01')), 'ERR_IS_FINALIZED');
     });
 
     it('Fails binding new token after finalized', async () => {
@@ -322,7 +306,7 @@ contract('Full pool test', (accounts) => {
       assert.equal(200, fromWei(wethPrice));
 
       const wethPriceFee = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceFeeCheck = ((10500 / 5) / (52.5 / 5)) * (1 / (1 - 0.003));
+      const wethPriceFeeCheck = ((10500 / 5) / (52.5 / 5));
       // 200.6018054162487462
       assert.equal(fromWei(wethPriceFee), wethPriceFeeCheck);
     });
@@ -365,7 +349,7 @@ contract('Full pool test', (accounts) => {
     it('swapExactAmountIn', async () => {
       // 2.5 WETH -> DAI
       const initialUserDaiBalance = await dai.balanceOf(user2);
-      const expected = calcOutGivenIn(52.5, 5, 10500, 5, 2.5, 0.003);
+      const expected = calcOutGivenIn(52.5, 5, 10500, 5, 2.5, 0);
       const txr = await pool.swapExactAmountIn(
         toWei('2.5'),
         toWei('475'),
@@ -374,7 +358,7 @@ contract('Full pool test', (accounts) => {
       );
       const log = txr.logs[0];
       assert.equal(log.event, 'LOG_SWAP');
-      // 475.905805337091423
+      // 477.2727272727272775
 
       const actual = fromWei(log.args[4]);
       const relDif = calcRelativeDiff(expected, actual);
@@ -389,9 +373,10 @@ contract('Full pool test', (accounts) => {
 
       assert.equal(fromWei(await dai.balanceOf(user2)), Number(fromWei(log.args[4])) + Number(fromWei(initialUserDaiBalance)));
 
-      // 182.804672101083406128
+      // 182.231404958677685864
       const wethPrice = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceFeeCheck = ((10024.094194662908577 / 5) / (55 / 5)) * (1 / (1 - 0.003));
+      const wethPriceFeeCheck = ((10022.7272727273 / 5) / (55 / 5));
+
       assert.approximately(Number(fromWei(wethPrice)), Number(wethPriceFeeCheck), errorDelta);
 
       const daiNormWeight = await pool.getNormalizedWeight(DAI);
@@ -402,8 +387,7 @@ contract('Full pool test', (accounts) => {
       const controller = await pool.getController();
       await pool.setTokenIntOut(WETH, MKR, {from: controller});
       // ETH -> 1 MKR
-      // const amountIn = (55 * (((21 / (21 - 1)) ** (5 / 5)) - 1)) / (1 - 0.003);
-      const expected = calcInGivenOut(55, 5, 21, 5, 1, 0.003);
+      const expected = calcInGivenOut(55, 5, 21, 5, 1, 0);
       const txr = await pool.swapExactAmountOut(
           toWei('3'),
           toWei('1.0'),

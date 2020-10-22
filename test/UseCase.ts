@@ -74,7 +74,6 @@ contract('Our use case', (accounts) => {
     await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
     await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
 
-    await pool.setSwapFee(swap_fee, { from: controller });
     await pool.finalize({ from: controller });
   });
 
