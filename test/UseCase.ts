@@ -59,7 +59,6 @@ contract('Our use case', (accounts) => {
     POOL = pool.address;
 
     // admin balances
-    await rowan.mint(controller, toWei('120000000'));
     await usdt.mint(controller, toWei('45000', 'mwei'));
 
     // user balances
@@ -68,11 +67,13 @@ contract('Our use case', (accounts) => {
     await rowan.approve(POOL, MAX, { from: user });
     await usdt.approve(POOL, MAX, { from: user });
 
-    await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
+    await pool.bind(ROWAN, 0, toWei(weightRowan.toString()), { from: controller });
     await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
+
+    await rowan.mint(POOL, toWei('15000000'));
+    await pool.gulp(ROWAN);
 
     await pool.finalize({ from: controller });
   });
@@ -357,13 +358,22 @@ contract('Our use case', (accounts) => {
       );
     });
 
-    it('Liquidity iteration', async () => {
+    xit('Liquidity iteration', async () => {
         await pool.joinswapExternAmountIn(toWei('625000'), { from: controller });
         if(verbose) {
             console.log('After adding liquidity:');
             await logState();
         }
     });
+
+    it('Liquidity iteration directly', async () => {
+      await rowan.mint(POOL, toWei('625000'));
+      await pool.gulp(ROWAN);
+      if(verbose) {
+          console.log('After adding liquidity:');
+          await logState();
+      }
+  });
 
     it('Exit pool', async () => {
         await pool.exitPool([0, 0], { from: controller });
