@@ -9,6 +9,7 @@ const {
   calcOutGivenIn,
   calcInGivenOut,
   calcRelativeDiff,
+  logState,
 } = require("./../utils.ts");
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
@@ -29,29 +30,6 @@ contract("Our use case", (accounts) => {
   let rowan;
   let usdt;
   let whitelist;
-
-  async function logState() {
-    const rowanBalance = await pool.getBalance(ROWAN);
-    console.log(`Rowan amount in pool : ${fromWei(rowanBalance)}`);
-
-    if (parseInt(fromWei(rowanBalance))) {
-      const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-      console.log(`Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
-    }
-
-    const userRowanBalance = await rowan.balanceOf(user);
-    console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
-    const controllerRowanBalance = await rowan.balanceOf(controller);
-    console.log(`Rowan Controller Balance: ${fromWei(controllerRowanBalance)}`);
-    const userUsdtBalance = await usdt.balanceOf(user);
-
-    console.log(`USDT User Balance: ${fromWei(userUsdtBalance, 'mwei')}`);
-    const controllerUsdtBalance = await usdt.balanceOf(controller);
-    console.log(`USDT Controller Balance: ${fromWei(controllerUsdtBalance, 'mwei')}`);
-    const usdtBalance = await pool.getBalance(USDT);
-    console.log(`USDT amount in pool : ${fromWei(usdtBalance, "mwei")}`);
-    console.log("");
-  }
 
   before(async () => {
     rowan = await MockRowanToken.new("eRowan", "RWN", 18);
@@ -250,9 +228,9 @@ contract("Our use case", (accounts) => {
         swap_fee
       );
 
-      if (verbose) {
-        console.log("Before swap:");
-        await logState();
+      if(verbose) {
+        console.log('Before swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
       assert.equal(await whitelist.isWhitelisted(user, { from: admin }), true);
@@ -261,9 +239,9 @@ contract("Our use case", (accounts) => {
         from: user,
       });
 
-      if (verbose) {
-        console.log("After swap:");
-        await logState();
+      if(verbose) {
+        console.log('After swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
       const log = txr.logs[0];
@@ -296,9 +274,9 @@ contract("Our use case", (accounts) => {
         swap_fee
       );
 
-      if (verbose) {
-        console.log("Before swap:");
-        await logState();
+      if(verbose) {
+        console.log('Before swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
       assert.equal(await whitelist.isWhitelisted(user, { from: admin }), true);
@@ -306,9 +284,9 @@ contract("Our use case", (accounts) => {
         from: user,
       });
 
-      if (verbose) {
-        console.log("After swap:");
-        await logState();
+      if(verbose) {
+        console.log('After swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
       const log = txr.logs[0];
@@ -338,7 +316,7 @@ contract("Our use case", (accounts) => {
       await pool.joinswapExternAmountIn(toWei("625000"), { from: controller });
       if (verbose) {
         console.log("After adding liquidity:");
-        await logState();
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
     });
 
@@ -346,7 +324,7 @@ contract("Our use case", (accounts) => {
       await pool.exitPool([0, 0], { from: controller });
       if (verbose) {
         console.log("After exiting pool:");
-        await logState();
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
     });
   });
