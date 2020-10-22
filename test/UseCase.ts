@@ -9,7 +9,7 @@ const {
   calcOutGivenIn,
   calcInGivenOut,
   calcRelativeDiff,
-} = require("./../calc_comparisons.ts");
+} = require("./../utils.ts");
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
