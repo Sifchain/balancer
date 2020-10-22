@@ -23,8 +23,7 @@ contract BConst {
     // Min investment amount is 500 USDT
     uint public constant MIN_SWAP_AMOUNT   = USDT_BONE * 500;
 
-    uint public constant MIN_FEE           = 0;
-    uint public constant MAX_FEE           = BONE / 10;
+    uint public constant SWAP_FEE          = 0;
     uint public constant EXIT_FEE          = 0;
 
     uint public constant MIN_WEIGHT        = BONE;
@@ -39,5 +38,6 @@ contract BConst {
     uint public constant BPOW_PRECISION    = BONE / 10**10;
 
     uint public constant MAX_IN_RATIO      = BONE / 2;
-    uint public constant MAX_OUT_RATIO     = (BONE / 3) + 1 wei;
+    // Max out ratio should be 10% of the pool
+    uint public constant MAX_OUT_RATIO     = BONE / 10;
 }

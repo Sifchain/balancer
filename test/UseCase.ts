@@ -5,7 +5,7 @@ const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -49,8 +49,8 @@ contract('Our use case', (accounts) => {
   }
 
   before(async () => {
-    rowan = await MockRowanToken.new('Rowan.eth', 'ROWAN', 18);
-    usdt = await MockRowanToken.new('USDT Stablecoin', 'USDT', 18);
+    rowan = await MockRowanToken.new('eRowan', 'RWN', 18);
+    usdt = await MockRowanToken.new('USDT Stablecoin', 'USDT', 6);
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
@@ -74,7 +74,6 @@ contract('Our use case', (accounts) => {
     await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
     await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
 
-    await pool.setSwapFee(swap_fee, { from: controller });
     await pool.finalize({ from: controller });
   });
 
@@ -237,16 +236,27 @@ contract('Our use case', (accounts) => {
       );
     });
 
-    it('Fails to swap less than min swap amount', async () => {
+    it('Fails to swapExactAmountIn with less than min swap amount', async () => {
       await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-
+      // Attempt to spend 100 USDT should fail, because user has to invest at least $500.
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('100', 'mwei'), 0, MAX, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
 
-    it('Swap iteration', async () => {
+    it('Fails to swapExactAmountOut with less than min swap amount', async () => {
+      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
+      // Attempt to buy 10,000 RWN priced $0.03 should fail, because user has to invest at least $500.
+      // (e.g. $500 / $0.03 per RWN = 16,666.66666667 RWN)
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(MAX, toWei('10000'), MAX, { from: user }),
+        'ERR_MIN_SWAP_AMOUNT',
+      );
+    });
+
+    it('Swap iteration using swapExactAmountIn', async () => {
+      // Attempt to spend 500 USDT should succeed.
       const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
@@ -287,7 +297,55 @@ contract('Our use case', (accounts) => {
       const relDif = calcRelativeDiff(expected, actual);
 
       const userRowanBalance = await rowan.balanceOf(user);
-      assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
+      assert.equal(Number(fromWei(userRowanBalance)), Number(fromWei(log.args.tokenAmountOut)));
+
+      assert.isAtMost(relDif.toNumber(), errorDelta);
+    });
+
+    it('Swap iteration using swapExactAmountOut', async () => {
+      // Attempt to buy 20,000 RWN priced $0.03 should succeed (e.g. 20,000 RWN * $0.03 per RWN = $600)
+      await usdt.mint(user, toWei('1000', 'mwei'));
+      const userRowanBalanceInitial = await rowan.balanceOf(user);
+      const usdtPoolBalance = await pool.getBalance(USDT);
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      const expected = calcInGivenOut(
+        fromWei(usdtPoolBalance, 'mwei'),
+        weightUsdt,
+        fromWei(rowanPoolBalance),
+        weightRowan,
+        20000,
+        swap_fee
+      );
+
+      if(verbose) {
+        console.log('Before swap:');
+        await logState();
+      }
+
+      assert.equal(
+        await whitelist.isWhitelisted(user, { from: admin }),
+        true
+      );
+      const txr = await pool.swapExactAmountOut(
+        MAX,
+        toWei('20000'),
+        MAX,
+        { from: user },
+      );
+
+      if(verbose) {
+        console.log('After swap:');
+        await logState();
+      }
+
+      const log = txr.logs[0];
+      assert.equal(log.event, 'LOG_SWAP');
+
+      const actual = fromWei(log.args.tokenAmountIn, 'mwei');
+      const relDif = calcRelativeDiff(expected, actual);
+
+      const userRowanBalance = await rowan.balanceOf(user);
+      assert.equal(Number(fromWei(userRowanBalance)), Number(fromWei(log.args.tokenAmountOut)) + Number(fromWei(userRowanBalanceInitial)));
 
       assert.isAtMost(relDif.toNumber(), errorDelta);
     });

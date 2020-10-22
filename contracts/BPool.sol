@@ -91,7 +91,7 @@ contract BPool is BMath {
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
 
-    // `setSwapFee` and `finalize` require CONTROL
+    // `finalize` requires CONTROL
     // `finalize` sets `PUBLIC can SWAP`, `PUBLIC can JOIN`
     uint private _swapFee;
     bool private _finalized;
@@ -105,7 +105,7 @@ contract BPool is BMath {
         _whiteListContract = _whitelist;
         _controller = controller;
         _factory = controller;
-        _swapFee = MIN_FEE;
+        _swapFee = SWAP_FEE;
         _publicSwap = false;
         _finalized = false;
     }
@@ -207,18 +207,6 @@ contract BPool is BMath {
         returns (address)
     {
         return _controller;
-    }
-
-    function setSwapFee(uint swapFee)
-        external
-        _logs_
-        _lock_
-        onlyController
-    {
-        require(!_finalized, "ERR_IS_FINALIZED");
-        require(swapFee >= MIN_FEE, "ERR_MIN_FEE");
-        require(swapFee <= MAX_FEE, "ERR_MAX_FEE");
-        _swapFee = swapFee;
     }
 
     function setController(address manager)
@@ -406,6 +394,7 @@ contract BPool is BMath {
                             _swapFee
                         );
         require(tokenAmountIn <= maxAmountIn, "ERR_LIMIT_IN");
+        require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
@@ -469,6 +458,7 @@ contract BPool is BMath {
                             _swapFee
                         );
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
+        require(tokenAmountOut <= bmul(outRecord.balance, MAX_OUT_RATIO), "ERR_MAX_OUT_RATIO");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
@@ -480,7 +470,7 @@ contract BPool is BMath {
                                 outRecord.denorm,
                                 _swapFee
                             );
-        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");     
+        require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
         require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
 
