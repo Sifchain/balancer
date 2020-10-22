@@ -1,7 +1,7 @@
 const Decimal = require('decimal.js');
 const { toWei, fromWei } = web3.utils;
 
-async function logState(pool, rowan, usdt, ROWAN, USDT, user, controller){
+async function logState(pool, rowan, usdt, ROWAN, USDT, user, controller) {
     const rowanBalance = await pool.getBalance(ROWAN);
     console.log(`Rowan amount in pool : ${fromWei(rowanBalance)}`);
 
@@ -21,7 +21,7 @@ async function logState(pool, rowan, usdt, ROWAN, USDT, user, controller){
     const usdtBalance = await pool.getBalance(USDT);
     console.log(`USDT amount in pool : ${fromWei(usdtBalance, 'mwei')}`);
     console.log('');
-  }
+}
 
 function calcRelativeDiff(expected, actual) {
     return ((Decimal(expected).minus(Decimal(actual))).div(expected)).abs();
