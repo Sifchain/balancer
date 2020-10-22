@@ -36,17 +36,18 @@ contract("Our use case", (accounts) => {
 
     if (parseInt(fromWei(rowanBalance))) {
       const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-      console.log(`Rowan price: ${fromWei(rowanPrice)}`);
+      console.log(`Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
     }
 
     const userRowanBalance = await rowan.balanceOf(user);
     console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
-    const adminRowanBalance = await rowan.balanceOf(admin);
-    console.log(`Rowan Admin Balance: ${fromWei(adminRowanBalance)}`);
+    const controllerRowanBalance = await rowan.balanceOf(controller);
+    console.log(`Rowan Controller Balance: ${fromWei(controllerRowanBalance)}`);
     const userUsdtBalance = await usdt.balanceOf(user);
-    console.log(`USDT User Balance: ${fromWei(userUsdtBalance, "mwei")}`);
-    const adminUsdtBalance = await usdt.balanceOf(admin);
-    console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance, "mwei")}`);
+
+    console.log(`USDT User Balance: ${fromWei(userUsdtBalance, 'mwei')}`);
+    const controllerUsdtBalance = await usdt.balanceOf(controller);
+    console.log(`USDT Controller Balance: ${fromWei(controllerUsdtBalance, 'mwei')}`);
     const usdtBalance = await pool.getBalance(USDT);
     console.log(`USDT amount in pool : ${fromWei(usdtBalance, "mwei")}`);
     console.log("");
