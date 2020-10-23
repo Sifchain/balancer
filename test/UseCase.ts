@@ -238,19 +238,19 @@ contract('Our use case', (accounts) => {
 
     it('Fails to swapExactAmountIn with less than min swap amount', async () => {
       await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-      // Attempt to spend 100 USDT should fail, because user has to invest at least $500.
+      // Attempt to spend 0 USDT should fail, because user has to invest at least 1 USDT.
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei('100', 'mwei'), 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
 
     it('Fails to swapExactAmountOut with less than min swap amount', async () => {
       await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-      // Attempt to buy 10,000 RWN priced $0.03 should fail, because user has to invest at least $500.
-      // (e.g. $500 / $0.03 per RWN = 16,666.66666667 RWN)
+      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
+      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('10000'), MAX, { from: user }),
+        pool.swapExactAmountOut(MAX, toWei('30'), MAX, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
