@@ -1,6 +1,7 @@
 const BPool = artifacts.require('BPool');
 const MockRowanToken = artifacts.require('MockRowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+const fs = require('fs');
 
 const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
@@ -10,9 +11,15 @@ const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
 const swap_fee = 0.0;
-const buyers_number = 10;
+const hours_in_week = 7 * 24;
+// parameters
+const first_hour_buyers_number = 100;
+const first_trade_amount = 1000;
+const subsequent_hour_buyers_number = 0;
+const subsequent_trade_amount = 10000;
+const fileName = `first.${first_hour_buyers_number}.${first_trade_amount}.subseq.${subsequent_hour_buyers_number}.${subsequent_trade_amount}:`
 
-async function swapIteration(pool, rowan, usdt, ROWAN, USDT, user, controller) {
+async function swapIteration(pool, ROWAN, USDT, user, amount) {
   const usdtPoolBalance = await pool.getBalance(USDT);
   const rowanPoolBalance = await pool.getBalance(ROWAN);
   const expected = calcOutGivenIn(
@@ -20,18 +27,16 @@ async function swapIteration(pool, rowan, usdt, ROWAN, USDT, user, controller) {
     weightUsdt,
     fromWei(rowanPoolBalance),
     weightRowan,
-    1000,
+    amount,
     swap_fee
   );
 
   const txr = await pool.swapExactAmountIn(
-    toWei('1000', 'mwei'),
+    toWei(amount.toString(), 'mwei'),
     0,
     MAX,
     { from: user },
   );
-
-  await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
 
   const log = txr.logs[0];
   assert.equal(log.event, 'LOG_SWAP');
@@ -70,7 +75,7 @@ contract('Our use case', (accounts) => {
     await usdt.mint(controller, toWei('45000', 'mwei'));
 
     // user balances
-    await usdt.mint(user, toWei('100000', 'mwei'));
+    await usdt.mint(user, toWei('100000000', 'mwei'));
 
     await rowan.approve(POOL, MAX, { from: user });
     await usdt.approve(POOL, MAX, { from: user });
@@ -95,16 +100,28 @@ contract('Our use case', (accounts) => {
         true
       );
 
-      for (let i = 0; i < buyers_number; i++) {
-        console.log(`Swap Interation ${i + 1}:`);
-        await swapIteration(pool, rowan, usdt, ROWAN, USDT, user, controller);
-      }
-    });
+      fs.writeFileSync(fileName, "");
 
-    it('Liquidity iteration', async () => {
+      for (let i = 0; i < first_hour_buyers_number; i++) {
+        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount);
+        const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+        console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
+        fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
+      }
+
+      for (let i = 0; i < hours_in_week; i++) {
         await pool.joinswapExternAmountIn(toWei('625000'), { from: controller });
-        console.log('After adding liquidity:');
-        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+        const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+        console.log(`Liquidity iteration ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
+        fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
+        for (let j = 0; j < subsequent_hour_buyers_number; j++) {
+          console.log(`Hour: ${i + 2}`);
+          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount);
+          const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
+          console.log(`Swap Interation ${i *subsequent_hour_buyers_number + j + first_hour_buyers_number + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
+          fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
+        }
+      }
     });
   });
 });
