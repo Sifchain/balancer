@@ -1,55 +1,61 @@
-const RowanToken = artifacts.require('RowanToken');
-const BN = require('bn.js');
+const RowanToken = artifacts.require("RowanToken");
+const BN = require("bn.js");
 const { toWei, fromWei } = web3.utils;
 
-contract('RowanToken', accounts => {
-    const admin = accounts[0]
-    const _name = 'Rowan.eth';
-    const _symbol = 'ROWAN';
-    const _decimals = 18;
-    let rowan;
+contract("RowanToken", (accounts) => {
+  const admin = accounts[0];
+  const _name = "eRowan";
+  const _symbol = "RWN";
+  const _decimals = 18;
+  let rowan;
 
-    it('Init token', async () => {
-        rowan = await RowanToken.new(_name, _symbol, _decimals, { from: admin });
+  it("Init token", async () => {
+    rowan = await RowanToken.new(_name, _symbol, _decimals, { from: admin });
+  });
+
+  describe("Token attributes", () => {
+    it("Has correct name", async () => {
+      const name = await rowan.name();
+      assert.equal(name, _name);
     });
 
-    describe('Token attributes', () => {
-        it('Has correct name', async () => {
-            const name = await rowan.name();
-            assert.equal(name, _name);
-        });
-
-        it('Has correct symbol', async  () => {
-            const symbol = await rowan.symbol();
-            assert.equal(symbol, _symbol);
-        });
-
-        it('Has correct decimals', async () => {
-            const decimals = await rowan.decimals();
-            assert.equal(decimals, _decimals);
-        });
-
-        it('Admin has correct token balance', async () => {
-            const balance = await rowan.balanceOf(admin);
-            assert.equal(balance, toWei('120', 'mether'));
-        });
-
-        it('Token contract has correct totalSupply', async () => {
-            const tokenSupply = await rowan.totalSupply();
-            assert.equal(tokenSupply, toWei('120', 'mether'));
-        });
-
-        it('Token contract should be able to burn tokens by sending to address 1', async () => {
-            await rowan.transfer('0x0000000000000000000000000000000000000001', toWei('120', 'mether'), { from: admin });
-            const balance = await rowan.balanceOf('0x0000000000000000000000000000000000000001');
-
-            // make sure that address 1 has all of the tokens
-            assert.equal(balance, toWei('120', 'mether'));
-
-            // make sure that the admin now has 0 balance after burning their tokens
-            const adminBalance = await rowan.balanceOf(admin);
-
-            assert.equal(adminBalance.eq(new BN(0)), true);
-        });
+    it("Has correct symbol", async () => {
+      const symbol = await rowan.symbol();
+      assert.equal(symbol, _symbol);
     });
+
+    it("Has correct decimals", async () => {
+      const decimals = await rowan.decimals();
+      assert.equal(decimals, _decimals);
+    });
+
+    it("Admin has correct token balance", async () => {
+      const balance = await rowan.balanceOf(admin);
+      assert.equal(balance, toWei("120", "mether"));
+    });
+
+    it("Token contract has correct totalSupply", async () => {
+      const tokenSupply = await rowan.totalSupply();
+      assert.equal(tokenSupply, toWei("120", "mether"));
+    });
+
+    it("Token contract should be able to burn tokens by sending to address 1", async () => {
+      await rowan.transfer(
+        "0x0000000000000000000000000000000000000001",
+        toWei("120", "mether"),
+        { from: admin }
+      );
+      const balance = await rowan.balanceOf(
+        "0x0000000000000000000000000000000000000001"
+      );
+
+      // make sure that address 1 has all of the tokens
+      assert.equal(balance, toWei("120", "mether"));
+
+      // make sure that the admin now has 0 balance after burning their tokens
+      const adminBalance = await rowan.balanceOf(admin);
+
+      assert.equal(adminBalance.eq(new BN(0)), true);
+    });
+  });
 });
