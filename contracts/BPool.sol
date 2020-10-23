@@ -302,6 +302,16 @@ contract BPool is BMath {
         }
     }
 
+    // Absorb any tokens that have been sent to this contract into the pool
+    function gulp(address token)
+    external
+    _logs_
+    _lock_
+    {
+        require(_records[token].bound, "ERR_NOT_BOUND");
+        _records[token].balance = IERC20(token).balanceOf(address(this));
+    }
+
     function getSpotPrice(address tokenIn, address tokenOut)
         external view
         _viewlock_
