@@ -4,7 +4,7 @@ const {
 } = require("@openzeppelin/test-helpers");
 
 contract("OwnableWhitelist", (accounts) => {
-  const admin = accounts[0];
+  const admin = process.env.WHITE_LIST_MANAGER;
   const user1 = accounts[1];
   const user2 = accounts[2];
   const user3 = accounts[3];
