@@ -336,6 +336,13 @@ contract("Full pool test", (accounts) => {
         }),
         "ERR_LIMIT_OUT."
       );
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(toWei("5"), toWei("1000"), toWei("200"), {
+          from: user2,
+        }),
+        "ERR_LIMIT_IN."
+      );
     });
 
     /*
