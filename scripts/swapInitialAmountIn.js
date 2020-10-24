@@ -4,7 +4,7 @@ const BPool = artifacts.require("BPool")
 const { toWei, fromWei } = web3.utils;
 const BN = require('bn.js');
 
-const tokenAmount = 125000000;
+const tokenAmount = 15000000;
 const tokenAmountBN = toWei(new BN(tokenAmount));
 const weightRowan = 10;
 const swap_fee = 0.0;
