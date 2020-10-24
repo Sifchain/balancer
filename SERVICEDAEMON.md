@@ -16,8 +16,20 @@ BPOOL=''bpool address on mainnet'
 truffle exec scripts/serviceDaemon.js --network mainnet
 ```
 
-4. How to run this cronjob:
+4. Set Up the Slack hook for daemon
+Go to the .env file and paste the ending lines of your slack key into it minus the first slash for your unique code.
+
+For example, if your slack URL is:
+
+https://hooks.slack.com/services/Jlkejoialke/theilaiwejnj/eeigoeal
+
+Then only use 
+Jlkejoialke/theilaiwejnj/eeigoeal 
+in the slack key variable in your .env file.
+
+4. To run this cronjob, start at the root directory, then run this command:
 
 ```
 node scripts/cron.js
 ```
+
