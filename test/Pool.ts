@@ -35,9 +35,10 @@ contract("Full pool test", (accounts) => {
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
     const minter = accounts[0];
-    const controller = process.env.CONTROLLER;
-    // TODO: To remove. This step is needed just to adjust all existing tests which don't call {from: controller} explicitly
-    await pool.setController(accounts[0], { from: controller });
+    const controller = accounts[0];
+    // TODO: This step is needed just to adjust all existing tests which don't call {from: controller} explicitly
+    // Should be removed and replaced by const controller = process.env.CONTROLLER
+    await pool.setController(accounts[0], { from: process.env.CONTROLLER });
 
     POOL = pool.address;
 
