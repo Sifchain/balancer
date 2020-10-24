@@ -15,7 +15,7 @@ const errorDelta = 10 ** -8;
 const MAX = web3.utils.toTwosComplement(-1);
 
 contract("Full pool test", (accounts) => {
-  const admin = accounts[0];
+  const admin = process.env.WHITE_LIST_MANAGER;
   const user1 = accounts[1];
   const user2 = accounts[2];
   let WETH;
@@ -34,8 +34,10 @@ contract("Full pool test", (accounts) => {
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
+    const minter = accounts[0];
     const controller = process.env.CONTROLLER;
-    await pool.setController(admin, { from: controller });
+    // TODO: To remove. This step is needed just to adjust all existing tests which don't call {from: controller} explicitly
+    await pool.setController(accounts[0], { from: controller });
 
     POOL = pool.address;
 
@@ -58,29 +60,25 @@ contract("Full pool test", (accounts) => {
     */
 
     // Admin balances
-    await weth.mint(admin, toWei("50"));
-    await mkr.mint(admin, toWei("20"));
-    await dai.mint(admin, toWei("10000"));
-    await xxx.mint(admin, toWei("10"));
+    await weth.mint(controller, toWei("50"), { from: minter });
+    await mkr.mint(controller, toWei("20"), { from: minter });
+    await dai.mint(controller, toWei("10000"), { from: minter });
+    await xxx.mint(controller, toWei("10"), { from: minter });
 
     // User1 balances
-    await weth.mint(user1, toWei("25"), { from: admin });
-    await mkr.mint(user1, toWei("4"), { from: admin });
-    await dai.mint(user1, toWei("40000"), { from: admin });
-    await xxx.mint(user1, toWei("10"), { from: admin });
+    await weth.mint(user1, toWei("25"), { from: minter });
+    await mkr.mint(user1, toWei("4"), { from: minter });
+    await dai.mint(user1, toWei("40000"), { from: minter });
+    await xxx.mint(user1, toWei("10"), { from: minter });
 
     // User2 balances
-    await weth.mint(user2, toWei("12.2222"), { from: admin });
-    await mkr.mint(user2, toWei("1.015333"), { from: admin });
-    await dai.mint(user2, toWei("10"), { from: admin });
-    await xxx.mint(user2, toWei("51"), { from: admin });
+    await weth.mint(user2, toWei("12.2222"), { from: minter });
+    await mkr.mint(user2, toWei("1.015333"), { from: minter });
+    await dai.mint(user2, toWei("10"), { from: minter });
+    await xxx.mint(user2, toWei("51"), { from: minter });
   });
 
   describe("Binding Tokens", () => {
-    it("Controller is msg.sender", async () => {
-      const controller = await pool.getController();
-      assert.equal(controller, admin);
-    });
 
     it("Pool starts with no bound tokens", async () => {
       const numTokens = await pool.getNumTokens();
