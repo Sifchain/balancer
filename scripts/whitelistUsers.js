@@ -11,7 +11,7 @@ module.exports = function (cb) {
     try {
       let whitelist = await OwnableWhitelist.at(whitelist_address);
       let res = await whitelist.bulkWhitelistUsers(usersToWhitelist, {
-        from: process.env.ADDRESS,
+        from: process.env.WHITE_LIST_MANAGER,
       });
 
       console.log("tx from bulk whitelisting: " + JSON.stringify(res));

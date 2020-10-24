@@ -6,6 +6,7 @@ module.exports = async function (deployer) {
   try {
     await deployer.deploy(OwnableWhitelist);
     const whiteListContract = await OwnableWhitelist.deployed();
+    await whiteListContract.transferOwnership(process.env.WHITE_LIST_MANAGER);
     await deployer.deploy(
       BPool,
       whiteListContract.address,
