@@ -3,7 +3,7 @@ const {
   calcOutGivenIn,
   calcInGivenOut,
   calcRelativeDiff,
-} = require("./../calc_comparisons.ts");
+} = require("./../utils.ts");
 const BPool = artifacts.require("BPool");
 const MockRowanToken = artifacts.require("MockRowanToken");
 const OwnableWhitelist = artifacts.require("OwnableWhitelist");
