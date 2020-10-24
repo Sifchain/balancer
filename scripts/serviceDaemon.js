@@ -26,7 +26,7 @@ async function addLiquidity(cb) {
         shell.exec(`curl -X POST -H 'Content-type: application/json' --data '{"text":"Successfully added liquidity to balancer!"}' https://hooks.slack.com/services/` + process.env.SLACK_KEY)
       } catch (error) {
           console.log("ERROR:: ", error)
-          shell.exec(`curl -X POST -H 'Content-type: application/json' --data '{"text":"Error adding liquidity to balancer: ` + error.message + `"}' https://hooks.slack.com/services/` + process.env.SLACK_KEY)
+          shell.exec(`curl -X POST -H 'Content-type: application/json' --data '{"text":"<!channel> Error adding liquidity to balancer: ` + error.message + `"}' https://hooks.slack.com/services/` + process.env.SLACK_KEY)
       }
     cb();
 }
