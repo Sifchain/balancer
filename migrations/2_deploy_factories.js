@@ -5,16 +5,16 @@ const fs = require("fs");
 module.exports = async function (deployer) {
   try {
     await deployer.deploy(OwnableWhitelist);
-    await OwnableWhitelist.deployed();
+    const whiteListContract = await OwnableWhitelist.deployed();
     await deployer.deploy(
       BPool,
-      OwnableWhitelist.address,
+      whiteListContract.address,
       process.env.CONTROLLER
     );
-    await BPool.deployed();
+    const poolContract = await BPool.deployed();
     let obj = {
-      abi: BPool.abi,
-      address: BPool.address,
+      abi: poolContract.abi,
+      address: poolContract.address,
     };
     let data = JSON.stringify(obj);
     fs.writeFileSync("BalancerABI.json", data);
