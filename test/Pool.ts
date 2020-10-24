@@ -362,7 +362,22 @@ contract("Full pool test", (accounts) => {
       assert.equal(await pool.getBalance(DAI), toWei("10500"));
     });
 
-    it("swapExactAmountIn", async () => {
+    /*
+      Current DAI in pool is 10,500, hence the max swap amount should be 1,050 DAI (10%).
+      Attempt to swap WETH to 1,051 DAI should fail.
+    */
+    it('Fail swapExactAmountOut over max swap ratio', async () => {
+      assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
+      assert.equal((await pool.getBalance(DAI)), toWei('10500'));
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(MAX, toWei('1051'), toWei('200'), {from: user2}),
+        'ERR_MAX_OUT_RATIO',
+      );
+      assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
+      assert.equal((await pool.getBalance(DAI)), toWei('10500'));
+    });
+
+    it('swapExactAmountIn', async () => {
       // 2.5 WETH -> DAI
       const initialUserDaiBalance = await dai.balanceOf(user2);
       const expected = calcOutGivenIn(52.5, 5, 10500, 5, 2.5, 0);

@@ -20,8 +20,8 @@ contract BConst {
     uint public constant MIN_BOUND_TOKENS  = 2;
     uint public constant MAX_BOUND_TOKENS  = 8;
 
-    // Min investment amount is 500 USDT
-    uint public constant MIN_SWAP_AMOUNT   = USDT_BONE * 500;
+    // Min investment amount is 1 USDT
+    uint public constant MIN_SWAP_AMOUNT   = USDT_BONE;
 
     uint public constant SWAP_FEE          = 0;
     uint public constant EXIT_FEE          = 0;
