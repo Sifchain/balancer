@@ -4,8 +4,9 @@
   "description": "",
   "main": "truffle-config.js",
   "scripts": {
+    "compile": "truffle compile",
     "test": "truffle test",
-    "coverage": "./node_modules/.bin/solidity-coverage"
+    "coverage": "truffle run coverage"
   },
   "repository": {
     "type": "git",

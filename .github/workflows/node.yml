@@ -22,9 +22,9 @@ jobs:
       - run: npm install -g ganache-cli
       - run: cat env.example >> .env
       - run: ganache-cli -d &
-      - run: truffle compile
-      - run: truffle test
-      - run: truffle run coverage
+      - run: npm run compile
+      - run: npm run test
+      - run: npm run coverage
         env:
           CI: true
 
@@ -32,4 +32,4 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage
+          directory: .
