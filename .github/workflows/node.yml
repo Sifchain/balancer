@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: '12.x'
       - run: npm install
+      - run: npm install -g truffle
+      - run: npm install -g ganache-cli
       - run: cat env.example >> .env
       - run: ganache-cli -d &
       - run: truffle compile
