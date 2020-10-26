@@ -1,12 +1,13 @@
-require('dotenv').config()
+require('dotenv').config();
 const {PRIVATE_KEY, NETWORK, INFURA_KEY} = process.env;
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const privateKeys = [PRIVATE_KEY]
+const privateKeys = [PRIVATE_KEY];
 
-console.log("PRIVKEY: ", privateKeys)
-console.log("NETWORK: ", NETWORK)
+console.log("PRIVKEY: ", privateKeys);
+console.log("NETWORK: ", NETWORK);
 
 module.exports = {
+    plugins: ["solidity-coverage"],
     networks: {
         local: {
             host: 'localhost', // Localhost (default: none)
