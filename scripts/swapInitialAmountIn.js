@@ -18,7 +18,7 @@ async function addLiquidity(cb) {
     try {
       const controller = process.env.CONTROLLER;
       const eRowanContract = await eRowan.at(process.env.EROWAN);
-      const bpool = await BPool.at(process.env.BPOOL);
+      const bpool = await BPool.at(BPool.address);
 
       // first approve and let the bpool have access to 120,000,000 eRowan tokens
       let resApprove = await eRowanContract.approve(bpool.address, tokenAmountBN, { from: controller });

@@ -1,6 +1,5 @@
 const eRowan = artifacts.require("MockRowanToken");
-const BPool = artifacts.require("BPool")
-
+const BPool = artifacts.require("BPool");
 const { toWei, fromWei } = web3.utils;
 const BN = require('bn.js');
 const shell = require('shelljs');
@@ -16,7 +15,7 @@ async function addLiquidity(cb) {
     try {
         const controller = process.env.CONTROLLER;
         const eRowanContract = await eRowan.at(process.env.EROWAN);
-        const bpool = await BPool.at(process.env.BPOOL);
+        const bpool = await BPool.at(BPool.address);
 
         let resApprove = await eRowanContract.approve(bpool.address, tokenAmountBN, { from: controller });
         let resBpool = await bpool.joinswapExternAmountIn(tokenAmountBN, { from: controller });
