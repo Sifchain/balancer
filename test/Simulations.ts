@@ -49,7 +49,7 @@ async function swapIteration(pool, ROWAN, USDT, user, amount) {
 
 contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
-  const admin = accounts[0];
+  const white_list_manager = process.env.WHITE_LIST_MANAGER;
   const user = accounts[1];
 
   let pool;
@@ -88,7 +88,7 @@ contract('Our use case', (accounts) => {
 
     await pool.finalize({ from: controller });
 
-    await whitelist.whitelistUser(user, { from: admin });
+    await whitelist.whitelistUser(user, { from: white_list_manager });
     await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
 
   });
@@ -96,7 +96,7 @@ contract('Our use case', (accounts) => {
   describe('Pool Operations', () => {
     it('Iterations cycle', async () => {
       assert.equal(
-        await whitelist.isWhitelisted(user, { from: admin }),
+        await whitelist.isWhitelisted(user, { from: white_list_manager }),
         true
       );
 

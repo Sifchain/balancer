@@ -14,7 +14,7 @@ module.exports = function(cb) {
 
 async function addLiquidity(cb) {
     try {
-        const controller = process.env.ADDRESS;
+        const controller = process.env.CONTROLLER;
         const eRowanContract = await eRowan.at(process.env.EROWAN);
         const bpool = await BPool.at(process.env.BPOOL);
 
