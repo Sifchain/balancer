@@ -7,7 +7,7 @@
             <div class="currency-form__input">
               <div class="sif-input__wrapper">
                 <label class="sif-input__label">Contribution amount</label>
-                <input v-model="amountUSDT" class="sif-input" type="number">
+                <input v-model="inputAmountUSDT" class="sif-input" type="number">
               </div>
             </div>
             <div class="currency-form__balance">
@@ -17,7 +17,7 @@
         </InputGroup>
 
         <InputGroup>
-          <CurrencyForm :amount="amountRWN" label="Minimum received" token="RWN" />
+          <CurrencyForm :amount="inputAmountRWN" label="Minimum received" token="RWN" />
         </InputGroup>
 
         <InputGroup v-if="walletConnected">
@@ -69,8 +69,10 @@
     setup() {
       const { api, actions, store } = useCore();
       const walletConnected = computed(() => store.wallet.eth.isConnected);
-      const amountUSDT = ref(100);
-      const amountRWN = computed(() => getReceivedAmountEstimate());
+      const inputAmountUSDT = ref(100);
+      const inputAmountRWN = ref(0);
+      const amountUSDT = computed(() => getUsdtEstimate());
+      const amountRWN = computed(() => getRowanEstimate());
       const priceRwn = ref(0.03);
       const priceImpact = ref(0.02);
       const providerFee = ref(0.0005);
@@ -83,22 +85,26 @@
         await actions.disconnectWallet();
       }
 
-      function getReceivedAmountEstimate() {
-        return amountUSDT.value / priceRwn.value;
+      function getRowanEstimate() {
+        return inputAmountUSDT.value / priceRwn.value;
+      }
+
+      function getUsdtEstimate() {
+        return inputAmountRWN.value * priceRwn.value;
       }
 
       async function transfer() {
-        const hash = await actions.transferEthWallet(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        const hash = await actions.transferEthWallet(inputAmountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
         console.log(hash);
       }
 
       async function swapExactAmountIn() {
-        const hash = await actions.swapExactAmountIn(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        const hash = await actions.swapExactAmountIn(amountUSDT.value, 0, Number.MAX_SAFE_INTEGER);
         console.log(hash);
       }
 
       async function swapExactAmountOut() {
-        const hash = await actions.swapExactAmountOut(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        const hash = await actions.swapExactAmountOut(amountUSDT.value, 0, Number.MAX_SAFE_INTEGER);
         console.log(hash);
       }
 
@@ -109,6 +115,8 @@
         transfer,
         amountUSDT,
         amountRWN,
+        inputAmountUSDT,
+        inputAmountRWN,
         priceRwn,
         priceImpact,
         providerFee,

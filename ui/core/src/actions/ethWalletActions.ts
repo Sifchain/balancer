@@ -2,7 +2,7 @@ import {effect} from "@vue/reactivity";
 import {Asset} from "../entities";
 import {ActionContext} from "..";
 import B from "../entities/utils/B";
-import { ETH } from "../constants";
+import { USDT } from "../constants";
 
 export default ({
   api,
@@ -25,7 +25,7 @@ export default ({
     async transferEthWallet(
       amount: number,
       recipient: string,
-      asset: Asset = ETH
+      asset: Asset = USDT
     ) {
       return await api.EthereumService.transfer({
         amount: B(amount, asset.decimals),
@@ -34,15 +34,15 @@ export default ({
       });
     },
     async swapExactAmountIn(
-      maxAmountIn: number,
-      tokenAmountOut: number,
+      tokenAmountIn: number,
+      minAmountOut: number,
       maxPrice: number
     ) {
       // TODO
     },
     async swapExactAmountOut(
-      tokenAmountIn: number,
-      minAmountOut: number,
+      maxAmountIn: number,
+      tokenAmountOut: number,
       maxPrice: number
     ) {
       // TODO
@@ -56,6 +56,11 @@ export default ({
 
   effect(async () => {
     api.EthereumService.isConnected();
+    await actions.updateBalances();
+  });
+
+  effect(async () => {
+    store.wallet.eth.address = ethereumState.address;
     await actions.updateBalances();
   });
 

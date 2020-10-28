@@ -12,6 +12,8 @@ import {
   isValidNetwork,
 } from "./utils/ethereumUtils";
 
+import { getSupportedTokens } from "./utils/getSupportedTokens"
+
 type Address = string;
 type Balances = Balance[];
 
@@ -40,18 +42,20 @@ export function handleConnectToMetaMaskError(err: any) {
       console.log(message);
     }
   } else {
-    if (err.toString().contains("Invalid network.")) {
-      // Invalid network.
-    } else {
-      // Provider not loaded.
-    }
     console.log(err.toString());
+    // if (err.toString().contains("Invalid network.")) {
+    //   // Invalid network.
+    // } else {
+    //   // Provider not loaded.
+    // }
   }
 }
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private blockSubscription: any;
+  private logsSubscription: any;
+
   private provider: provider | undefined;
 
   // This is shared reactive state
@@ -112,6 +116,9 @@ export class EthereumService implements IWalletService {
         throw new Error("Invalid network.");
         // TODO: show error popup
       }
+
+      // await getSupportedTokens();
+
       await this.updateAccounts();
 
       [this.state.address] = this.state.accounts;
@@ -119,7 +126,7 @@ export class EthereumService implements IWalletService {
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
         if (this.provider.request) {
-          // If metamask lets try and connect
+          // If Metamask lets try and connect
           await this.provider.request({ method: "eth_requestAccounts" });
         }
       }
@@ -139,10 +146,18 @@ export class EthereumService implements IWalletService {
         this.state.log = result?.hash ?? "null";
       }
     );
+    this.logsSubscription = this.web3?.eth.subscribe(
+      "logs",
+      {},
+      (error, result) => {
+        console.log("logsSubscription", error, result);
+      }
+    );
   }
 
   removeWeb3Subscription() {
     this.blockSubscription?.unsubscribe();
+    this.logsSubscription?.unsubscribe();
   }
 
   async disconnect() {

@@ -10,7 +10,7 @@ import {
 import {Contract} from 'web3-eth-contract';
 // @ts-ignore
 import { AbiItem } from "web3-utils";
-import { ETH } from "../../../constants";
+import { USDT } from "../../../constants";
 import { Address, Asset, Balance, Token } from "../../../entities";
 
 const erc20TokenAbi: AbiItem[] = [
@@ -170,5 +170,5 @@ export async function transferEther(
 
 export async function getEthereumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
-  return Balance.create(ETH, ethBalance);
+  return Balance.create(USDT, ethBalance);
 }

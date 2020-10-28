@@ -7,8 +7,8 @@ export type Token = Asset & {
 };
 
 export function createToken(
-  symbol: string,
   decimals: number,
+  symbol: string,
   name: string,
   chainId: ChainId,
   address: string
