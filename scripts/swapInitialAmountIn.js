@@ -1,6 +1,5 @@
 const iToken = artifacts.require("IERC20");
 const BPool = artifacts.require("BPool");
-const BN = require('bn.js');
 const pool_address = BPool.address;
 const { toWei } = web3.utils;
 
@@ -9,9 +8,6 @@ const tokenRowanAmount = 15000000;
 const tokenUSDTAmount = 45000;
 const weightRowan = 10;
 const weightUsdt = 1;
-
-const tokenRowanAmountBN = toWei(new BN(tokenRowanAmount));
-const tokenUSDTAmountBN = toWei(new BN(tokenUSDTAmount));
 
 module.exports = function(cb) {
   addLiquidity(cb);
@@ -28,16 +24,16 @@ async function addLiquidity(cb) {
     console.log("USDT address: " + usdtContract.address);
 
     // first approve and let the bpool have access to 120,000,000 eRowan tokens
-    let res = await eRowanContract.approve(pool_address, tokenRowanAmountBN, { from: controller });
+    let res = await eRowanContract.approve(pool_address, toWei(tokenRowanAmount.toString()), { from: controller });
     console.log('tx Rowan approved: ' + JSON.stringify(res));
 
-    res = await usdtContract.approve(pool_address, tokenUSDTAmountBN, { from: controller });
+    res = await usdtContract.approve(pool_address, toWei(tokenUSDTAmount.toString(), "mwei"), { from: controller });
     console.log('\n\n\n\n\n\n\ntx USDT approved: ' + JSON.stringify(res));
 
     // then bind eRowan and USDT to the contract
-    res = await bpool.bind(eRowanContract.address, tokenRowanAmountBN, toWei(weightRowan.toString()), { from: controller });
+    res = await bpool.bind(eRowanContract.address, toWei(tokenRowanAmount.toString()), toWei(weightRowan.toString()), { from: controller });
     console.log('\n\n\n\n\n\n\ntx Rowan bound: ' + JSON.stringify(res));
-    res = await bpool.bind(usdtContract.address, tokenUSDTAmountBN, toWei(weightUsdt.toString()), { from: controller });
+    res = await bpool.bind(usdtContract.address, toWei(tokenUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
     console.log('\n\n\n\n\n\n\ntx USDT bound: ' + JSON.stringify(res));
 
     // now finalize
