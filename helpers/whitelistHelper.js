@@ -1,5 +1,7 @@
+const Web3 = require('web3');
+
 module.exports.hash = (v => {
-    return web3.utils.keccak256(v, {encoding: "hex"})
+    return Web3.utils.keccak256(v, {encoding: "hex"})
 });
   
 module.exports.genHashedKeys = (str, len) => {

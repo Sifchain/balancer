@@ -1,14 +1,14 @@
 [
     {
         "address": "0x3d0147fdbb151C16C275Ff263cF683420Bc5C694",
-        "hashed_key": "0xHashedValueInHex"
+        "key": "SecretString0"
     },
     {
         "address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
-        "hashed_key": "0xHashedValueInHex"
+        "key": "SecretString1"
     },
     {
         "address": "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e",
-        "hashed_key": "0xHashedValueInHex"
+        "key": "SecretString2"
     }
 ]
