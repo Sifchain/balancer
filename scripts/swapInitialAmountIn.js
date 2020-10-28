@@ -23,6 +23,9 @@ async function addLiquidity(cb) {
     const eRowanContract = await iToken.at(process.env.EROWAN);
     const usdtContract = await iToken.at(process.env.USDT);
     const bpool = await BPool.at(pool_address);
+    console.log("Pool address: " + pool_address);
+    console.log("eRowan address: " + eRowanContract.address);
+    console.log("USDT address: " + usdtContract.address);
 
     // first approve and let the bpool have access to 120,000,000 eRowan tokens
     let res = await eRowanContract.approve(pool_address, tokenRowanAmountBN, { from: controller });
