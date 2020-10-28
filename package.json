@@ -5,8 +5,13 @@
   "main": "truffle-config.js",
   "scripts": {
     "compile": "truffle compile",
+    "ganache": "yarn ganache-cli -d",
+    "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
+    "build": "yarn build:chain && cd ./ui && yarn build",
+    "start": "truffle migrate --reset && cd ./ui && yarn app:serve",
     "test": "truffle test",
-    "coverage": "truffle run coverage"
+    "coverage": "truffle run coverage",
+    "test:ui": "cd ./ui && yarn test"
   },
   "repository": {
     "type": "git",

@@ -4,8 +4,9 @@
 export PATH=$(npm bin):$PATH
 cat env.example >> .env
 ganache-cli -d
-```
 
-## Slack hook for daemon
-Go to the .env file and paste the ending lines of your slack hook key into it minus the first slash for your unique code.
-Then add the slack failure channel hook key in and start the daemon.
+1. `yarn` - Install dependencies
+1. `yarn ganache` - Run ganache
+1. `yarn build` - Build chain and ui
+1. `yarn start` - Start the app at http://localhost:8080/
+```
