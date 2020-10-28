@@ -19,13 +19,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BPool is BMath {
 
-    // struct Record {
-    //     bool bound;   // is token bound to pool
-    //     uint index;   // private
-    //     uint denorm;  // denormalized weight
-    //     uint balance;
-    // }
-
     event LOG_SWAP(
         address indexed caller,
         address indexed tokenIn,

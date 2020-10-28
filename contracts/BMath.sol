@@ -45,7 +45,6 @@ contract BMath is BConst, BNum {
         uint numer = bdiv(tokenBalanceIn, tokenWeightIn);
         uint denom = bdiv(tokenBalanceOut, tokenWeightOut);
         uint ratio = bdiv(numer, denom);
-        //uint scale = bdiv(BONE, bsub(BONE, swapFee));
         return  (spotPrice = ratio);
     }
 
@@ -79,25 +78,6 @@ contract BMath is BConst, BNum {
         tokenAmountOut = bmul(outRecord.balance, bar);
         return tokenAmountOut;
     }
-
-    // function calcOutGivenInWithRecord(
-    //     Record memory _inrecord,
-    //     Record memory _inrecord,
-    //     uint tokenAmountIn,
-    //     uint swapFee
-    // )
-    //     public pure
-    //     returns (uint tokenAmountOut)
-    // {
-    //     uint weightRatio = bdiv(tokenWeightIn, tokenWeightOut);
-    //     uint adjustedIn = bsub(BONE, swapFee);
-    //     adjustedIn = bmul(tokenAmountIn, adjustedIn);
-    //     uint y = bdiv(tokenBalanceIn, badd(tokenBalanceIn, adjustedIn));
-    //     uint foo = bpow(y, weightRatio);
-    //     uint bar = bsub(BONE, foo);
-    //     tokenAmountOut = bmul(tokenBalanceOut, bar);
-    //     return tokenAmountOut;
-    // }
 
     /**********************************************************************************************
     // calcInGivenOut                                                                            //
