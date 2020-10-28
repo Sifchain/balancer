@@ -2,10 +2,6 @@
   <div>
     <Main>
       <div>
-<!--        <div id="nav">-->
-<!--          <router-link to="/">Connect Wallet</router-link> |-->
-<!--          <router-link to="/purchase">Purchase Rowan</router-link>-->
-<!--        </div>-->
         <router-view />
       </div>
     </Main>

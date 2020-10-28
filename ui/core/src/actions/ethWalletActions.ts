@@ -34,24 +34,23 @@ export default ({
       });
     },
     async swapExactAmountIn(
-      amount: number,
-      recipient: string,
-      asset: Asset = ETH
+      maxAmountIn: number,
+      tokenAmountOut: number,
+      maxPrice: number
     ) {
       // TODO
     },
     async swapExactAmountOut(
-      amount: number,
-      recipient: string,
-      asset: Asset = ETH
+      tokenAmountIn: number,
+      minAmountOut: number,
+      maxPrice: number
     ) {
       // TODO
     },
   };
 
   effect(async () => {
-    store.wallet.eth.isConnected = ethereumState.connected;
-    store.wallet.eth.address = ethereumState.address;
+    store.wallet.eth.isConnected = api.EthereumService.getState().connected;
     await actions.updateBalances();
   });
 
@@ -61,7 +60,7 @@ export default ({
   });
 
   effect(async () => {
-    ethereumState.log;
+    api.EthereumService.getState().log;
     await actions.updateBalances();
   });
 

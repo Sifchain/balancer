@@ -13,6 +13,4 @@ export type IWalletService = {
   disconnect(): Promise<void>;
   transfer(params: TxParams): Promise<TxHash>;
   getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
-  setPhrase(phrase: string): Promise<Address>;
-  purgeClient(): void;
 };
