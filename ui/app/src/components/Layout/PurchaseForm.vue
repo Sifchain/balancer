@@ -1,0 +1,129 @@
+<template>
+  <div>
+    <SifApp>
+      <div>
+        <InputGroup>
+          <div class="currency-form text--small">
+            <div class="currency-form__input">
+              <div class="sif-input__wrapper">
+                <label class="sif-input__label">Contribution amount</label>
+                <input v-model="amountUSDT" class="sif-input" type="number">
+              </div>
+            </div>
+            <div class="currency-form__balance">
+              <span>USDT</span>
+            </div>
+          </div>
+        </InputGroup>
+
+        <InputGroup>
+          <CurrencyForm :amount="amountRWN" label="Minimum received" token="RWN" />
+        </InputGroup>
+
+        <InputGroup v-if="walletConnected">
+          <div>
+            <p class="text--small" align="left">
+              Price: {{ priceRwn }} USDT
+            </p>
+            <p class="text--small" align="left">
+              Minimum received: {{ amountRWN }}
+            </p>
+          </div>
+        </InputGroup>
+
+        <p v-if="!walletConnected" class="text--small">
+          No wallet connected
+        </p>
+
+        <p v-if="walletConnected" class="text--small">
+          {{ store.wallet.eth.address }}
+        </p>
+
+        <button v-if="walletConnected" @click="handleDisconnectClicked">
+          Disconnect
+        </button>
+
+        <ActionButton primary block v-if="!walletConnected" @click="handleConnectClicked">
+          Connect Wallet
+        </ActionButton>
+
+        <ActionButton primary block v-if="walletConnected" @click="transfer">
+          Purchase
+        </ActionButton>
+      </div>
+    </SifApp>
+
+  </div>
+</template>
+
+<script>
+  import ActionButton from '../Elements/ActionButton.vue';
+  import InputGroup from '../Elements/InputGroup.vue';
+  import SifApp from '../Blocks/SifApp.vue';
+  import CurrencyForm from '../Blocks/CurrencyForm.vue';
+  import { useCore } from "@/hooks/useCore";
+  import { computed, ref } from "@vue/reactivity";
+
+  export default {
+    name: "PurchaseForm",
+    setup() {
+      const { api, actions, store } = useCore();
+      const walletConnected = computed(() => store.wallet.eth.isConnected);
+      const amountUSDT = ref(100);
+      const amountRWN = computed(() => getReceivedAmountEstimate());
+      const priceRwn = ref(0.03);
+      const priceImpact = ref(0.02);
+      const providerFee = ref(0.0005);
+
+      async function handleConnectClicked() {
+        await actions.connectToWallet();
+      }
+
+      async function handleDisconnectClicked() {
+        await actions.disconnectWallet();
+      }
+
+      function getReceivedAmountEstimate() {
+        return amountUSDT.value / priceRwn.value;
+      }
+
+      async function transfer() {
+        const hash = await actions.transferEthWallet(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        console.log(hash);
+      }
+
+      async function swapExactAmountIn() {
+        const hash = await actions.swapExactAmountIn(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        console.log(hash);
+      }
+
+      async function swapExactAmountOut() {
+        const hash = await actions.swapExactAmountOut(amountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+        console.log(hash);
+      }
+
+      return {
+        store,
+        handleDisconnectClicked,
+        handleConnectClicked,
+        transfer,
+        amountUSDT,
+        amountRWN,
+        priceRwn,
+        priceImpact,
+        providerFee,
+        walletConnected,
+      };
+    },
+    components: {
+      ActionButton,
+      SifApp,
+      InputGroup,
+      CurrencyForm,
+    }
+  }
+</script>
+
+<style>
+
+</style>
