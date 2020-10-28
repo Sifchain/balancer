@@ -13,7 +13,7 @@ const weightRowan = 10;
 const swap_fee = 0.0;
 const hours_in_week = 7 * 24;
 // parameters
-const first_hour_buyers_number = 10;
+const first_hour_buyers_number = 100;
 const first_trade_amount = 1000;
 const subsequent_hour_buyers_number = 0;
 const subsequent_trade_amount = 10000;
