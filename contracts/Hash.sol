@@ -25,7 +25,7 @@ contract Hash {
     }
 
     function deleteToken(address _user, bytes32 _data) internal returns (bool) {
-        _tokenByAddress[_user][_data] = false;
+        delete _tokenByAddress[_user][_data];
         return true;
     }
 }
