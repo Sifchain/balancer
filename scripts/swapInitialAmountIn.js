@@ -37,8 +37,10 @@ async function addLiquidity(cb) {
     console.log('\n\n\n\n\n\n\ntx USDT bound: ' + JSON.stringify(res));
 
     // now finalize
-    await bpool.finalize({ from: controller });
-    await bpool.setTokenIntOut(process.env.USDT, process.env.EROWAN, { from: controller });
+    res = await bpool.finalize({ from: controller });
+    console.log('\n\n\n\n\n\n\ntx Pool finalized: ' + JSON.stringify(res));
+    res = await bpool.setTokenIntOut(process.env.USDT, process.env.EROWAN, { from: controller });
+    console.log('\n\n\n\n\n\n\ntx setTokenIntOut: ' + JSON.stringify(res));
   } catch (error) {
       console.log("ERROR:: ", error)
   }
