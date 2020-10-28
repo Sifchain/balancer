@@ -54,6 +54,10 @@ const erc20TokenAbi: AbiItem[] = [
   },
 ];
 
+export function isValidNetwork(networkType: string): boolean {
+  return networkType === "private" // use "main" for production, "private" or "ropsten" for testing
+}
+
 export function isToken(value?: Asset | Token): value is Token {
   return value ? Object.keys(value).includes("address") : false;
 }
