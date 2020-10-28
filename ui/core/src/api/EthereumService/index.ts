@@ -9,6 +9,7 @@ import {
   isEventEmittingProvider,
   isToken,
   transferAsset,
+  isValidNetwork,
 } from "./utils/ethereumUtils";
 
 type Address = string;
@@ -25,6 +26,27 @@ type MetaMaskProvider = WebsocketProvider & {
 
 function isMetaMaskProvider(provider?: provider): provider is MetaMaskProvider {
   return typeof (provider as any).request === "function";
+}
+
+export function handleConnectToMetaMaskError(err: any) {
+  const { code, message } = err;
+  // TODO show popup dialog
+  if (code) {
+    if (code === -32002) {
+      // Permissions request already pending; please wait.
+      console.log(message);
+    } else if (code === 4001) {
+      // User rejected the request.
+      console.log(message);
+    }
+  } else {
+    if (err.toString().contains("Invalid network.")) {
+      // Invalid network.
+    } else {
+      // Provider not loaded.
+    }
+    console.log(err.toString());
+  }
 }
 
 export class EthereumService implements IWalletService {
@@ -47,9 +69,7 @@ export class EthereumService implements IWalletService {
     log: "unset",
   });
 
-  constructor(
-    getWeb3Provider: () => Promise<provider>,
-  ) {
+  constructor(getWeb3Provider: () => Promise<provider>) {
     getWeb3Provider().then((provider) => {
       if (isEventEmittingProvider(provider)) {
         provider.on("connect", () => {
@@ -86,7 +106,12 @@ export class EthereumService implements IWalletService {
         throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
+      const networkType = await this.web3.eth.net.getNetworkType();
 
+      if (!isValidNetwork(networkType)) {
+        throw new Error("Invalid network.");
+        // TODO: show error popup
+      }
       await this.updateAccounts();
 
       [this.state.address] = this.state.accounts;
@@ -102,6 +127,7 @@ export class EthereumService implements IWalletService {
 
       this.addWeb3Subscription();
     } catch (err) {
+      handleConnectToMetaMaskError(err);
       this.web3 = null;
     }
   }
@@ -156,7 +182,6 @@ export class EthereumService implements IWalletService {
   }
 
   async transfer(params: TxParams): Promise<TxHash> {
-    // TODO: validate params!!
     if (!this.web3) {
       throw new Error(
         "Cannot do transfer because there is not yet a connection to Ethereum."
@@ -173,15 +198,6 @@ export class EthereumService implements IWalletService {
     }
 
     return await transferAsset(this.web3, from, recipient, amount, asset);
-  }
-
-  async setPhrase() {
-    // We currently delegate auth to metamask so this is irrelavent
-    return "";
-  }
-
-  purgeClient() {
-    // We currently delegate auth to metamask so this is irrelavent
   }
 
   static create({
