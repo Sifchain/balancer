@@ -16,6 +16,14 @@ pragma solidity 0.5.12;
 import "./BNum.sol";
 
 contract BMath is BConst, BNum {
+
+    struct Record {
+        bool bound;   // is token bound to pool
+        uint index;   // private
+        uint denorm;  // denormalized weight
+        uint balance;
+    }
+
     /**********************************************************************************************
     // calcSpotPrice                                                                             //
     // sP = spotPrice                                                                            //
@@ -29,8 +37,7 @@ contract BMath is BConst, BNum {
         uint tokenBalanceIn,
         uint tokenWeightIn,
         uint tokenBalanceOut,
-        uint tokenWeightOut,
-        uint swapFee
+        uint tokenWeightOut
     )
         public pure
         returns (uint spotPrice)
@@ -38,8 +45,8 @@ contract BMath is BConst, BNum {
         uint numer = bdiv(tokenBalanceIn, tokenWeightIn);
         uint denom = bdiv(tokenBalanceOut, tokenWeightOut);
         uint ratio = bdiv(numer, denom);
-        uint scale = bdiv(BONE, bsub(BONE, swapFee));
-        return  (spotPrice = bmul(ratio, scale));
+        //uint scale = bdiv(BONE, bsub(BONE, swapFee));
+        return  (spotPrice = ratio);
     }
 
     /**********************************************************************************************
@@ -53,25 +60,44 @@ contract BMath is BConst, BNum {
     // sF = swapFee                                                                              //
     **********************************************************************************************/
     function calcOutGivenIn(
-        uint tokenBalanceIn,
-        uint tokenWeightIn,
-        uint tokenBalanceOut,
-        uint tokenWeightOut,
-        uint tokenAmountIn,
-        uint swapFee
+        Record memory inRecord,
+        Record memory outRecord,
+        // uint tokenBalanceIn,
+        // uint tokenWeightIn,
+        // uint tokenBalanceOut,
+        // uint tokenWeightOut,
+        uint tokenAmountIn
     )
-        public pure
+        internal pure
         returns (uint tokenAmountOut)
     {
-        uint weightRatio = bdiv(tokenWeightIn, tokenWeightOut);
-        uint adjustedIn = bsub(BONE, swapFee);
-        adjustedIn = bmul(tokenAmountIn, adjustedIn);
-        uint y = bdiv(tokenBalanceIn, badd(tokenBalanceIn, adjustedIn));
+        uint weightRatio = bdiv(inRecord.denorm, outRecord.denorm);
+        uint adjustedIn = bmul(tokenAmountIn, BONE);
+        uint y = bdiv(inRecord.balance, badd(inRecord.balance, adjustedIn));
         uint foo = bpow(y, weightRatio);
         uint bar = bsub(BONE, foo);
-        tokenAmountOut = bmul(tokenBalanceOut, bar);
+        tokenAmountOut = bmul(outRecord.balance, bar);
         return tokenAmountOut;
     }
+
+    // function calcOutGivenInWithRecord(
+    //     Record memory _inrecord,
+    //     Record memory _inrecord,
+    //     uint tokenAmountIn,
+    //     uint swapFee
+    // )
+    //     public pure
+    //     returns (uint tokenAmountOut)
+    // {
+    //     uint weightRatio = bdiv(tokenWeightIn, tokenWeightOut);
+    //     uint adjustedIn = bsub(BONE, swapFee);
+    //     adjustedIn = bmul(tokenAmountIn, adjustedIn);
+    //     uint y = bdiv(tokenBalanceIn, badd(tokenBalanceIn, adjustedIn));
+    //     uint foo = bpow(y, weightRatio);
+    //     uint bar = bsub(BONE, foo);
+    //     tokenAmountOut = bmul(tokenBalanceOut, bar);
+    //     return tokenAmountOut;
+    // }
 
     /**********************************************************************************************
     // calcInGivenOut                                                                            //

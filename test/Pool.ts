@@ -14,6 +14,10 @@ const { toWei, fromWei } = web3.utils;
 const errorDelta = 10 ** -8;
 const MAX = web3.utils.toTwosComplement(-1);
 
+const helpers = require("../helpers/whitelistHelper");
+const unhashedKey = "CnatGeusHtis"
+const hashedKey = helpers.hash(unhashedKey)
+
 contract("Full pool test", (accounts) => {
   const admin = process.env.WHITE_LIST_MANAGER;
   const user1 = accounts[1];
@@ -190,25 +194,27 @@ contract("Full pool test", (accounts) => {
     });
 
     it("Fails calling any swap before finalizing", async () => {
+      await whitelist.whitelistUser(user2, hashedKey, { from: admin });
+
       const controller = await pool.getController();
       await pool.setTokenIntOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
       await pool.setTokenIntOut(DAI, WETH, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
       await pool.setTokenIntOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
       await pool.setTokenIntOut(DAI, WETH, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
     });
@@ -313,31 +319,30 @@ contract("Full pool test", (accounts) => {
 
     it("Fail swapExactAmountIn unbound or over min max ratios", async () => {
       const controller = await pool.getController();
-      await whitelist.whitelistUser(user2, { from: admin });
       await pool.setTokenIntOut(WETH, XXX, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("2.5"), toWei("100"), toWei("200"), {
+        pool.swapExactAmountIn(toWei("2.5"), toWei("100"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_NOT_BOUND"
       );
       await pool.setTokenIntOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("26.5"), toWei("5000"), toWei("200"), {
+        pool.swapExactAmountIn(toWei("26.5"), toWei("5000"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_MAX_IN_RATIO"
       );
 
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("5.3"), toWei("1000"), toWei("200"), {
+        pool.swapExactAmountIn(toWei("5.3"), toWei("1000"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_LIMIT_OUT."
       );
 
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("5"), toWei("1000"), toWei("200"), {
+        pool.swapExactAmountOut(toWei("5"), toWei("1000"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_LIMIT_IN."
@@ -352,7 +357,7 @@ contract("Full pool test", (accounts) => {
       assert.equal(await pool.getBalance(WETH), toWei("52.5"));
       assert.equal(await pool.getBalance(DAI), toWei("10500"));
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("6"), toWei("1074"), toWei("200"), {
+        pool.swapExactAmountIn(toWei("6"), toWei("1074"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_MAX_OUT_RATIO"
@@ -369,7 +374,7 @@ contract("Full pool test", (accounts) => {
       assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
       assert.equal((await pool.getBalance(DAI)), toWei('10500'));
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('1051'), toWei('200'), {from: user2}),
+        pool.swapExactAmountOut(MAX, toWei('1051'), toWei('200'), unhashedKey, {from: user2}),
         'ERR_MAX_OUT_RATIO',
       );
       assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
@@ -384,6 +389,7 @@ contract("Full pool test", (accounts) => {
         toWei("2.5"),
         toWei("475"),
         toWei("200"),
+        unhashedKey,
         { from: user2 }
       );
       const log = txr.logs[0];
@@ -429,6 +435,7 @@ contract("Full pool test", (accounts) => {
         toWei("3"),
         toWei("1.0"),
         toWei("500"),
+        unhashedKey,
         { from: user2 }
       );
       const log = txr.logs[0];
@@ -458,22 +465,22 @@ contract("Full pool test", (accounts) => {
       const controller = await pool.getController();
       await pool.setTokenIntOut(XXX, DAI, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
       await pool.setTokenIntOut(DAI, XXX, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
       await pool.setTokenIntOut(XXX, DAI, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
       await pool.setTokenIntOut(DAI, XXX, { from: controller });
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200")),
+        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
       await truffleAssert.reverts(

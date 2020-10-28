@@ -17,6 +17,10 @@ const weightRowan = 10;
 const swap_fee = 0.0;
 const verbose = true;
 
+const helpers = require("../helpers/whitelistHelper");
+const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
+const hashedKey = helpers.hash(unhashedKey)
+
 contract("Our use case", (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
@@ -90,7 +94,7 @@ contract("Our use case", (accounts) => {
 
     it("Should be able to mint if the minter is the admin", async () => {
       assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
-      usdt.mint(user, toWei("500", "mwei"), { from: minter });
+      await usdt.mint(user, toWei("500", "mwei"), { from: minter });
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
     });
   });
@@ -125,7 +129,7 @@ contract("Our use case", (accounts) => {
 
     it("Should be able to burn if the burner is the admin", async () => {
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
-      usdt.burn(user, toWei("500", "mwei"), { from: minter });
+      await usdt.burn(user, toWei("500", "mwei"), { from: minter });
       assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
     });
   });
@@ -134,7 +138,7 @@ contract("Our use case", (accounts) => {
     it("Should not be possible to whitelist a user if not admin", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
       await truffleAssert.reverts(
-        whitelist.whitelistUser(user, { from: user2 }),
+        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
         "Ownable: caller is not the owner"
       );
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
@@ -142,16 +146,19 @@ contract("Our use case", (accounts) => {
 
     it("Admin should be able to whitelist a user", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
-      await whitelist.whitelistUser(user, { from: white_list_manager });
+      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
     });
 
     it("Admin should be able to check if any user is in whitelist", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true)
+
       assert.equal(
         await whitelist.isWhitelisted(user2, { from: white_list_manager }),
         false
       );
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey), false)
     });
 
     it("Whitelisted user should be able to check if s/he is in the whitelist", async () => {
@@ -161,7 +168,7 @@ contract("Our use case", (accounts) => {
     it("Should not be possible to remove whitelisted user if not admin", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
       await truffleAssert.reverts(
-        whitelist.whitelistUser(user, { from: user2 }),
+        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
         "Ownable: caller is not the owner"
       );
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
@@ -169,7 +176,7 @@ contract("Our use case", (accounts) => {
 
     it("Admin should be able to remove whitelisted user", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      await whitelist.removeWhitelistedUser(user, { from: white_list_manager });
+      await whitelist.removeWhitelistedUser(user, hashedKey, { from: white_list_manager });
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
     });
   });
@@ -177,16 +184,16 @@ contract("Our use case", (accounts) => {
   describe("Pool Operations", () => {
     it("Fails to swap if user is not in the whitelist", async () => {
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, { from: user }),
         "ERR_NOT_WHITELISTED"
       );
     });
 
     it("Fails to swap when in/out tokens have not set", async () => {
-      await whitelist.whitelistUser(user, { from: white_list_manager });
+      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
 
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, { from: user }),
         "ERR_NOT_BOUND"
       );
     });
@@ -202,7 +209,7 @@ contract("Our use case", (accounts) => {
       await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
       // Attempt to spend 0 USDT should fail, because user has to invest at least 1 USDT.
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, { from: user }),
+        pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, unhashedKey, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
       );
     });
@@ -212,8 +219,29 @@ contract("Our use case", (accounts) => {
       // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
       // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
       await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('30'), MAX, { from: user }),
+        pool.swapExactAmountOut(MAX, toWei('30'), MAX, unhashedKey, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
+      );
+    });
+
+    it('Fails to swapExactAmountOut with incorrect unhashed key', async () => {
+      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
+      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
+      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(MAX, toWei('30'), MAX, "incorrect_key", { from: user }),
+        'ERR_NOT_WHITELISTED/INVALID_KEY',
+      );
+    });
+
+    it('Fails to swapExactAmountOut with address that is not whitelisted', async () => {
+      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
+      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
+      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
+      assert.equal(await whitelist.isWhitelisted(user2), false)
+      await truffleAssert.reverts(
+        pool.swapExactAmountOut(MAX, toWei('30'), MAX, unhashedKey, { from: user2 }),
+        'ERR_NOT_WHITELISTED/INVALID_KEY',
       );
     });
 
@@ -237,7 +265,7 @@ contract("Our use case", (accounts) => {
 
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
 
-      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, {
+      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
       });
 
@@ -282,7 +310,7 @@ contract("Our use case", (accounts) => {
       }
 
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      const txr = await pool.swapExactAmountOut(MAX, toWei("20000"), MAX, {
+      const txr = await pool.swapExactAmountOut(MAX, toWei("20000"), MAX, unhashedKey, {
         from: user,
       });
 

@@ -9,8 +9,11 @@ const usersToWhitelist = require("./whitelist.json");
 module.exports = function (cb) {
   async function bulkwhitelistUsers() {
     try {
+      const whitelistAddresses = usersToWhitelist.map(e => {e.address})
+      const whitelistHashedKeys = usersToWhitelist.map(e => {e.hashed_key})
       let whitelist = await OwnableWhitelist.at(whitelist_address);
-      let res = await whitelist.bulkWhitelistUsers(usersToWhitelist, {
+      let res = await whitelist.bulkWhitelistUsers(
+        whitelistAddresses, whitelistHashedKeys, {
         from: process.env.WHITE_LIST_MANAGER,
       });
 

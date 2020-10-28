@@ -19,12 +19,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BPool is BMath {
 
-    struct Record {
-        bool bound;   // is token bound to pool
-        uint index;   // private
-        uint denorm;  // denormalized weight
-        uint balance;
-    }
+    // struct Record {
+    //     bool bound;   // is token bound to pool
+    //     uint index;   // private
+    //     uint denorm;  // denormalized weight
+    //     uint balance;
+    // }
 
     event LOG_SWAP(
         address indexed caller,
@@ -69,10 +69,10 @@ contract BPool is BMath {
         _;
     }
 
-    modifier onlyWhitelisted(address _user) {
+    modifier onlyWhitelisted(address _user, string memory _key) {
         require(
-            OwnableWhitelist(_whiteListContract).isWhitelisted(_user) == true,
-            "ERR_NOT_WHITELISTED"
+            OwnableWhitelist(_whiteListContract).validateWhitelistedUserAndKey(_user, _key),
+            "ERR_NOT_WHITELISTED/INVALID_KEY"
         );
         _;
     }
@@ -321,7 +321,7 @@ contract BPool is BMath {
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
         Record storage inRecord = _records[tokenIn];
         Record storage outRecord = _records[tokenOut];
-        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm, _swapFee);
+        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm);
     }
 
     function getSpotPriceSansFee(address tokenIn, address tokenOut)
@@ -333,7 +333,7 @@ contract BPool is BMath {
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
         Record storage inRecord = _records[tokenIn];
         Record storage outRecord = _records[tokenOut];
-        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm, 0);
+        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm);
     }
 
     function exitPool(uint[] calldata minAmountsOut)
@@ -359,12 +359,13 @@ contract BPool is BMath {
     function swapExactAmountOut(
         uint maxAmountIn,
         uint tokenAmountOut,
-        uint maxPrice
+        uint maxPrice,
+        string calldata _key
     )
         external
         _logs_
         _lock_
-        onlyWhitelisted(msg.sender)
+        onlyWhitelisted(msg.sender, _key)
         returns (uint tokenAmountIn, uint spotPriceAfter)
     {
         require(_records[_tokenIn].bound, "ERR_NOT_BOUND");
@@ -380,8 +381,7 @@ contract BPool is BMath {
                                     inRecord.balance,
                                     inRecord.denorm,
                                     outRecord.balance,
-                                    outRecord.denorm,
-                                    _swapFee
+                                    outRecord.denorm
                                 );
         require(spotPriceBefore <= maxPrice, "ERR_BAD_LIMIT_PRICE");
 
@@ -403,8 +403,7 @@ contract BPool is BMath {
                                 inRecord.balance,
                                 inRecord.denorm,
                                 outRecord.balance,
-                                outRecord.denorm,
-                                _swapFee
+                                outRecord.denorm
                             );
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
@@ -421,12 +420,13 @@ contract BPool is BMath {
     function swapExactAmountIn(
         uint tokenAmountIn,
         uint minAmountOut,
-        uint maxPrice
+        uint maxPrice,
+        string calldata _key
     )
         external
         _logs_
         _lock_
-        onlyWhitelisted(msg.sender)
+        onlyWhitelisted(msg.sender, _key)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
 
@@ -444,18 +444,16 @@ contract BPool is BMath {
                                     inRecord.balance,
                                     inRecord.denorm,
                                     outRecord.balance,
-                                    outRecord.denorm,
-                                    _swapFee
+                                    outRecord.denorm
                                 );
         require(spotPriceBefore <= maxPrice, "ERR_BAD_LIMIT_PRICE");
 
         tokenAmountOut = calcOutGivenIn(
-                            inRecord.balance,
-                            inRecord.denorm,
-                            outRecord.balance,
-                            outRecord.denorm,
-                            tokenAmountIn,
-                            _swapFee
+                            inRecord,
+                            // inRecord.denorm,
+                            outRecord,
+                            // outRecord.denorm,
+                            tokenAmountIn
                         );
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
         require(tokenAmountOut <= bmul(outRecord.balance, MAX_OUT_RATIO), "ERR_MAX_OUT_RATIO");
@@ -467,8 +465,7 @@ contract BPool is BMath {
                                 inRecord.balance,
                                 inRecord.denorm,
                                 outRecord.balance,
-                                outRecord.denorm,
-                                _swapFee
+                                outRecord.denorm
                             );
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
