@@ -84,7 +84,6 @@ contract("Full pool test", (accounts) => {
   });
 
   describe("Binding Tokens", () => {
-
     it("Pool starts with no bound tokens", async () => {
       const numTokens = await pool.getNumTokens();
       assert.equal(0, numTokens);
@@ -129,6 +128,10 @@ contract("Full pool test", (accounts) => {
       await truffleAssert.reverts(pool.finalize(), "ERR_MIN_TOKENS");
     });
 
+    it('Fails gulp on unbound token', async () => {
+      await truffleAssert.reverts(pool.gulp(WETH), 'ERR_NOT_BOUND');
+    });
+
     it("Admin binds tokens", async () => {
       // Equal weights WETH, MKR, DAI
       await pool.bind(WETH, toWei("50"), toWei("5"));
@@ -144,6 +147,12 @@ contract("Full pool test", (accounts) => {
       assert.equal(0.333333333333333333, fromWei(wethNormWeight));
       const mkrBalance = await pool.getBalance(MKR);
       assert.equal(20, fromWei(mkrBalance));
+    });
+
+    it('Pool can gulp tokens', async () => {
+      await pool.gulp(WETH);
+      const balance = await pool.getBalance(WETH);
+      assert.equal(fromWei(balance), 50);
     });
 
     it("Fails binding above MAX TOTAL WEIGHT", async () => {
