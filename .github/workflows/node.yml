@@ -17,14 +17,14 @@ jobs:
         uses: actions/setup-node@v2.1.2
         with:
           node-version: '12.x'
-      - run: npm install
-      - run: npm install -g truffle
-      - run: npm install -g ganache-cli
+      - run: yarn
+      - run: yarn add global truffle
+      - run: yarn add global ganache-cli
       - run: cat env.example >> .env
-      - run: ganache-cli -d &
-      - run: npm run compile
-      - run: npm run test
-      - run: npm run coverage
+      - run: yarn ganache &
+      - run: yarn compile
+      - run: yarn test
+      - run: yarn coverage
         env:
           CI: true
 
