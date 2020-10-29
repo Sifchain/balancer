@@ -1,4 +1,4 @@
-const RowanToken = artifacts.require("RowanToken");
+const RowanToken = artifacts.require("MockRowanToken");
 const BN = require("bn.js");
 const { toWei, fromWei } = web3.utils;
 
@@ -11,6 +11,7 @@ contract("RowanToken", (accounts) => {
 
   it("Init token", async () => {
     rowan = await RowanToken.new(_name, _symbol, _decimals, { from: admin });
+    await rowan.mint(admin, toWei("120000000"));
   });
 
   describe("Token attributes", () => {
