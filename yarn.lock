@@ -241,14 +241,13 @@
     "@nodelib/fs.scandir" "2.1.3"
     fastq "^1.6.0"
 
-"@openzeppelin/contract-loader@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contract-loader/-/contract-loader-0.4.0.tgz#c28c05d09df94c634d968ed175b5777dfc675872"
-  integrity sha512-K+Pl4tn0FbxMSP0H9sgi61ayCbecpqhQmuBshelC7A3q2MlpcqWRJan0xijpwdtv6TORNd5oZNe/+f3l+GD6tw==
+"@openzeppelin/contract-loader@^0.6.2":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contract-loader/-/contract-loader-0.6.2.tgz#f0c08f14d5dfeaeb44952ba777ec9ce1c9ff9759"
+  integrity sha512-/P8v8ZFVwK+Z7rHQH2N3hqzEmTzLFjhMtvNK4FeIak6DEeONZ92vdFaFb10CCCQtp390Rp/Y57Rtfrm50bUdMQ==
   dependencies:
     find-up "^4.1.0"
     fs-extra "^8.1.0"
-    try-require "^1.2.1"
 
 "@openzeppelin/contracts@^2.3.0":
   version "2.5.1"
@@ -256,11 +255,11 @@
   integrity sha512-qIy6tLx8rtybEsIOAlrM4J/85s2q2nPkDqj/Rx46VakBZ0LwtFhXIVub96LXHczQX0vaqmAueDqNPXtbSXSaYQ==
 
 "@openzeppelin/test-helpers@^0.5.7":
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/test-helpers/-/test-helpers-0.5.8.tgz#7663352063f6c0908fbbc2d478e2b9ffd6ee45ae"
-  integrity sha512-ueJoBSN3Tv0GNU5sT5O5QvcSikC2Cnj6s7t4GE0gpt09SzYkepbeciuoeaa5oxrw617aLEqkfNyZWIwpTefbLg==
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/test-helpers/-/test-helpers-0.5.9.tgz#7cf4b0f068b21391aea03a839d1dc43d7434049b"
+  integrity sha512-pnY4E8vC7Ifdg2ptjHOJzdF4paRctOjwkjgD/fbxdwECs5dXUNMuAyG49bPPoJ5hqceEVbzseLF+iTr8z5j47w==
   dependencies:
-    "@openzeppelin/contract-loader" "^0.4.0"
+    "@openzeppelin/contract-loader" "^0.6.2"
     "@truffle/contract" "^4.0.35 <4.2.2"
     ansi-colors "^3.2.3"
     chai "^4.2.0"
@@ -477,19 +476,19 @@
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
 "@types/node@*":
-  version "14.14.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.5.tgz#e92d3b8f76583efa26c1a63a21c9d3c1143daa29"
-  integrity sha512-H5Wn24s/ZOukBmDn03nnGTp18A60ny9AmCwnEcgJiTgSGsCO7k+NWP7zjCCbhlcnVCoI+co52dUAt9GMhOSULw==
+  version "14.14.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.6.tgz#146d3da57b3c636cc0d1769396ce1cfa8991147f"
+  integrity sha512-6QlRuqsQ/Ox/aJEQWBEJG7A9+u7oSYl3mem/K8IzxXG/kAGbV1YPD9Bg9Zw3vyxC/YP+zONKwy8hGkSt1jxFMw==
 
 "@types/node@^10.12.18", "@types/node@^10.3.2":
-  version "10.17.43"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.43.tgz#af70c6de04841d9216fc2b58e427c8a823b83418"
-  integrity sha512-F7xV2kxZGb3seVP3UQt3msHcoDCtDi8WNO/UCzNLhRwaYVT4yJO1ndcV+vCTnY+jiAVqyLZq/VJbRE/AhwqEag==
+  version "10.17.44"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.44.tgz#3945e6b702cb6403f22b779c8ea9e5c3f44ead40"
+  integrity sha512-vHPAyBX1ffLcy4fQHmDyIUMUb42gHZjPHU66nhvbMzAWJqHnySGZ6STwN3rwrnSd1FHB0DI/RWgGELgKSYRDmw==
 
 "@types/node@^12.12.6", "@types/node@^12.6.1":
-  version "12.19.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.19.2.tgz#9565ed5c72ba96038fc3add643edd5e7820598e7"
-  integrity sha512-SRH6QM0IMOBBFmDiJ75vlhcbUEYEquvSuhsVW9ijG20JvdFTfOrB1p6ddZxz5y/JNnbf+9HoHhjhOVSX2hsJyA==
+  version "12.19.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.19.3.tgz#a6e252973214079155f749e8bef99cc80af182fa"
+  integrity sha512-8Jduo8wvvwDzEVJCOvS/G6sgilOLvvhn1eMmK3TW8/T217O7u1jdrK6ImKLv80tVryaPSVeKu6sjDEiFjd4/eg==
 
 "@types/pbkdf2@^3.0.0":
   version "3.1.0"
@@ -2006,9 +2005,9 @@ fast-safe-stringify@^2.0.6:
   integrity sha512-Utm6CdzT+6xsDk2m8S6uL8VHxNwI6Jub+e9NYTcAms28T84pTa25GJQV9j0CY0N1rM8hK4x6grpF2BQf+2qwVA==
 
 fastq@^1.6.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.8.0.tgz#550e1f9f59bbc65fe185cb6a9b4d95357107f481"
-  integrity sha512-SMIZoZdLh/fgofivvIkmknUXyPnvxRE3DhtZ5Me3Mrsk5gyPL42F0xr51TdRXskBxHfMp+07bcYzfsYEsSQA9Q==
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/fastq/-/fastq-1.9.0.tgz#e16a72f338eaca48e91b5c23593bcc2ef66b7947"
+  integrity sha512-i7FVWL8HhVY+CTkwFxkN2mk3h+787ixS5S63eb78diVRc1MCssarHq3W5cj0av7YDSwmaV928RNag+U1etRQ7w==
   dependencies:
     reusify "^1.0.4"
 
@@ -4253,11 +4252,6 @@ truffle-assertions@^0.9.2:
   dependencies:
     assertion-error "^1.1.0"
     lodash.isequal "^4.5.0"
-
-try-require@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/try-require/-/try-require-1.2.1.tgz#34489a2cac0c09c1cc10ed91ba011594d4333be2"
-  integrity sha1-NEiaLKwMCcHMEO2RugEVlNQzO+I=
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
