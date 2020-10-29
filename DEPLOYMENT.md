@@ -24,3 +24,5 @@ truffle exec scripts/swapInitialAmountIn.js --network mainnet
 ```
 
 You can use any network, kovan, mainnet, rinkeby, ropsten, just make sure you have deployed to that network before you run the script.
+
+Don't forget to save ./build/contracts/*.json files in git after deployment to mainnet
