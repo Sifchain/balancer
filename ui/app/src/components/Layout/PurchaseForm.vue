@@ -94,17 +94,40 @@
       }
 
       async function transfer() {
-        const hash = await actions.transferEthWallet(inputAmountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
-        console.log(hash);
+        if (store.wallet.eth.balances.length > 0) {
+          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
+            const hash = await actions.transferEthWallet(inputAmountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
+            console.log(hash);
+          } else {
+            // Low balance
+            // TODO update UI
+          }
+        }
       }
 
       async function swapExactAmountIn() {
-        const hash = await actions.swapExactAmountIn(amountUSDT.value, 0, Number.MAX_SAFE_INTEGER);
+        if (store.wallet.eth.balances.length > 0) {
+          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
+            const hash = await actions.swapExactAmountIn(amountUSDT.value);
+            console.log(hash);
+          } else {
+            // Low balance
+            // TODO update UI
+          }
+        }
         console.log(hash);
       }
 
       async function swapExactAmountOut() {
-        const hash = await actions.swapExactAmountOut(amountUSDT.value, 0, Number.MAX_SAFE_INTEGER);
+        if (store.wallet.eth.balances.length > 0) {
+          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
+            const hash = await actions.swapExactAmountOut(amountUSDT.value);
+            console.log(hash);
+          } else {
+            // Low balance
+            // TODO update UI
+          }
+        }
         console.log(hash);
       }
 
@@ -113,6 +136,8 @@
         handleDisconnectClicked,
         handleConnectClicked,
         transfer,
+        swapExactAmountIn,
+        swapExactAmountOut,
         amountUSDT,
         amountRWN,
         inputAmountUSDT,
