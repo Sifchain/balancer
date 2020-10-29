@@ -6,7 +6,7 @@ Here is how to use the service daemon to send transactions to the mainnet during
 
 ```
 EROWAN='eRowan address on mainnet'
-BPOOL=''bpool address on mainnet'
+USDT='USDT address on mainnet'
 ```
 
 2. Make sure that the controller address in the .env file is set to your address. Also make sure that the private key in the .env file is your private key.

@@ -17,4 +17,12 @@ Make sure all the values in the .env file is correct. Then run this command to d
 truffle exec scripts/whitelistUsers.js --network mainnet
 ```
 
+To initialize pool providing the first liquidity. Please set correct EROWAN and USDT addresses in .env beforehand
+
+```
+truffle exec scripts/swapInitialAmountIn.js --network mainnet
+```
+
 You can use any network, kovan, mainnet, rinkeby, ropsten, just make sure you have deployed to that network before you run the script.
+
+Don't forget to save ./build/contracts/*.json files in git after deployment to mainnet
