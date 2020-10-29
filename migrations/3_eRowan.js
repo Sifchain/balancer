@@ -1,3 +1,4 @@
+// Only deploy this mock token locally
 const MockRowanToken = artifacts.require("MockRowanToken");
 const { toWei } = web3.utils;
 
