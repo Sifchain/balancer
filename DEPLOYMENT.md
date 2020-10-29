@@ -6,7 +6,12 @@ First check the example in env.example, copy that example into .env and then cha
 truffle migrate --reset --network mainnet
 ```
 
-After you have deployed your contracts and want to bulk whitelist users, go to the whitelist.json file, add an array of addresses that you want to whitelist in a single transaction, try to keep this below 100 addresses per transaction so that we don't go over the gas limit. Remove the existing value from that file, that only serves as an example. Make sure all the values in the .env file is correct. Then run this command to deploy to mainnet. (You can substitute in whatever network you would like)
+After you have deployed your contracts and want to bulk whitelist users, go to the whitelist.json file, add an array of addresses that you want to whitelist in a single transaction, try to keep this below 100 addresses per transaction so that we don't go over the gas limit. Remove the existing value from that file, that only serves as an example. 
+
+## Key Point
+Add in the correct strings for the correct user's address so they can participate in the token sale. 
+
+Make sure all the values in the .env file is correct. Then run this command to deploy to mainnet. (You can substitute in whatever network you would like)
 
 ```
 truffle exec scripts/whitelistUsers.js --network mainnet
