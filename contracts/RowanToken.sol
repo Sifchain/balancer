@@ -15,4 +15,16 @@ contract RowanToken is ERC20 {
         // The person who creates this contract gets all 120,000,000 tokens
         _mint(msg.sender, totalTokenSupply);
     }
+
+    function name() public view returns (string memory) {
+        return _name;
+    }
+
+    function symbol() public view returns (string memory) {
+        return _symbol;
+    }
+
+    function decimals() public view returns (uint8) {
+        return _decimals;
+    }
 }
