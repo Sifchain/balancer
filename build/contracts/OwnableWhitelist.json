@@ -2964,9 +2964,63 @@
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "1603924643309": {
+      "events": {
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x19ef9a4877199f89440a26acb26895ec02ed86f2df1aeaa90dc18041b892f71f": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "UserAdded",
+          "type": "event"
+        },
+        "0xe9dce8c992623ce791725b21e857e33248d1f190a25b5168313420eebdaae99d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "UserRemoved",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0xC5aFE31AE505594B190AC71EA689B58139d1C354",
+      "transactionHash": "0x4b5d87163a71903c40aea59819da30be8be16a30371b4cd6605e988d1af92cf0"
+    }
+  },
   "schemaVersion": "3.3.1",
-  "updatedAt": "2020-10-28T23:38:56.093Z",
+  "updatedAt": "2020-10-29T01:14:48.255Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {
       "isOwner()": {

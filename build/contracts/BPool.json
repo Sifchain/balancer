@@ -39853,9 +39853,130 @@
     "name": "solc",
     "version": "0.5.12+commit.7709ece9.Emscripten.clang"
   },
-  "networks": {},
+  "networks": {
+    "1603924643309": {
+      "events": {
+        "0x25fce1fe01d9b241fda40b2152ddd6f4ba063fcfb3c2c81dddf84ee20d3f341f": {
+          "anonymous": true,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes4",
+              "name": "sig",
+              "type": "bytes4"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "caller",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "name": "LOG_CALL",
+          "type": "event"
+        },
+        "0xe74c91552b64c2e2e7bd255639e004e693bd3e1d01cc33e65610b86afcc1ffed": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "caller",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "tokenOut",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "tokenAmountOut",
+              "type": "uint256"
+            }
+          ],
+          "name": "LOG_EXIT",
+          "type": "event"
+        },
+        "0x63982df10efd8dfaaaa0fcc7f50b2d93b7cba26ccc48adee2873220d485dc39a": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "caller",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "tokenIn",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "tokenAmountIn",
+              "type": "uint256"
+            }
+          ],
+          "name": "LOG_JOIN",
+          "type": "event"
+        },
+        "0x908fb5ee8f16c6bc9bc3690973819f32a4d4b10188134543c88706e0e1d43378": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "caller",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "tokenIn",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "tokenOut",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "tokenAmountIn",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "tokenAmountOut",
+              "type": "uint256"
+            }
+          ],
+          "name": "LOG_SWAP",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x25AF99b922857C37282f578F428CB7f34335B379",
+      "transactionHash": "0x92f6423de5749a0053e767f933e2acdea43365cd92bec2b13ef31111eb953957"
+    }
+  },
   "schemaVersion": "3.3.1",
-  "updatedAt": "2020-10-28T23:38:56.082Z",
+  "updatedAt": "2020-10-29T01:14:48.244Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {}
   },
