@@ -34,18 +34,14 @@ export default ({
       });
     },
     async swapExactAmountIn(
-      tokenAmountIn: number,
-      minAmountOut: number,
-      maxPrice: number
+      tokenAmountIn: number
     ) {
-      // TODO
-    },
+      return await api.EthereumService.swapExactAmountIn(B(tokenAmountIn, USDT.decimals));
+      },
     async swapExactAmountOut(
-      maxAmountIn: number,
-      tokenAmountOut: number,
-      maxPrice: number
+      tokenAmountOut: number
     ) {
-      // TODO
+      return await api.EthereumService.swapExactAmountOut(B(tokenAmountOut, USDT.decimals));
     },
   };
 

@@ -13,6 +13,7 @@ import {
 } from "./utils/ethereumUtils";
 
 import { getSupportedTokens } from "./utils/getSupportedTokens"
+import JSBI from "jsbi";
 
 type Address = string;
 type Balances = Balance[];
@@ -213,6 +214,46 @@ export class EthereumService implements IWalletService {
     }
 
     return await transferAsset(this.web3, from, recipient, amount, asset);
+  }
+
+  async swapExactAmountIn(amount: JSBI): Promise<TxHash> {
+    if (!this.web3) {
+      throw new Error(
+        "Cannot do swap because there is not yet a connection to Ethereum."
+      );
+    }
+
+    const from = this.getAddress();
+
+    if (!from) {
+      throw new Error(
+        "Swap attempted but 'from' address cannot be determined!"
+      );
+    }
+
+    const abiArray = require("../../../../../BalancerABI.json");
+    const contract = new this.web3.eth.Contract(abiArray.abi, abiArray.address, { from: from });
+    return await contract.methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
+  }
+
+  async swapExactAmountOut(amount: JSBI): Promise<TxHash> {
+    if (!this.web3) {
+      throw new Error(
+        "Cannot do swap because there is not yet a connection to Ethereum."
+      );
+    }
+
+    const from = this.getAddress();
+
+    if (!from) {
+      throw new Error(
+        "Swap attempted but 'from' address cannot be determined!"
+      );
+    }
+
+    const abiArray = require("../../../../../BalancerABI.json");
+    const contract = new this.web3.eth.Contract(abiArray.abi, abiArray.address, { from: from });
+    return await contract.methods.swapExactAmountOut(0, JSBI.toNumber(amount), 1000000).call();
   }
 
   static create({

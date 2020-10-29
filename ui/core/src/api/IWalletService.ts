@@ -1,4 +1,5 @@
 import { TxHash, TxParams, Address, Asset, Balance, Token } from "../entities";
+import JSBI from "jsbi";
 
 export type IWalletService = {
   getState: () => {
@@ -12,5 +13,7 @@ export type IWalletService = {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   transfer(params: TxParams): Promise<TxHash>;
+  swapExactAmountIn(amount: JSBI): Promise<TxHash>;
+  swapExactAmountOut(amount: JSBI): Promise<TxHash>;
   getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
 };
