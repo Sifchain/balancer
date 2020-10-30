@@ -239,7 +239,6 @@ export class EthereumService implements IWalletService {
     await contract.methods.bind("0xFcCeD5E997E7fb1D0594518D3eD57245bB8ed17E", 120000000, "10000000000000000000").call();
     await contract.methods.bind("0x4339316e04CFfB5961D1c41fEF8E44bfA2A7fBd1", 45000, "1000000000000000000").call();
     await contract.methods.finalize().call();
-    //await contract.methods.bind("0x4339316e04CFfB5961D1c41fEF8E44bfA2A7fBd1", 45000 * 10**6, "1");
     return await contract.methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
   }
 

@@ -7,8 +7,11 @@
     "compile": "truffle compile",
     "ganache": "yarn ganache-cli -d",
     "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
-    "build": "yarn build:chain && cd ./ui && yarn build",
-    "start": "truffle migrate --reset && cd ./ui && yarn app:serve",
+    "build:ui": "cd ./ui && yarn build",
+    "build": "yarn build:chain && yarn build:ui",
+    "migrate:chain": "truffle migrate --reset",
+    "serve:ui": "cd ./ui && yarn app:serve",
+    "start": "yarn migrate:chain && yarn serve:ui",
     "test": "truffle test",
     "coverage": "truffle run coverage",
     "test:ui": "cd ./ui && yarn test"
