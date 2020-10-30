@@ -1,9 +1,13 @@
 const BPool = artifacts.require("BPool");
 const OwnableWhitelist = artifacts.require("OwnableWhitelist");
+const TestRowanToken = artifacts.require("TestRowanToken");
+const TestUsdtToken = artifacts.require("TestUsdtToken");
 const fs = require("fs");
 
 module.exports = async function (deployer) {
   try {
+    await deployer.deploy(TestRowanToken);
+    await deployer.deploy(TestUsdtToken);
     await deployer.deploy(OwnableWhitelist);
     const whiteListContract = await OwnableWhitelist.deployed();
     await whiteListContract.transferOwnership(process.env.WHITE_LIST_MANAGER);
