@@ -8,9 +8,9 @@ ganache-cli -d
 Running chain & UI
 1. `yarn` - Install dependencies
 2. `yarn ganache` - Run ganache-cli
-3. `yarn build` - Build chain and ui (truffle build & tsc)
 3. `yarn migrate:chain` - Run migrations and deploy contracts
-4. `yarn serve:ui` - Start the app at http://localhost:8080/
+4. `yarn build:ui` - Build UI (core & app)
+5. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
 ## Slack hook for daemon

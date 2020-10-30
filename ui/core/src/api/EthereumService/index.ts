@@ -231,15 +231,22 @@ export class EthereumService implements IWalletService {
       );
     }
 
-    const abiArray = require("../../../../../BalancerABI.json");
-    const contract = new this.web3.eth.Contract(abiArray.abi, abiArray.address, { from: from });
+    const balancerAbiArray = require("../../../../../BalancerABI.json");
+    const balancerContract = new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address, { from: from });
+
+    const rowanAbiArray = require("../../../../../TestRowanTokenABI.json");
+    //const rowanContract = new this.web3.eth.Contract(rowanAbiArray.abi, rowanAbiArray.address, { from: from });
+
+    const usdtAbiArray = require("../../../../../TestUsdtTokenABI.json");
+    //const usdtContract = new this.web3.eth.Contract(usdtAbiArray.abi, usdtAbiArray.address, { from: from });
+
     // TODO approve before binding
 
     // TODO: use separate calls for bind / finalize
-    await contract.methods.bind("0xFcCeD5E997E7fb1D0594518D3eD57245bB8ed17E", 120000000, "10000000000000000000").call();
-    await contract.methods.bind("0x4339316e04CFfB5961D1c41fEF8E44bfA2A7fBd1", 45000, "1000000000000000000").call();
-    await contract.methods.finalize().call();
-    return await contract.methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
+    await balancerContract.methods.bind(rowanAbiArray.address, 120000000, "10000000000000000000").call();
+    await balancerContract.methods.bind(usdtAbiArray.address, 45000, "1000000000000000000").call();
+    await balancerContract.methods.finalize().call();
+    return await balancerContract.methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
   }
 
   async swapExactAmountOut(amount: JSBI): Promise<TxHash> {
