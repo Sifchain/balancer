@@ -48,7 +48,15 @@
         </ActionButton>
 
         <ActionButton primary block v-if="walletConnected" @click="transfer">
-          Purchase
+          Transfer
+        </ActionButton>
+
+        <ActionButton primary block v-if="walletConnected" @click="swapExactAmountIn">
+          Swap In
+        </ActionButton>
+
+        <ActionButton primary block v-if="walletConnected" @click="swapExactAmountOut">
+          Swap Out
         </ActionButton>
       </div>
     </SifApp>
@@ -115,7 +123,6 @@
             // TODO update UI
           }
         }
-        console.log(hash);
       }
 
       async function swapExactAmountOut() {
@@ -128,7 +135,6 @@
             // TODO update UI
           }
         }
-        console.log(hash);
       }
 
       return {
