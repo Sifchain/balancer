@@ -1,9 +1,17 @@
 # How to deploy
 
-First check the example in env.example, copy that example into .env and then change the values to the network you want to use, your private keys, your address and your infura key. Then run the following command to deploy all the contracts to mainnet
+First check the example in env.example, copy that example into .env and then change the values to the network you want to use, your private keys, your address and your infura key. Then run the following command to deploy all the contracts
+
+mainnet:
 
 ```
-truffle migrate --reset --network mainnet
+truffle migrate --reset --to 2 --network mainnet
+```
+
+testnet(with test USDT token):
+
+```
+truffle migrate --reset --to 3 --network ropsten
 ```
 
 After you have deployed your contracts and want to bulk whitelist users, go to the whitelist.json file, add an array of addresses that you want to whitelist in a single transaction, try to keep this below 100 addresses per transaction so that we don't go over the gas limit. Remove the existing value from that file, that only serves as an example. 

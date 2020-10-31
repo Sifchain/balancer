@@ -2,7 +2,7 @@ const BPool = artifacts.require("BPool");
 const OwnableWhitelist = artifacts.require("OwnableWhitelist");
 const fs = require("fs");
 
-module.exports = async function (deployer) {
+module.exports = async function (deployer, networkName) {
   try {
     await deployer.deploy(OwnableWhitelist);
     const whiteListContract = await OwnableWhitelist.deployed();
@@ -18,7 +18,7 @@ module.exports = async function (deployer) {
       address: poolContract.address,
     };
     let data = JSON.stringify(obj);
-    fs.writeFileSync("BalancerABI.json", data);
+    fs.writeFileSync("BalancerABI."+networkName+".json", data);
   } catch (error) {
     console.log("Error deploying:::: ", error);
   }
