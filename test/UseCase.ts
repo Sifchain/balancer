@@ -83,15 +83,6 @@ contract("Our use case", (accounts) => {
       assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
     });
 
-    xit("Should not be able to mint if mint amount is 0", async () => {
-      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
-      await truffleAssert.reverts(
-        usdt.mint(user, toWei("0", "mwei"), { from: minter }),
-        "ERR_LOW_MINT_AMOUNT"
-      );
-      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
-    });
-
     it("Should be able to mint if the minter has the Minter role", async () => {
       assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
       await usdt.mint(user, toWei("500", "mwei"), { from: minter });
@@ -100,29 +91,11 @@ contract("Our use case", (accounts) => {
   });
 
   describe("Burning Tokens", () => {
-    xit("Should not be able to burn if the burner is not admin", async () => {
+    it("Should not be able to burn if account balance is insufficient", async () => {
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
       await truffleAssert.reverts(
-        usdt.burn(user, toWei("100", "mwei"), { from: user }),
-        "Ownable: caller is not the owner"
-      );
-      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
-    });
-
-    xit("Should not be able to burn if burn amount is 0", async () => {
-      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
-      await truffleAssert.reverts(
-        usdt.burn(user, toWei("0", "mwei"), { from: minter }),
-        "ERR_LOW_BURN_AMOUNT"
-      );
-      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
-    });
-
-    xit("Should not be able to burn if account balance is insufficient", async () => {
-      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
-      await truffleAssert.reverts(
-        usdt.burn(user, toWei("1001", "mwei"), { from: minter }),
-        "ERR_INSUFFICIENT_BAL"
+        usdt.burn(toWei("1001", "mwei"), { from: user }),
+        "SafeMath: subtraction overflow"
       );
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
     });

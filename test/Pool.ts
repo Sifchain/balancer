@@ -20,6 +20,7 @@ const hashedKey = helpers.hash(unhashedKey)
 
 contract("Full pool test", (accounts) => {
   const admin = process.env.WHITE_LIST_MANAGER;
+  const controller = process.env.CONTROLLER;
   const user1 = accounts[1];
   const user2 = accounts[2];
   let WETH;
@@ -39,11 +40,6 @@ contract("Full pool test", (accounts) => {
     whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
     const minter = accounts[0];
-    const controller = accounts[0];
-    // TODO: This step is needed just to adjust all existing tests which don't call {from: controller} explicitly
-    // Should be removed and replaced by const controller = process.env.CONTROLLER
-    await pool.setController(accounts[0], { from: process.env.CONTROLLER });
-
     POOL = pool.address;
 
     weth = await MockRowanToken.new("Wrapped Ether", "WETH", 18);
@@ -93,39 +89,39 @@ contract("Full pool test", (accounts) => {
 
     it("Fails binding tokens that are not approved", async () => {
       await truffleAssert.reverts(
-        pool.bind(MKR, toWei("1"), toWei("2.5")),
+        pool.bind(MKR, toWei("1"), toWei("2.5"), { from: controller }),
         "SafeMath: subtraction overflow"
       );
     });
 
     it("Admin approves tokens", async () => {
-      await weth.approve(POOL, MAX);
-      await mkr.approve(POOL, MAX);
-      await dai.approve(POOL, MAX);
-      await xxx.approve(POOL, MAX);
+      await weth.approve(POOL, MAX, { from: controller });
+      await mkr.approve(POOL, MAX, { from: controller });
+      await dai.approve(POOL, MAX, { from: controller });
+      await xxx.approve(POOL, MAX, { from: controller });
     });
 
     it("Fails binding weights and balances outside MIX MAX", async () => {
       await truffleAssert.reverts(
-        pool.bind(WETH, toWei("51"), toWei("1")),
+        pool.bind(WETH, toWei("51"), toWei("1"), { from: controller }),
         "SafeMath: subtraction overflow"
       );
       await truffleAssert.reverts(
-        pool.bind(MKR, toWei("0.0000000000001"), toWei("1")),
+        pool.bind(MKR, toWei("0.0000000000001"), toWei("1"), { from: controller }),
         "ERR_MIN_BALANCE"
       );
       await truffleAssert.reverts(
-        pool.bind(DAI, toWei("1000"), toWei("0.99")),
+        pool.bind(DAI, toWei("1000"), toWei("0.99"), { from: controller }),
         "ERR_MIN_WEIGHT"
       );
       await truffleAssert.reverts(
-        pool.bind(WETH, toWei("5"), toWei("50.01")),
+        pool.bind(WETH, toWei("5"), toWei("50.01"), { from: controller }),
         "ERR_MAX_WEIGHT"
       );
     });
 
     it("Fails finalizing pool without 2 tokens", async () => {
-      await truffleAssert.reverts(pool.finalize(), "ERR_MIN_TOKENS");
+      await truffleAssert.reverts(pool.finalize({ from: controller }), "ERR_MIN_TOKENS");
     });
 
     it('Fails gulp on unbound token', async () => {
@@ -134,9 +130,9 @@ contract("Full pool test", (accounts) => {
 
     it("Admin binds tokens", async () => {
       // Equal weights WETH, MKR, DAI
-      await pool.bind(WETH, toWei("50"), toWei("5"));
-      await pool.bind(MKR, toWei("20"), toWei("5"));
-      await pool.bind(DAI, toWei("10000"), toWei("5"));
+      await pool.bind(WETH, toWei("50"), toWei("5"), { from: controller });
+      await pool.bind(MKR, toWei("20"), toWei("5"), { from: controller });
+      await pool.bind(DAI, toWei("10000"), toWei("5"), { from: controller });
       const numTokens = await pool.getNumTokens();
       assert.equal(3, numTokens);
       const totalDernomWeight = await pool.getTotalDenormalizedWeight();
@@ -157,18 +153,18 @@ contract("Full pool test", (accounts) => {
 
     it("Fails binding above MAX TOTAL WEIGHT", async () => {
       await truffleAssert.reverts(
-        pool.bind(XXX, toWei("1"), toWei("40")),
+        pool.bind(XXX, toWei("1"), toWei("40"), { from: controller }),
         "ERR_MAX_TOTAL_WEIGHT"
       );
     });
 
     it("Fails rebinding token or unbinding random token", async () => {
       await truffleAssert.reverts(
-        pool.bind(WETH, toWei("0"), toWei("1")),
+        pool.bind(WETH, toWei("0"), toWei("1"), { from: controller }),
         "ERR_IS_BOUND"
       );
       await truffleAssert.reverts(
-        pool.rebind(XXX, toWei("0"), toWei("1")),
+        pool.rebind(XXX, toWei("0"), toWei("1"), { from: controller }),
         "ERR_NOT_BOUND"
       );
     });
@@ -230,7 +226,7 @@ contract("Full pool test", (accounts) => {
 
     it("Fails calling any join exit swap before finalizing", async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("2.5")),
+        pool.joinswapExternAmountIn(toWei("2.5"), { from: controller }),
         "ERR_NOT_FINALIZED"
       );
     });
@@ -255,22 +251,22 @@ contract("Full pool test", (accounts) => {
     });
 
     it("Admin finalizes pool", async () => {
-      await pool.finalize();
+      await pool.finalize({ from: controller });
       const finalized = pool.isFinalized();
       assert(finalized);
     });
 
     it("Fails finalizing pool after finalized", async () => {
-      await truffleAssert.reverts(pool.finalize(), "ERR_IS_FINALIZED");
+      await truffleAssert.reverts(pool.finalize({ from: controller }), "ERR_IS_FINALIZED");
     });
 
     it("Fails binding new token after finalized", async () => {
       await truffleAssert.reverts(
-        pool.bind(XXX, toWei("10"), toWei("5")),
+        pool.bind(XXX, toWei("10"), toWei("5"), { from: controller }),
         "ERR_IS_FINALIZED"
       );
       await truffleAssert.reverts(
-        pool.rebind(DAI, toWei("10"), toWei("5")),
+        pool.rebind(DAI, toWei("10"), toWei("5"), { from: controller }),
         "ERR_IS_FINALIZED"
       );
     });
@@ -465,7 +461,7 @@ contract("Full pool test", (accounts) => {
 
     it("Fails exit pool with limits", async () => {
       await truffleAssert.reverts(
-        pool.exitPool([toWei("30"), toWei("30"), toWei("30")]),
+        pool.exitPool([toWei("30"), toWei("30"), toWei("30")], { from: controller }),
         "ERR_LIMIT_OUT"
       );
     });
@@ -493,7 +489,7 @@ contract("Full pool test", (accounts) => {
         "ERR_NOT_BOUND"
       );
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("2.5")),
+        pool.joinswapExternAmountIn(toWei("2.5"), { from: controller }),
         "ERR_NOT_BOUND"
       );
     });
