@@ -4,6 +4,14 @@
 export PATH=$(npm bin):$PATH
 cat env.example >> .env
 ganache-cli -d
+
+Running chain & UI
+0. `cat env.example >> .env` - Set env vars
+1. `yarn` - Install dependencies
+2. `yarn ganache` - Run ganache-cli
+3. `yarn migrate:chain` - Run migrations and deploy contracts
+4. `yarn build:ui` - Build UI (core & app)
+5. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
 ## Slack hook for daemon

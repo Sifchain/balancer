@@ -18,7 +18,8 @@ module.exports = async function (deployer, networkName) {
       address: poolContract.address,
     };
     let data = JSON.stringify(obj);
-    fs.writeFileSync("BalancerABI."+networkName+".json", data);
+    fs.writeFileSync(`BalancerABI.${networkName}.json`, data);
+    fs.writeFileSync(`BalancerABI.json`, data);
   } catch (error) {
     console.log("Error deploying:::: ", error);
   }
