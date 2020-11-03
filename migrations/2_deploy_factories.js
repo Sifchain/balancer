@@ -4,7 +4,7 @@ const TestRowanToken = artifacts.require("TestRowanToken");
 const TestUsdtToken = artifacts.require("TestUsdtToken");
 const fs = require("fs");
 
-module.exports = async function (deployer) {
+module.exports = async function (deployer, networkName) {
   try {
     await deployer.deploy(TestRowanToken);
     const rowanContract = await TestRowanToken.deployed();
@@ -38,7 +38,7 @@ module.exports = async function (deployer) {
       address: poolContract.address,
     };
     let data = JSON.stringify(obj);
-    fs.writeFileSync("BalancerABI.json", data);
+    fs.writeFileSync("BalancerABI."+networkName+".json", data);
   } catch (error) {
     console.log("Error deploying:::: ", error);
   }

@@ -19,7 +19,11 @@ const subsequent_hour_buyers_number = 0;
 const subsequent_trade_amount = 10000;
 const fileName = `first.${first_hour_buyers_number}.${first_trade_amount}.subseq.${subsequent_hour_buyers_number}.${subsequent_trade_amount}:`
 
-async function swapIteration(pool, ROWAN, USDT, user, amount) {
+const helpers = require("../helpers/whitelistHelper");
+const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
+const hashedKey = helpers.hash(unhashedKey)
+
+async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
   const usdtPoolBalance = await pool.getBalance(USDT);
   const rowanPoolBalance = await pool.getBalance(ROWAN);
   const expected = calcOutGivenIn(
@@ -35,6 +39,7 @@ async function swapIteration(pool, ROWAN, USDT, user, amount) {
     toWei(amount.toString(), 'mwei'),
     0,
     MAX,
+    unhashedkey,
     { from: user },
   );
 
@@ -88,7 +93,7 @@ contract('Our use case', (accounts) => {
 
     await pool.finalize({ from: controller });
 
-    await whitelist.whitelistUser(user, { from: white_list_manager });
+    await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
     await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
 
   });
@@ -103,7 +108,7 @@ contract('Our use case', (accounts) => {
       fs.writeFileSync(fileName, "");
 
       for (let i = 0; i < first_hour_buyers_number; i++) {
-        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount);
+        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount, unhashedKey);
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
