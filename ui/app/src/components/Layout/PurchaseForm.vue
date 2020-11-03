@@ -47,10 +47,6 @@
           Connect Wallet
         </ActionButton>
 
-        <ActionButton primary block v-if="walletConnected" @click="initPool">
-          Init Pool
-        </ActionButton>
-
         <ActionButton primary block v-if="walletConnected" @click="swapExactAmountIn">
           Swap In
         </ActionButton>
@@ -102,10 +98,6 @@
         return inputAmountRWN.value * priceRwn.value;
       }
 
-      async function initPool() {
-        await actions.initPool();
-      }
-
       async function swapExactAmountIn() {
         if (store.wallet.eth.balances.length > 0) {
           if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
@@ -134,7 +126,6 @@
         store,
         handleDisconnectClicked,
         handleConnectClicked,
-        initPool,
         swapExactAmountIn,
         swapExactAmountOut,
         amountUSDT,

@@ -11,7 +11,7 @@ import {Contract} from 'web3-eth-contract';
 // @ts-ignore
 import { AbiItem } from "web3-utils";
 import { USDT } from "../../../constants";
-import { Address, Asset, Balance, Token } from "../../../entities";
+import { ChainId, createToken, Address, Asset, Balance, Token } from "../../../entities";
 
 const erc20TokenAbi: AbiItem[] = [
   // balanceOf
@@ -171,4 +171,20 @@ export async function transferEther(
 export async function getEthereumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
   return Balance.create(USDT, ethBalance);
+}
+
+function getRowanAbi() {
+  return require("../../../../../../MockRowanTokenABI.json");
+}
+
+function getUsdtAbi() {
+  return require("../../../../../../MockUsdtTokenABI.json");
+}
+
+export async function getSupportedTokens(): Promise<Token[]> {
+  // Return the tokens parsed as assets
+  return [
+    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, getRowanAbi().address),
+    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, getUsdtAbi().address),
+  ];
 }

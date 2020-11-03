@@ -21,9 +21,6 @@ export default ({
       await api.EthereumService.connect();
       await actions.updateBalances();
     },
-    async initPool() {
-      return await api.EthereumService.initPool();
-    },
     async swapExactAmountIn(
       tokenAmountIn: number
     ) {
