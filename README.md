@@ -6,6 +6,7 @@ cat env.example >> .env
 ganache-cli -d
 
 Running chain & UI
+0. `cat env.example >> .env` - Set env vars
 1. `yarn` - Install dependencies
 2. `yarn ganache` - Run ganache-cli
 3. `yarn migrate:chain` - Run migrations and deploy contracts
