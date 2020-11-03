@@ -1,5 +1,5 @@
 <template>
-  <button 
+  <button
     class="btn"
     :class="classes"
   >
@@ -37,7 +37,7 @@ export default {
   data() {
     return {
       classes: {
-        'btn--disabled': this.disabled, 
+        'btn--disabled': this.disabled,
         'btn--block': this.block,
         'btn--medium': this.medium,
         'btn--primary': this.primary,
@@ -114,12 +114,12 @@ export default {
     }
   }
 
-  // sizes: 
+  // sizes:
   // block spans the full width of parent
   &--block {
     display: block;
     width: 100%;
-    margin: 0;
+    margin: 4px;
   }
 
   &--medium {

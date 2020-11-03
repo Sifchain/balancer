@@ -1,9 +1,9 @@
 <template>
-   <div class="currency-form text--small">
-      <div class="currency-form__input">
+   <div class="token-form text--small">
+      <div class="token-form__input">
         <NumericInput :amount="amount" :label="label" />
       </div>
-      <div class="currency-form__balance">
+      <div class="token-form__balance">
         <span>{{ token }}</span>
       </div>
     </div>
@@ -37,7 +37,7 @@ export default {
 </script>
 
 <style lang="scss">
-.currency-form {
+.token-form {
   display: flex;
 
   &__input,

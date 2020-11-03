@@ -3,21 +3,21 @@
     <SifApp>
       <div>
         <InputGroup>
-          <div class="currency-form text--small">
-            <div class="currency-form__input">
+          <div class="token-form text--small">
+            <div class="token-form__input">
               <div class="sif-input__wrapper">
                 <label class="sif-input__label">Contribution amount</label>
                 <input v-model="inputAmountUSDT" class="sif-input" type="number">
               </div>
             </div>
-            <div class="currency-form__balance">
+            <div class="token-form__balance">
               <span>USDT</span>
             </div>
           </div>
         </InputGroup>
 
         <InputGroup>
-          <CurrencyForm :amount="inputAmountRWN" label="Minimum received" token="RWN" />
+          <TokenForm :amount="inputAmountRWN" label="Minimum received" token="RWN" />
         </InputGroup>
 
         <InputGroup v-if="walletConnected">
@@ -26,7 +26,7 @@
               Price: {{ priceRwn }} USDT
             </p>
             <p class="text--small" align="left">
-              Minimum received: {{ amountRWN }}
+              Minimum received: {{ amountRWN }} RWN
             </p>
           </div>
         </InputGroup>
@@ -39,16 +39,16 @@
           {{ store.wallet.eth.address }}
         </p>
 
-        <button v-if="walletConnected" @click="handleDisconnectClicked">
-          Disconnect
-        </button>
+        <InputGroup v-if="walletConnected">
+          <ConfirmationCode label="Confirmation code" />
+        </InputGroup>
 
         <ActionButton primary block v-if="!walletConnected" @click="handleConnectClicked">
           Connect Wallet
         </ActionButton>
 
-        <ActionButton primary block v-if="walletConnected" @click="transfer">
-          Transfer
+        <ActionButton primary block v-if="walletConnected" @click="initPool">
+          Init Pool
         </ActionButton>
 
         <ActionButton primary block v-if="walletConnected" @click="swapExactAmountIn">
@@ -68,9 +68,10 @@
   import ActionButton from '../Elements/ActionButton.vue';
   import InputGroup from '../Elements/InputGroup.vue';
   import SifApp from '../Blocks/SifApp.vue';
-  import CurrencyForm from '../Blocks/CurrencyForm.vue';
+  import TokenForm from '../Blocks/TokenForm.vue';
   import { useCore } from "@/hooks/useCore";
   import { computed, ref } from "@vue/reactivity";
+  import ConfirmationCode from "@/components/Blocks/ConfirmationCode";
 
   export default {
     name: "PurchaseForm",
@@ -101,16 +102,8 @@
         return inputAmountRWN.value * priceRwn.value;
       }
 
-      async function transfer() {
-        if (store.wallet.eth.balances.length > 0) {
-          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
-            const hash = await actions.transferEthWallet(inputAmountUSDT.value, "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e");
-            console.log(hash);
-          } else {
-            // Low balance
-            // TODO update UI
-          }
-        }
+      async function initPool() {
+        await actions.initPool();
       }
 
       async function swapExactAmountIn() {
@@ -141,7 +134,7 @@
         store,
         handleDisconnectClicked,
         handleConnectClicked,
-        transfer,
+        initPool,
         swapExactAmountIn,
         swapExactAmountOut,
         amountUSDT,
@@ -155,10 +148,11 @@
       };
     },
     components: {
+      ConfirmationCode,
       ActionButton,
       SifApp,
       InputGroup,
-      CurrencyForm,
+      TokenForm,
     }
   }
 </script>

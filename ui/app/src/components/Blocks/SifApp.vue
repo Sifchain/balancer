@@ -12,10 +12,6 @@
       <div class="sif-app__body">
         <slot></slot>
       </div>
-
-<!--      <div class="sif-app__footer">-->
-<!--        <slot name="footer"></slot>-->
-<!--      </div>-->
     </div> <!-- main app card -->
 
     <div class="sif-app__after">
