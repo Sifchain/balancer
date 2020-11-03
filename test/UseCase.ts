@@ -95,7 +95,7 @@ contract("Our use case", (accounts) => {
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
       await truffleAssert.reverts(
         usdt.burn(toWei("1001", "mwei"), { from: user }),
-        "SafeMath: subtraction overflow"
+        "ERC20: burn amount exceeds balance."
       );
       assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
     });
