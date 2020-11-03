@@ -2,13 +2,12 @@ import { reactive } from "@vue/reactivity";
 import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
-import { TxHash, TxParams, Asset, Balance, Token } from "../../entities";
+import { TxHash, Asset, Balance, Token } from "../../entities";
 import {
   getEthereumBalance,
   getTokenBalance,
   isEventEmittingProvider,
   isToken,
-  transferAsset,
   isValidNetwork,
 } from "./utils/ethereumUtils";
 
@@ -197,76 +196,52 @@ export class EthereumService implements IWalletService {
     return balances;
   }
 
-  async transfer(params: TxParams): Promise<TxHash> {
+  getBalancerContract() {
     if (!this.web3) {
       throw new Error(
-        "Cannot do transfer because there is not yet a connection to Ethereum."
+        "Cannot do swap because there is not yet a connection to Ethereum."
       );
     }
 
-    const { amount, recipient, asset } = params;
     const from = this.getAddress();
-
     if (!from) {
       throw new Error(
-        "Transaction attempted but 'from' address cannot be determined!"
+        "Swap attempted but 'from' address cannot be determined!"
       );
     }
+    const balancerAbiArray = require("../../../../../BalancerABI.json");
+    return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address, { from: from });
+  }
 
-    return await transferAsset(this.web3, from, recipient, amount, asset);
+  getRowanAbi() {
+    return require("../../../../../TestRowanTokenABI.json");
+  }
+
+  getUsdtAbi() {
+    return require("../../../../../TestUsdtTokenABI.json");
+  }
+
+  async bindToken(address: string, amount: number, weight: number) {
+    await this.getBalancerContract().methods.bind(address, amount, (weight * 10**18).toString()).call();
+  }
+
+  async finalizePool() {
+    await this.getBalancerContract().methods.finalize().call();
+  }
+
+  async initPool() {
+    // TODO: approve
+    this.bindToken(this.getRowanAbi().address, 120000000, 10);
+    this.bindToken(this.getUsdtAbi().address, 45000, 1);
+    this.finalizePool()
   }
 
   async swapExactAmountIn(amount: JSBI): Promise<TxHash> {
-    if (!this.web3) {
-      throw new Error(
-        "Cannot do swap because there is not yet a connection to Ethereum."
-      );
-    }
-
-    const from = this.getAddress();
-
-    if (!from) {
-      throw new Error(
-        "Swap attempted but 'from' address cannot be determined!"
-      );
-    }
-
-    const balancerAbiArray = require("../../../../../BalancerABI.json");
-    const balancerContract = new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address, { from: from });
-
-    const rowanAbiArray = require("../../../../../TestRowanTokenABI.json");
-    //const rowanContract = new this.web3.eth.Contract(rowanAbiArray.abi, rowanAbiArray.address, { from: from });
-
-    const usdtAbiArray = require("../../../../../TestUsdtTokenABI.json");
-    //const usdtContract = new this.web3.eth.Contract(usdtAbiArray.abi, usdtAbiArray.address, { from: from });
-
-    // TODO approve before binding
-
-    // TODO: use separate calls for bind / finalize
-    await balancerContract.methods.bind(rowanAbiArray.address, 120000000, "10000000000000000000").call();
-    await balancerContract.methods.bind(usdtAbiArray.address, 45000, "1000000000000000000").call();
-    await balancerContract.methods.finalize().call();
-    return await balancerContract.methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
+    return await this.getBalancerContract().methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000).call();
   }
 
   async swapExactAmountOut(amount: JSBI): Promise<TxHash> {
-    if (!this.web3) {
-      throw new Error(
-        "Cannot do swap because there is not yet a connection to Ethereum."
-      );
-    }
-
-    const from = this.getAddress();
-
-    if (!from) {
-      throw new Error(
-        "Swap attempted but 'from' address cannot be determined!"
-      );
-    }
-
-    const abiArray = require("../../../../../BalancerABI.json");
-    const contract = new this.web3.eth.Contract(abiArray.abi, abiArray.address, { from: from });
-    return await contract.methods.swapExactAmountOut(0, JSBI.toNumber(amount), 1000000).call();
+    return await this.getBalancerContract().methods.swapExactAmountOut(0, JSBI.toNumber(amount), 1000000).call();
   }
 
   static create({
