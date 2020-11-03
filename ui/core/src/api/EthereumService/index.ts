@@ -214,11 +214,11 @@ export class EthereumService implements IWalletService {
   }
 
   getRowanAbi() {
-    return require("../../../../../TestRowanTokenABI.json");
+    return require("../../../../../MockRowanTokenABI.json");
   }
 
   getUsdtAbi() {
-    return require("../../../../../TestUsdtTokenABI.json");
+    return require("../../../../../MockUsdtTokenABI.json");
   }
 
   async bindToken(address: string, amount: number, weight: number) {
