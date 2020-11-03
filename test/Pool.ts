@@ -90,7 +90,7 @@ contract("Full pool test", (accounts) => {
     it("Fails binding tokens that are not approved", async () => {
       await truffleAssert.reverts(
         pool.bind(MKR, toWei("1"), toWei("2.5"), { from: controller }),
-        "ERC20: transfer amount exceeds allowance."
+        "SafeMath: subtraction overflow"
       );
     });
 
@@ -104,7 +104,7 @@ contract("Full pool test", (accounts) => {
     it("Fails binding weights and balances outside MIX MAX", async () => {
       await truffleAssert.reverts(
         pool.bind(WETH, toWei("51"), toWei("1"), { from: controller }),
-        "ERC20: transfer amount exceeds balance."
+        "SafeMath: subtraction overflow"
       );
       await truffleAssert.reverts(
         pool.bind(MKR, toWei("0.0000000000001"), toWei("1"), { from: controller }),
