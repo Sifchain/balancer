@@ -125,6 +125,12 @@ export class EthereumService implements IWalletService {
 
       await getSupportedTokens();
 
+      /*
+      TODO:
+      const accounts = await this.web3.eth.getAccounts();
+      await this.getRowanContract().methods.approve(<pool address>, MAX).send({from: accounts[0]});
+      */
+
       await this.updateAccounts();
 
       [this.state.address] = this.state.accounts;
