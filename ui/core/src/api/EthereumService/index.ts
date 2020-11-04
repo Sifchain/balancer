@@ -3,6 +3,7 @@ import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
 import { TxHash, Asset, Balance, Token } from "../../entities";
+import JSBI from "jsbi";
 import {
   getEthereumBalance,
   getTokenBalance,
@@ -12,15 +13,13 @@ import {
   getSupportedTokens
 } from "./utils/ethereumUtils";
 
-const MAX = Web3.utils.toTwosComplement(-1);
-//const helpers = require("../helpers/whitelistHelper");
-const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
-//const hashedKey = helpers.hash(unhashedKey)
-
-import JSBI from "jsbi";
-
 type Address = string;
 type Balances = Balance[];
+
+const MAX = Web3.utils.toTwosComplement(-1);
+//const unhashedKey = "TooFast-Secure-Key--Random34&*(#*$&R#*O(I($";
+const unhashedKey = "SecretString2";
+const hashedKey = "0xc175ed99c4057b2c8ff2bb95576411f681a351686896be6112e7065daa7f4f91";
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -56,12 +55,19 @@ export function handleConnectToMetaMaskError(err: any) {
   }
 }
 
+const initState = {
+  connected: false,
+  accounts: [],
+  balances: [],
+  address: "",
+  log: "unset",
+};
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private networkType: string | null = null;
   private blockSubscription: any;
   private logsSubscription: any;
-
   private provider: provider | undefined;
 
   // This is shared reactive state
@@ -71,15 +77,11 @@ export class EthereumService implements IWalletService {
     accounts: Address[];
     balances: Balance[];
     log: string;
-  } = reactive({
-    connected: false,
-    accounts: [],
-    balances: [],
-    address: "",
-    log: "unset",
-  });
+  };
 
   constructor(getWeb3Provider: () => Promise<provider>) {
+    this.state = reactive({ ...initState });
+
     getWeb3Provider().then((provider) => {
       if (isEventEmittingProvider(provider)) {
         provider.on("connect", () => {
@@ -97,9 +99,18 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  private async updateAccounts() {
-    if (!this.web3) return;
-    this.state.accounts = (await this.web3?.eth.getAccounts()) ?? [];
+  private async updateData() {
+    if (!this.web3) {
+      this.state.connected = false;
+      this.state.accounts = [];
+      this.state.address = "";
+      this.state.balances = [];
+      return;
+    }
+    this.state.connected = !!this.web3;
+    this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
+    [this.state.address] = this.state.accounts;
+    this.state.balances = await this.getBalance();
   }
 
   getAddress(): Address {
@@ -125,15 +136,8 @@ export class EthereumService implements IWalletService {
 
       await getSupportedTokens();
 
-      /*
-      TODO:
-      const accounts = await this.web3.eth.getAccounts();
-      await this.getRowanContract().methods.approve(<pool address>, MAX).send({from: accounts[0]});
-      */
-
-      await this.updateAccounts();
-
-      [this.state.address] = this.state.accounts;
+      // const accounts = await this.web3.eth.getAccounts();
+      // await this.getRowanContract().methods.approve("0xC89Ce4735882C9F0f0FE26686c53074E09B0D550", MAX).send({from: accounts[0]});
 
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
@@ -142,9 +146,9 @@ export class EthereumService implements IWalletService {
           await this.provider.request({ method: "eth_requestAccounts" });
         }
       }
-      this.state.connected = true;
 
       this.addWeb3Subscription();
+      await this.updateData();
     } catch (err) {
       handleConnectToMetaMaskError(err);
       this.web3 = null;
@@ -174,8 +178,21 @@ export class EthereumService implements IWalletService {
 
   async disconnect() {
     this.removeWeb3Subscription();
-    this.state.connected = false;
     this.web3 = null;
+    await this.updateData();
+
+    if (isMetaMaskProvider(this.provider)) {
+      if (this.provider.request) {
+        await this.provider.request({
+          method: "wallet_requestPermissions",
+          params: [
+            {
+              eth_accounts: {}
+            }
+          ]
+        });
+      }
+    }
   }
 
   async getBalance(
@@ -219,13 +236,13 @@ export class EthereumService implements IWalletService {
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
-  async swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash> {
-    let ret = await this.getBalancerContract().methods.swapExactAmountIn(amount.toString(10), minAmountOut.toString(10), MAX, unhashedKey).call();
+  async swapExactAmountIn(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+    let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call();
     return ret.tokenAmountOut;
   }
 
   async swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
-    let ret =  await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(10), tokenAmountOut.toString(10), MAX, unhashedKey).call();
+    let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call();
     return ret.tokenAmountIn;
   }
 
