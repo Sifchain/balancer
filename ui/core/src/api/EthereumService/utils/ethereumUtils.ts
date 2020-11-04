@@ -173,18 +173,11 @@ export async function getEthereumBalance(web3: Web3, address: Address) {
   return Balance.create(USDT, ethBalance);
 }
 
-function getRowanAbi() {
-  return require("../../../../../../MockRowanTokenABI.json");
-}
-
-function getUsdtAbi() {
-  return require("../../../../../../MockUsdtTokenABI.json");
-}
-
 export async function getSupportedTokens(): Promise<Token[]> {
   // Return the tokens parsed as assets
+  // TODO: to import .env from the root folder (dotenv or from manual parsing anyhow)
   return [
-    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, getRowanAbi().address),
-    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, getUsdtAbi().address),
+    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, process.env.EROWAN),
+    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, process.env.USDT),
   ];
 }

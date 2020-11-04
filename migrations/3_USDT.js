@@ -13,5 +13,4 @@ module.exports = async function (deployer) {
     address: usdtContract.address,
   };
   let usdtData = JSON.stringify(usdt);
-  fs.writeFileSync("MockUsdtTokenABI.json", usdtData);
 };

@@ -14,5 +14,4 @@ module.exports = async function (deployer) {
     address: eRowanContract.address,
   };
   let rowanData = JSON.stringify(rowan);
-  fs.writeFileSync("MockRowanTokenABI.json", rowanData);
 };
