@@ -7,7 +7,6 @@ export default ({
   api,
   store,
 }: ActionContext<"EthereumService", "wallet" | "asset">) => {
-
   const ethereumState = api.EthereumService.getState();
 
   const actions = {
@@ -19,7 +18,6 @@ export default ({
     },
     async connectToWallet() {
       await api.EthereumService.connect();
-      await actions.updateBalances();
     },
     async swapExactAmountIn(
       tokenAmountIn: number,
@@ -36,23 +34,20 @@ export default ({
   };
 
   effect(async () => {
-    store.wallet.eth.isConnected = api.EthereumService.getState().connected;
-    await actions.updateBalances();
-  });
-
-  effect(async () => {
-    api.EthereumService.isConnected();
-    await actions.updateBalances();
+    store.wallet.eth.isConnected = ethereumState.connected;
   });
 
   effect(async () => {
     store.wallet.eth.address = ethereumState.address;
-    await actions.updateBalances();
   });
 
   effect(async () => {
-    api.EthereumService.getState().log;
-    await actions.updateBalances();
+    store.wallet.eth.balances = ethereumState.balances;
+  });
+
+  effect(async () => {
+    ethereumState.log;
+    await api.EthereumService.getBalance();
   });
 
   return actions;
