@@ -91,6 +91,9 @@
       }
 
       function getRowanEstimate() {
+        /* TODO:
+        return await actions.swapExactAmountIn(<real input>, 0xffffffffffffffffffffffffffffffff);
+        */
         return inputAmountUSDT.value / priceRwn.value;
       }
 
@@ -99,6 +102,9 @@
       }
 
       async function swapExactAmountIn() {
+        // TODO: to take real input USDT from user form:
+        const hash = await actions.swapExactAmountIn(100, getRowanEstimate() * 0.95);
+        /* TODO: to fix.
         if (store.wallet.eth.balances.length > 0) {
           if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
             const hash = await actions.swapExactAmountIn(amountUSDT.value);
@@ -108,6 +114,7 @@
             // TODO update UI
           }
         }
+        */
       }
 
       async function swapExactAmountOut() {

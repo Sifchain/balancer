@@ -12,7 +12,7 @@ export type IWalletService = {
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  swapExactAmountIn(amount: JSBI): Promise<TxHash>;
-  swapExactAmountOut(amount: JSBI): Promise<TxHash>;
+  swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash>;
+  swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash>;
   getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
 };

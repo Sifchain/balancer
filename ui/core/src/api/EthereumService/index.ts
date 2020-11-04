@@ -12,6 +12,7 @@ import {
   getSupportedTokens
 } from "./utils/ethereumUtils";
 
+const MAX = Web3.utils.toTwosComplement(-1);
 //const helpers = require("../helpers/whitelistHelper");
 const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
 //const hashedKey = helpers.hash(unhashedKey)
@@ -57,6 +58,7 @@ export function handleConnectToMetaMaskError(err: any) {
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
+  private networkType: string | null = null;
   private blockSubscription: any;
   private logsSubscription: any;
 
@@ -114,14 +116,20 @@ export class EthereumService implements IWalletService {
         throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
-      const networkType = await this.web3.eth.net.getNetworkType();
+      this.networkType = await this.web3.eth.net.getNetworkType();
 
-      if (!isValidNetwork(networkType)) {
+      if (!isValidNetwork(this.networkType)) {
         throw new Error("Invalid network.");
         // TODO: show error popup
       }
 
       await getSupportedTokens();
+
+      /*
+      TODO:
+      const accounts = await this.web3.eth.getAccounts();
+      await this.getRowanContract().methods.approve(<pool address>, MAX).send({from: accounts[0]});
+      */
 
       await this.updateAccounts();
 
@@ -206,16 +214,19 @@ export class EthereumService implements IWalletService {
         "Cannot do swap because there is not yet a connection to Ethereum."
       );
     }
-    const balancerAbiArray = require("../../../../../BalancerABI.json");
+    const networkType = this.networkType == "private" ? "development" : this.networkType;
+    const balancerAbiArray = require("../../../../../BalancerABI."+networkType+".json");
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
-  async swapExactAmountIn(amount: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000, unhashedKey).call();
+  async swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+    let ret = await this.getBalancerContract().methods.swapExactAmountIn(amount.toString(10), minAmountOut.toString(10), MAX, unhashedKey).call();
+    return ret.tokenAmountOut;
   }
 
-  async swapExactAmountOut(amount: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountOut(0, JSBI.toNumber(amount), 1000000, unhashedKey).call();
+  async swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
+    let ret =  await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(10), tokenAmountOut.toString(10), MAX, unhashedKey).call();
+    return ret.tokenAmountIn;
   }
 
   static create({

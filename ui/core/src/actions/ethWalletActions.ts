@@ -1,7 +1,7 @@
 import {effect} from "@vue/reactivity";
 import {ActionContext} from "..";
 import B from "../entities/utils/B";
-import { USDT } from "../constants";
+import { USDT, RWN } from "../constants";
 
 export default ({
   api,
@@ -22,14 +22,16 @@ export default ({
       await actions.updateBalances();
     },
     async swapExactAmountIn(
-      tokenAmountIn: number
+      tokenAmountIn: number,
+      minAmountOut: number
     ) {
-      return await api.EthereumService.swapExactAmountIn(B(tokenAmountIn, USDT.decimals));
+      return await api.EthereumService.swapExactAmountIn(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
       },
     async swapExactAmountOut(
+      maxAmountIn: number,
       tokenAmountOut: number
     ) {
-      return await api.EthereumService.swapExactAmountOut(B(tokenAmountOut, USDT.decimals));
+      return await api.EthereumService.swapExactAmountOut(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
     },
   };
 

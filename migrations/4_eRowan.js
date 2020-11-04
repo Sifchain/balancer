@@ -8,11 +8,4 @@ module.exports = async function (deployer) {
   const eRowanContract = await MockRowanToken.deployed();
   const controller = process.env.CONTROLLER;
   await eRowanContract.mint(controller, toWei("120000000"));
-
-  let rowan = {
-    abi: eRowanContract.abi,
-    address: eRowanContract.address,
-  };
-  let rowanData = JSON.stringify(rowan);
-  fs.writeFileSync("MockRowanTokenABI.json", rowanData);
 };

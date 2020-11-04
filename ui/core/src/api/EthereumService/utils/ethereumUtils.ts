@@ -52,6 +52,27 @@ const erc20TokenAbi: AbiItem[] = [
     ],
     type: "function",
   },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: "spender",
+        type: "address",
+      },
+      {
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "approve",
+    outputs: [
+      {
+        name: "",
+        type: "bool",
+      },
+    ],
+    type: "function",
+  }
 ];
 
 export function isValidNetwork(networkType: string): boolean {
@@ -173,18 +194,11 @@ export async function getEthereumBalance(web3: Web3, address: Address) {
   return Balance.create(USDT, ethBalance);
 }
 
-function getRowanAbi() {
-  return require("../../../../../../MockRowanTokenABI.json");
-}
-
-function getUsdtAbi() {
-  return require("../../../../../../MockUsdtTokenABI.json");
-}
-
 export async function getSupportedTokens(): Promise<Token[]> {
   // Return the tokens parsed as assets
+  // TODO: to import .env from the root folder (dotenv or from manual parsing anyhow)
   return [
-    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, getRowanAbi().address),
-    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, getUsdtAbi().address),
+    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, process.env.EROWAN),
+    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, process.env.USDT),
   ];
 }
