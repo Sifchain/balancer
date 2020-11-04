@@ -23,25 +23,25 @@
         <InputGroup v-if="walletConnected">
           <div>
             <p class="text--small" align="left">
-              Price: {{ priceRwn }} USDT
+              Price: {{ priceRwn }} USDT per RWN
             </p>
             <p class="text--small" align="left">
-              Minimum received: {{ amountRWN }} RWN
+              Slippage tolerance
             </p>
           </div>
         </InputGroup>
 
         <p v-if="!walletConnected" class="text--small">
-          No wallet connected
+          No wallet connected 🅧
         </p>
+
+        <ActionButton primary block v-if="walletConnected" @click="handleDisconnectClicked">
+          Disconnect
+        </ActionButton>
 
         <p v-if="walletConnected" class="text--small">
-          {{ store.wallet.eth.address }}
+          Connected to {{ getShortenedAddress() }} ✅
         </p>
-
-        <InputGroup v-if="walletConnected">
-          <ConfirmationCode label="Confirmation code" />
-        </InputGroup>
 
         <ActionButton primary block v-if="!walletConnected" @click="handleConnectClicked">
           Connect Wallet
@@ -54,7 +54,17 @@
         <ActionButton primary block v-if="walletConnected" @click="swapExactAmountOut">
           Swap Out
         </ActionButton>
+
+        <InputGroup v-if="walletConnected">
+          <ConfirmationCode label="Confirmation code" />
+        </InputGroup>
       </div>
+      <p v-if="!walletConnected">
+        Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
+        If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
+        Please remember to use the wallet address you provided us in your KYC information.
+        Any transactions from unapproved wallet addresses will be rejected.
+      </p>
     </SifApp>
 
   </div>
@@ -82,6 +92,10 @@
       const priceImpact = ref(0.02);
       const providerFee = ref(0.0005);
 
+      function getShortenedAddress() {
+        return store.wallet.eth.isConnected ? store.wallet.eth.address.slice(0, 8) + "..." : "";
+      }
+
       async function handleConnectClicked() {
         await actions.connectToWallet();
       }
@@ -90,43 +104,42 @@
         await actions.disconnectWallet();
       }
 
-      function getRowanEstimate() {
-        /* TODO:
-        return await actions.swapExactAmountIn(<real input>, 0xffffffffffffffffffffffffffffffff);
-        */
-        return inputAmountUSDT.value / priceRwn.value;
+      async function getRowanEstimate() {
+        return await actions.swapExactAmountIn(inputAmountUSDT.value, 10000000000000000000);
       }
 
-      function getUsdtEstimate() {
-        return inputAmountRWN.value * priceRwn.value;
+      async function getUsdtEstimate() {
+        return await actions.swapExactAmountOut(0, inputAmountRWN.value);
       }
 
       async function swapExactAmountIn() {
-        // TODO: to take real input USDT from user form:
-        const hash = await actions.swapExactAmountIn(100, getRowanEstimate() * 0.95);
-        /* TODO: to fix.
-        if (store.wallet.eth.balances.length > 0) {
-          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
-            const hash = await actions.swapExactAmountIn(amountUSDT.value);
-            console.log(hash);
-          } else {
-            // Low balance
-            // TODO update UI
-          }
-        }
-        */
+        const hash = await actions.swapExactAmountIn(inputAmountUSDT.value, await getRowanEstimate() * 0.95);
+        console.log("swapExactAmountIn hash:", hash);
+
+        // if (store.wallet.eth.balances.length > 0) {
+        //   if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
+        //     const hash = await actions.swapExactAmountIn(amountUSDT.value);
+        //     console.log(hash);
+        //   } else {
+        //     // Low balance
+        //     // TODO update UI
+        //   }
+        // }
       }
 
       async function swapExactAmountOut() {
-        if (store.wallet.eth.balances.length > 0) {
-          if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
-            const hash = await actions.swapExactAmountOut(amountUSDT.value);
-            console.log(hash);
-          } else {
-            // Low balance
-            // TODO update UI
-          }
-        }
+        const hash = await actions.swapExactAmountOut(inputAmountUSDT.value, await getUsdtEstimate() * 1.05);
+        console.log("swapExactAmountOut hash:", hash);
+
+        // if (store.wallet.eth.balances.length > 0) {
+        //   if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
+        //     const hash = await actions.swapExactAmountOut(amountUSDT.value);
+        //     console.log(hash);
+        //   } else {
+        //     // Low balance
+        //     // TODO update UI
+        //   }
+        // }
       }
 
       return {
@@ -135,6 +148,9 @@
         handleConnectClicked,
         swapExactAmountIn,
         swapExactAmountOut,
+        getShortenedAddress,
+        getRowanEstimate,
+        getUsdtEstimate,
         amountUSDT,
         amountRWN,
         inputAmountUSDT,
