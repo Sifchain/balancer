@@ -57,6 +57,7 @@ export function handleConnectToMetaMaskError(err: any) {
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
+  private networkType: string | null = null;
   private blockSubscription: any;
   private logsSubscription: any;
 
@@ -114,9 +115,9 @@ export class EthereumService implements IWalletService {
         throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
-      const networkType = await this.web3.eth.net.getNetworkType();
+      this.networkType = await this.web3.eth.net.getNetworkType();
 
-      if (!isValidNetwork(networkType)) {
+      if (!isValidNetwork(this.networkType)) {
         throw new Error("Invalid network.");
         // TODO: show error popup
       }
@@ -206,7 +207,8 @@ export class EthereumService implements IWalletService {
         "Cannot do swap because there is not yet a connection to Ethereum."
       );
     }
-    const balancerAbiArray = require("../../../../../BalancerABI.json");
+    const networkType = this.networkType == "private" ? "development" : this.networkType;
+    const balancerAbiArray = require("../../../../../BalancerABI."+networkType+".json");
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
