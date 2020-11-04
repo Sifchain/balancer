@@ -4,6 +4,7 @@
   "description": "",
   "main": "truffle-config.js",
   "scripts": {
+    "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
     "compile": "truffle compile",
     "ganache": "yarn ganache-cli -d",
     "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
