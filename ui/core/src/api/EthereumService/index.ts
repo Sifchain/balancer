@@ -12,6 +12,7 @@ import {
   getSupportedTokens
 } from "./utils/ethereumUtils";
 
+const MAX = Web3.utils.toTwosComplement(-1);
 //const helpers = require("../helpers/whitelistHelper");
 const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
 //const hashedKey = helpers.hash(unhashedKey)
@@ -212,12 +213,14 @@ export class EthereumService implements IWalletService {
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
-  async swapExactAmountIn(amount: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountIn(JSBI.toNumber(amount), 0, 1000000, unhashedKey).call();
+  async swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+    let ret = await this.getBalancerContract().methods.swapExactAmountIn(amount.toString(10), minAmountOut.toString(10), MAX, unhashedKey).call();
+    return ret.tokenAmountOut;
   }
 
-  async swapExactAmountOut(amount: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountOut(0, JSBI.toNumber(amount), 1000000, unhashedKey).call();
+  async swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
+    let ret =  await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(10), tokenAmountOut.toString(10), MAX, unhashedKey).call();
+    return ret.tokenAmountIn;
   }
 
   static create({
