@@ -255,15 +255,22 @@ export class EthereumService implements IWalletService {
     return new this.web3.eth.Contract(erc20TokenAbi, address);
   }
 
+  async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+    return await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send();
+  }
 
-  async swapExactAmountIn(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+  async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
     let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call();
     return ret.tokenAmountOut;
   }
 
-  async swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
+  async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
     let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call();
     return ret.tokenAmountIn;
+  }
+
+  async swapExactAmountOutSend(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
+    return await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).send();
   }
 
   static create({

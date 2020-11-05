@@ -19,17 +19,29 @@ export default ({
     async connectToWallet() {
       await api.EthereumService.connect();
     },
-    async swapExactAmountIn(
+    async swapExactAmountInCall(
       tokenAmountIn: number,
       minAmountOut: number
     ) {
-      return await api.EthereumService.swapExactAmountIn(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
+      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
       },
-    async swapExactAmountOut(
+    async swapExactAmountOutCall(
       maxAmountIn: number,
       tokenAmountOut: number
     ) {
-      return await api.EthereumService.swapExactAmountOut(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
+      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
+    },
+    async swapExactAmountInSend(
+      tokenAmountIn: number,
+      minAmountOut: number
+    ) {
+      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
+      },
+    async swapExactAmountOutSend(
+      maxAmountIn: number,
+      tokenAmountOut: number
+    ) {
+      return await api.EthereumService.swapExactAmountOutSend(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
     },
   };
 
