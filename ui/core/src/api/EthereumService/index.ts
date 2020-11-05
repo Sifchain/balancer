@@ -10,7 +10,8 @@ import {
   isEventEmittingProvider,
   isToken,
   isValidNetwork,
-  getSupportedTokens
+  getSupportedTokens,
+  erc20TokenAbi
 } from "./utils/ethereumUtils";
 
 type Address = string;
@@ -136,8 +137,9 @@ export class EthereumService implements IWalletService {
 
       await getSupportedTokens();
 
-      // const accounts = await this.web3.eth.getAccounts();
-      // await this.getRowanContract().methods.approve("0xC89Ce4735882C9F0f0FE26686c53074E09B0D550", MAX).send({from: accounts[0]});
+      const accounts = await this.web3.eth.getAccounts();
+      await this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accounts[0]});
+      //await this.getERC20TokenContract(this.getTokenData().rowanAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accounts[0]});
 
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
@@ -225,16 +227,34 @@ export class EthereumService implements IWalletService {
     return balances;
   }
 
+  getBalancerAbiArray() {
+    const networkType = this.networkType === "private" ? "development" : this.networkType === "main" ? "mainnet" : this.networkType;
+    return require("../../../../../BalancerABI."+networkType+".json");
+  }
+
   getBalancerContract() {
     if (!this.web3) {
       throw new Error(
-        "Cannot do swap because there is not yet a connection to Ethereum."
+        "There is not yet a connection to Ethereum."
       );
     }
-    const networkType = this.networkType == "private" ? "development" : this.networkType;
-    const balancerAbiArray = require("../../../../../BalancerABI."+networkType+".json");
+    const balancerAbiArray = this.getBalancerAbiArray();
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
+
+  getTokenData() {
+    return require("../../../../../TokenData.json");
+  }
+
+  getERC20TokenContract(address: any) {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    return new this.web3.eth.Contract(erc20TokenAbi, address);
+  }
+
 
   async swapExactAmountIn(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
     let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call();
