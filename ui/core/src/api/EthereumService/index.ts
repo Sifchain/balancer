@@ -255,22 +255,36 @@ export class EthereumService implements IWalletService {
     return new this.web3.eth.Contract(erc20TokenAbi, address);
   }
 
+  async getCurrentAccount() {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    const accounts = await this.web3.eth.getAccounts();
+    return accounts[0];
+  }
+
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send();
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
   }
 
   async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
-    let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call();
+    const accountFrom = await this.getCurrentAccount();
+    let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountOut;
   }
 
   async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
-    let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call();
+    const accountFrom = await this.getCurrentAccount();
+    let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountIn;
   }
 
   async swapExactAmountOutSend(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
-    return await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).send();
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
   }
 
   static create({
