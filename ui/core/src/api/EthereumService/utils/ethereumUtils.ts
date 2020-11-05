@@ -198,7 +198,7 @@ export async function getSupportedTokens(): Promise<Token[]> {
   // Return the tokens parsed as assets
   // TODO: to import .env from the root folder (dotenv or from manual parsing anyhow)
   return [
-    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, process.env.EROWAN),
-    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, process.env.USDT),
+    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, '0x0290FB167208Af455bB137780163b7B7a9a10C16'),
+    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7'),
   ];
 }
