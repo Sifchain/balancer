@@ -105,15 +105,15 @@
       }
 
       async function getRowanEstimate() {
-        return await actions.swapExactAmountIn(inputAmountUSDT.value, 10000000000000000000);
+        return await actions.swapExactAmountInCall(inputAmountUSDT.value, 0) / (10 ** 18);
       }
 
       async function getUsdtEstimate() {
-        return await actions.swapExactAmountOut(0, inputAmountRWN.value);
+        return await actions.swapExactAmountOutCall(100000000000, inputAmountRWN.value)  / (10 ** 6);
       }
 
       async function swapExactAmountIn() {
-        const hash = await actions.swapExactAmountIn(inputAmountUSDT.value, await getRowanEstimate() * 0.95);
+        const hash = await actions.swapExactAmountInSend(inputAmountUSDT.value, await getRowanEstimate() * 0.95);
         console.log("swapExactAmountIn hash:", hash);
 
         // if (store.wallet.eth.balances.length > 0) {
@@ -128,7 +128,7 @@
       }
 
       async function swapExactAmountOut() {
-        const hash = await actions.swapExactAmountOut(inputAmountUSDT.value, await getUsdtEstimate() * 1.05);
+        const hash = await actions.swapExactAmountOutSend(await getUsdtEstimate() * 1.05, inputAmountRWN.value);
         console.log("swapExactAmountOut hash:", hash);
 
         // if (store.wallet.eth.balances.length > 0) {
