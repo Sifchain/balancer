@@ -7,6 +7,8 @@
     "tokendata": "truffle exec scripts/getTokenData.js",
     "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
     "pool:whitelist": "truffle exec scripts/whitelistUsers.js",
+    "mint:usdt": "truffle exec scripts/mintUSDT.js",
+    "mint:rowan": "truffle exec scripts/mintRowan.js",
     "compile": "truffle compile",
     "ganache": "yarn ganache-cli -d",
     "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
