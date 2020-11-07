@@ -18,6 +18,18 @@ Testing swaps in UI:
 9. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
+Migrate to ropsten
+0. `cat env.example >> .env`
+1. `yarn` - Install dependencies
+2. set WHITE_LIST_MANAGER, CONTROLLER and PRIVATE_KEY in .env
+3. `yarn migrate:testnet --network ropsten`
+4. Copy USDT and ROWAN contract addresses into .env
+5. set PRIVATE_KEY in .env to rowan owner.
+6. `yarn mint:rowan --network ropsten`
+7. set PRIVATE_KEY in .env to CONTROLLER
+8. `yarn pool:init --network ropsten`
+```
+
 ## Slack hook for daemon
 Go to the .env file and paste the ending lines of your slack hook key into it minus the first slash for your unique code.
 Then add the slack failure channel hook key in and start the daemon.
