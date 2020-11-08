@@ -6,7 +6,7 @@ import { USDT, RWN } from "../constants";
 export default ({
   api,
   store,
-}: ActionContext<"EthereumService", "wallet" | "asset">) => {
+}: ActionContext<"EthereumService", "wallet" | "purchase" | "asset">) => {
   const ethereumState = api.EthereumService.getState();
 
   const actions = {
@@ -37,13 +37,19 @@ export default ({
     ) {
       return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
       },
-    async swapExactAmountOutSend(
-      maxAmountIn: number,
-      tokenAmountOut: number
-    ) {
-      return await api.EthereumService.swapExactAmountOutSend(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
+    async approveToken() {
+      return await api.EthereumService.approveToken();
     },
   };
+
+  effect(async () => {
+    store.purchase.usdtAmount = ethereumState.initialUsdtAmount;
+    store.purchase.rwnAmount = ethereumState.initialRwnEstimate;
+  });
+
+  effect(async () => {
+    store.purchase.usdtAllowance = ethereumState.allowance;
+  });
 
   effect(async () => {
     store.wallet.eth.isConnected = ethereumState.connected;

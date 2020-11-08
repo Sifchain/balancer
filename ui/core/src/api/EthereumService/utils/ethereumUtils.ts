@@ -70,7 +70,33 @@ export const erc20TokenAbi: AbiItem[] = [
       },
     ],
     type: "function",
-  }
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address"
+      }
+    ],
+    name: "allowance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    payable: false,
+    stateMutability: "view",
+    type: "function"
+  },
 ];
 
 export function isValidNetwork(networkType: string): boolean {

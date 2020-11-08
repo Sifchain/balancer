@@ -5,14 +5,16 @@ import { IWalletService } from "../IWalletService";
 import { TxHash, Asset, Balance, Token } from "../../entities";
 import JSBI from "jsbi";
 import {
+  erc20TokenAbi,
   getEthereumBalance,
+  getSupportedTokens,
   getTokenBalance,
   isEventEmittingProvider,
   isToken,
-  isValidNetwork,
-  getSupportedTokens,
-  erc20TokenAbi
+  isValidNetwork
 } from "./utils/ethereumUtils";
+import B from "../../entities/utils/B";
+import { USDT } from "../../constants";
 
 type Address = string;
 type Balances = Balance[];
@@ -62,6 +64,9 @@ const initState = {
   balances: [],
   address: "",
   log: "unset",
+  allowance: 0,
+  initialUsdtAmount: 100,
+  initialRwnEstimate: 0,
 };
 
 export class EthereumService implements IWalletService {
@@ -72,12 +77,15 @@ export class EthereumService implements IWalletService {
   private provider: provider | undefined;
 
   // This is shared reactive state
-  private state: {
+  private readonly state: {
     connected: boolean;
     address: Address;
     accounts: Address[];
     balances: Balance[];
     log: string;
+    allowance: number;
+    initialUsdtAmount: number;
+    initialRwnEstimate: number;
   };
 
   constructor(getWeb3Provider: () => Promise<provider>) {
@@ -100,18 +108,24 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  private async updateData() {
+  async updateData() {
     if (!this.web3) {
       this.state.connected = false;
       this.state.accounts = [];
       this.state.address = "";
       this.state.balances = [];
+      this.state.allowance = 0;
+      this.state.initialUsdtAmount = 100;
+      this.state.initialRwnEstimate = 0;
       return;
     }
     this.state.connected = !!this.web3;
     this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
     [this.state.address] = this.state.accounts;
     this.state.balances = await this.getBalance();
+    this.state.allowance = await this.getAllowance();
+    this.state.initialUsdtAmount = 100;
+    this.state.initialRwnEstimate = Number(await this.swapExactAmountInCall(B(this.state.initialUsdtAmount, USDT.decimals), B(0, USDT.decimals))) / (10 ** 18)
   }
 
   getAddress(): Address {
@@ -124,8 +138,7 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      if (!this.provider)
-        throw new Error("Cannot connect because provider is not yet loaded!");
+      if (!this.provider) throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
       this.networkType = await this.web3.eth.net.getNetworkType();
@@ -136,10 +149,6 @@ export class EthereumService implements IWalletService {
       }
 
       await getSupportedTokens();
-
-      const accounts = await this.web3.eth.getAccounts();
-      await this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accounts[0]});
-      //await this.getERC20TokenContract(this.getTokenData().rowanAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accounts[0]});
 
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
@@ -265,9 +274,19 @@ export class EthereumService implements IWalletService {
     return accounts[0];
   }
 
+  async getAllowance(): Promise<number> {
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.allowance(accountFrom, this.getBalancerAbiArray().address).call({from: accountFrom});
+  }
+
+  async approveToken(): Promise<TxHash> {
+    const accountFrom = await this.getCurrentAccount();
+    return this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accountFrom});
+  }
+
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
     const accountFrom = await this.getCurrentAccount();
-    return await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
+    return this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
   }
 
   async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
@@ -280,11 +299,6 @@ export class EthereumService implements IWalletService {
     const accountFrom = await this.getCurrentAccount();
     let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountIn;
-  }
-
-  async swapExactAmountOutSend(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
-    const accountFrom = await this.getCurrentAccount();
-    return await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
   }
 
   static create({
