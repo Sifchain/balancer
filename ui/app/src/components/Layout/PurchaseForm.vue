@@ -65,8 +65,15 @@
           Purchase
         </ActionButton>
 
-        <InputGroup v-if="store.wallet.eth.isConnected && store.purchase.usdtAllowance <= 0">
-          <ConfirmationCode label="Confirmation code" />
+        <InputGroup v-if="store.wallet.eth.isConnected && store.purchase.usdtAllowance > 0">
+          <div class="token-form text--small">
+            <div class="token-form__input">
+              <div class="sif-input__wrapper">
+                <label class="sif-input__label">Confirmation code</label>
+                <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
+              </div>
+            </div>
+          </div>
         </InputGroup>
       </div>
       <p v-if="!store.wallet.eth.isConnected">
@@ -98,6 +105,10 @@
         return store.wallet.eth.isConnected ? store.wallet.eth.address.slice(0, 8) + "..." : "";
       }
 
+      async function checkConfirmationCode() {
+        // TODO check code and enable inputs
+      }
+
       async function handleConnectClicked() {
         await actions.connectToWallet();
       }
@@ -107,14 +118,14 @@
       }
 
       async function getRowanEstimate() {
-        const estimate = await actions.swapExactAmountInCall(store.purchase.usdtAmount, 0) / (10 ** 18);
+        const estimate = await actions.swapExactAmountInCall(store.purchase.usdtAmount, 0, store.purchase.unhashedKey) / (10 ** 18);
         console.log("getRowanEstimate:", estimate);
         store.purchase.rwnAmount = estimate;
         return estimate
       }
 
       async function getUsdtEstimate() {
-        const estimate = await actions.swapExactAmountOutCall(100000000000, store.purchase.rwnAmount) / (10 ** 6);
+        const estimate = await actions.swapExactAmountOutCall(100000000000, store.purchase.rwnAmount, store.purchase.unhashedKey) / (10 ** 6);
         console.log("getUsdtEstimate:", estimate);
         store.purchase.usdtAmount = estimate;
         return estimate
@@ -129,7 +140,7 @@
       }
 
       async function swapExactAmountIn() {
-        const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95);
+        const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
         console.log("swapExactAmountIn hash:", hash);
 
         // if (store.wallet.eth.balances.length > 0) {

@@ -6,7 +6,7 @@ import { USDT, RWN } from "../constants";
 export default ({
   api,
   store,
-}: ActionContext<"EthereumService", "wallet" | "purchase" | "asset">) => {
+}: ActionContext<"EthereumService", "wallet" | "purchase">) => {
   const ethereumState = api.EthereumService.getState();
 
   const actions = {
@@ -21,31 +21,29 @@ export default ({
     },
     async swapExactAmountInCall(
       tokenAmountIn: number,
-      minAmountOut: number
+      minAmountOut: number,
+      unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
-      },
+      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+    },
     async swapExactAmountOutCall(
       maxAmountIn: number,
-      tokenAmountOut: number
+      tokenAmountOut: number,
+      unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
+      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals), unhashedKey);
     },
     async swapExactAmountInSend(
       tokenAmountIn: number,
-      minAmountOut: number
+      minAmountOut: number,
+      unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
-      },
+      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+    },
     async approveToken() {
       return await api.EthereumService.approveToken();
     },
   };
-
-  effect(async () => {
-    store.purchase.usdtAmount = ethereumState.initialUsdtAmount;
-    store.purchase.rwnAmount = ethereumState.initialRwnEstimate;
-  });
 
   effect(async () => {
     store.purchase.usdtAllowance = ethereumState.allowance;

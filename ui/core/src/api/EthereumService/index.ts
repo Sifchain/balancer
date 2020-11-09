@@ -13,16 +13,11 @@ import {
   isToken,
   isValidNetwork
 } from "./utils/ethereumUtils";
-import B from "../../entities/utils/B";
-import { USDT } from "../../constants";
 
 type Address = string;
 type Balances = Balance[];
 
 const MAX = Web3.utils.toTwosComplement(-1);
-//const unhashedKey = "TooFast-Secure-Key--Random34&*(#*$&R#*O(I($";
-const unhashedKey = "SecretString2";
-const hashedKey = "0xc175ed99c4057b2c8ff2bb95576411f681a351686896be6112e7065daa7f4f91";
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -65,8 +60,6 @@ const initState = {
   address: "",
   log: "unset",
   allowance: 0,
-  initialUsdtAmount: 100,
-  initialRwnEstimate: 0,
 };
 
 export class EthereumService implements IWalletService {
@@ -84,8 +77,6 @@ export class EthereumService implements IWalletService {
     balances: Balance[];
     log: string;
     allowance: number;
-    initialUsdtAmount: number;
-    initialRwnEstimate: number;
   };
 
   constructor(getWeb3Provider: () => Promise<provider>) {
@@ -115,8 +106,6 @@ export class EthereumService implements IWalletService {
       this.state.address = "";
       this.state.balances = [];
       this.state.allowance = 0;
-      this.state.initialUsdtAmount = 100;
-      this.state.initialRwnEstimate = 0;
       return;
     }
     this.state.connected = !!this.web3;
@@ -124,8 +113,6 @@ export class EthereumService implements IWalletService {
     [this.state.address] = this.state.accounts;
     this.state.balances = await this.getBalance();
     this.state.allowance = await this.getAllowance();
-    this.state.initialUsdtAmount = 100;
-    this.state.initialRwnEstimate = Number(await this.swapExactAmountInCall(B(this.state.initialUsdtAmount, USDT.decimals), B(0, USDT.decimals))) / (10 ** 18)
   }
 
   getAddress(): Address {
@@ -284,18 +271,18 @@ export class EthereumService implements IWalletService {
     return this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accountFrom});
   }
 
-  async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+  async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
     const accountFrom = await this.getCurrentAccount();
     return this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
   }
 
-  async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI): Promise<TxHash> {
+  async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
     const accountFrom = await this.getCurrentAccount();
     let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountOut;
   }
 
-  async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
+  async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
     const accountFrom = await this.getCurrentAccount();
     let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountIn;
