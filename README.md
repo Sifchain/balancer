@@ -21,7 +21,7 @@ Testing swaps in UI:
 Migrate to ropsten
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
-2. set WHITE_LIST_MANAGER, CONTROLLER and PRIVATE_KEY in .env
+2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
 3. `yarn migrate:testnet --network ropsten`
 4. Copy USDT and ROWAN contract addresses into .env
 5. set PRIVATE_KEY in .env to rowan owner.
