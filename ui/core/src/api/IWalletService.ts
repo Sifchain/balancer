@@ -8,11 +8,15 @@ export type IWalletService = {
     connected: boolean;
     balances: Balance[];
     log: string;
+    allowance: number;
   };
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash>;
-  swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash>;
+  swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
+  swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
+  swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
+  approveToken(): Promise<TxHash>;
+  getAllowance(): Promise<number>;
   getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
 };

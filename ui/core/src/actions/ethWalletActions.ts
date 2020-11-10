@@ -6,8 +6,7 @@ import { USDT, RWN } from "../constants";
 export default ({
   api,
   store,
-}: ActionContext<"EthereumService", "wallet" | "asset">) => {
-
+}: ActionContext<"EthereumService", "wallet" | "purchase">) => {
   const ethereumState = api.EthereumService.getState();
 
   const actions = {
@@ -19,40 +18,52 @@ export default ({
     },
     async connectToWallet() {
       await api.EthereumService.connect();
-      await actions.updateBalances();
     },
-    async swapExactAmountIn(
+    async swapExactAmountInCall(
       tokenAmountIn: number,
-      minAmountOut: number
+      minAmountOut: number,
+      unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountIn(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals));
-      },
-    async swapExactAmountOut(
+      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+    },
+    async swapExactAmountOutCall(
       maxAmountIn: number,
-      tokenAmountOut: number
+      tokenAmountOut: number,
+      unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountOut(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals));
+      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals), unhashedKey);
+    },
+    async swapExactAmountInSend(
+      tokenAmountIn: number,
+      minAmountOut: number,
+      unhashedKey: string
+    ) {
+      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+    },
+    async approveToken() {
+      return await api.EthereumService.approveToken();
     },
   };
 
   effect(async () => {
-    store.wallet.eth.isConnected = api.EthereumService.getState().connected;
-    await actions.updateBalances();
+    store.purchase.usdtAllowance = ethereumState.allowance;
   });
 
   effect(async () => {
-    api.EthereumService.isConnected();
-    await actions.updateBalances();
+    store.wallet.eth.isConnected = ethereumState.connected;
   });
 
   effect(async () => {
     store.wallet.eth.address = ethereumState.address;
-    await actions.updateBalances();
   });
 
   effect(async () => {
-    api.EthereumService.getState().log;
-    await actions.updateBalances();
+    store.wallet.eth.balances = ethereumState.balances;
+  });
+
+  effect(async () => {
+    ethereumState.log;
+    await api.EthereumService.getBalance();
   });
 
   return actions;

@@ -1,9 +1,7 @@
-import JSBI from "jsbi";
 import Web3 from "web3";
 import {
   IpcProvider,
   provider,
-  TransactionReceipt,
   WebsocketProvider,
 } from "web3-core";
 // @ts-ignore
@@ -13,7 +11,7 @@ import { AbiItem } from "web3-utils";
 import { USDT } from "../../../constants";
 import { ChainId, createToken, Address, Asset, Balance, Token } from "../../../entities";
 
-const erc20TokenAbi: AbiItem[] = [
+export const erc20TokenAbi: AbiItem[] = [
   // balanceOf
   {
     constant: true,
@@ -72,11 +70,37 @@ const erc20TokenAbi: AbiItem[] = [
       },
     ],
     type: "function",
-  }
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "spender",
+        type: "address"
+      }
+    ],
+    name: "allowance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    payable: false,
+    stateMutability: "view",
+    type: "function"
+  },
 ];
 
 export function isValidNetwork(networkType: string): boolean {
-  return networkType === "private" // use "main" for production, "private" or "ropsten" for testing
+  return networkType === "private" // TODO use "main" for production, "private" or "ropsten" for testing
 }
 
 export function isToken(value?: Asset | Token): value is Token {
@@ -105,100 +129,15 @@ export function isEventEmittingProvider(
   return typeof (provider as any).on === "function";
 }
 
-// Transfer token or ether
-export async function transferAsset(
-  web3: Web3,
-  fromAddress: Address,
-  toAddress: Address,
-  amount: JSBI,
-  asset?: Asset
-) {
-  if (isToken(asset)) {
-    return await transferToken(web3, fromAddress, toAddress, amount, asset);
-  }
-
-  return await transferEther(web3, fromAddress, toAddress, amount);
-}
-
-// Transfer token
-export async function transferToken(
-  web3: Web3,
-  fromAddress: Address,
-  toAddress: Address,
-  amount: JSBI,
-  asset: Token
-) {
-  const contract = getTokenContract(web3, asset);
-  return new Promise<string>((resolve, reject) => {
-    let hash: string;
-    let receipt: boolean;
-
-    function resolvePromise() {
-      if (receipt && hash) resolve(hash);
-    }
-
-    contract.methods
-      .transfer(toAddress, JSBI.toNumber(amount))
-      .send({ from: fromAddress })
-      .on("transactionHash", (_hash: string) => {
-        hash = _hash;
-        resolvePromise();
-      })
-      .on("receipt", (_receipt: boolean) => {
-        receipt = _receipt;
-        resolvePromise();
-      })
-      .on("error", (err: any) => {
-        reject(err);
-      });
-  });
-}
-
-// Transfer ether
-export async function transferEther(
-  web3: Web3,
-  fromAddress: Address,
-  toAddress: Address,
-  amount: JSBI
-) {
-  return new Promise<string>((resolve, reject) => {
-    let hash: string;
-    let receipt: TransactionReceipt;
-
-    function resolvePromise() {
-      if (receipt && hash) resolve(hash);
-    }
-
-    web3.eth
-      .sendTransaction({
-        from: fromAddress,
-        to: toAddress,
-        value: amount.toString(),
-      })
-      .on("transactionHash", (_hash: string) => {
-        hash = _hash;
-        resolvePromise();
-      })
-      .on("receipt", (_receipt) => {
-        receipt = _receipt;
-        resolvePromise();
-      })
-      .on("error", (err: any) => {
-        reject(err);
-      });
-  });
-}
-
 export async function getEthereumBalance(web3: Web3, address: Address) {
   const ethBalance = await web3.eth.getBalance(address);
   return Balance.create(USDT, ethBalance);
 }
 
 export async function getSupportedTokens(): Promise<Token[]> {
-  // Return the tokens parsed as assets
-  // TODO: to import .env from the root folder (dotenv or from manual parsing anyhow)
+  const tokenData = require("../../../../../../TokenData.json");
   return [
-    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, process.env.EROWAN),
-    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, process.env.USDT),
+    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, tokenData.rowanAddress),
+    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, tokenData.usdtAddress),
   ];
 }

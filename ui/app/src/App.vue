@@ -18,12 +18,6 @@
     components: {
       Main,
     },
-
-    setup() {
-      const { actions } = useCore();
-      onMounted(async () => {
-      });
-    },
   });
 </script>
 

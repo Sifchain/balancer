@@ -12,5 +12,3 @@ export function createActions(context: ActionContext) {
     ...ethWalletActions(context),
   };
 }
-
-export type Actions = ReturnType<typeof createActions>;

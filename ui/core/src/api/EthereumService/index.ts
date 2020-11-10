@@ -3,24 +3,21 @@ import Web3 from "web3";
 import { provider, WebsocketProvider } from "web3-core";
 import { IWalletService } from "../IWalletService";
 import { TxHash, Asset, Balance, Token } from "../../entities";
+import JSBI from "jsbi";
 import {
+  erc20TokenAbi,
   getEthereumBalance,
+  getSupportedTokens,
   getTokenBalance,
   isEventEmittingProvider,
   isToken,
-  isValidNetwork,
-  getSupportedTokens
+  isValidNetwork
 } from "./utils/ethereumUtils";
-
-const MAX = Web3.utils.toTwosComplement(-1);
-//const helpers = require("../helpers/whitelistHelper");
-const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
-//const hashedKey = helpers.hash(unhashedKey)
-
-import JSBI from "jsbi";
 
 type Address = string;
 type Balances = Balance[];
+
+const MAX = Web3.utils.toTwosComplement(-1);
 
 export type EthereumServiceContext = {
   getWeb3Provider: () => Promise<provider>;
@@ -56,30 +53,35 @@ export function handleConnectToMetaMaskError(err: any) {
   }
 }
 
+const initState = {
+  connected: false,
+  accounts: [],
+  balances: [],
+  address: "",
+  log: "unset",
+  allowance: 0,
+};
+
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
   private networkType: string | null = null;
   private blockSubscription: any;
   private logsSubscription: any;
-
   private provider: provider | undefined;
 
   // This is shared reactive state
-  private state: {
+  private readonly state: {
     connected: boolean;
     address: Address;
     accounts: Address[];
     balances: Balance[];
     log: string;
-  } = reactive({
-    connected: false,
-    accounts: [],
-    balances: [],
-    address: "",
-    log: "unset",
-  });
+    allowance: number;
+  };
 
   constructor(getWeb3Provider: () => Promise<provider>) {
+    this.state = reactive({ ...initState });
+
     getWeb3Provider().then((provider) => {
       if (isEventEmittingProvider(provider)) {
         provider.on("connect", () => {
@@ -97,9 +99,20 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  private async updateAccounts() {
-    if (!this.web3) return;
-    this.state.accounts = (await this.web3?.eth.getAccounts()) ?? [];
+  async updateData() {
+    if (!this.web3) {
+      this.state.connected = false;
+      this.state.accounts = [];
+      this.state.address = "";
+      this.state.balances = [];
+      this.state.allowance = 0;
+      return;
+    }
+    this.state.connected = !!this.web3;
+    this.state.accounts = (await this.web3.eth.getAccounts()) ?? [];
+    [this.state.address] = this.state.accounts;
+    this.state.balances = await this.getBalance();
+    this.state.allowance = await this.getAllowance();
   }
 
   getAddress(): Address {
@@ -112,8 +125,7 @@ export class EthereumService implements IWalletService {
 
   async connect() {
     try {
-      if (!this.provider)
-        throw new Error("Cannot connect because provider is not yet loaded!");
+      if (!this.provider) throw new Error("Cannot connect because provider is not yet loaded!");
 
       this.web3 = new Web3(this.provider);
       this.networkType = await this.web3.eth.net.getNetworkType();
@@ -125,16 +137,6 @@ export class EthereumService implements IWalletService {
 
       await getSupportedTokens();
 
-      /*
-      TODO:
-      const accounts = await this.web3.eth.getAccounts();
-      await this.getRowanContract().methods.approve(<pool address>, MAX).send({from: accounts[0]});
-      */
-
-      await this.updateAccounts();
-
-      [this.state.address] = this.state.accounts;
-
       // Let's test for Metamask
       if (isMetaMaskProvider(this.provider)) {
         if (this.provider.request) {
@@ -142,9 +144,9 @@ export class EthereumService implements IWalletService {
           await this.provider.request({ method: "eth_requestAccounts" });
         }
       }
-      this.state.connected = true;
 
       this.addWeb3Subscription();
+      await this.updateData();
     } catch (err) {
       handleConnectToMetaMaskError(err);
       this.web3 = null;
@@ -174,8 +176,21 @@ export class EthereumService implements IWalletService {
 
   async disconnect() {
     this.removeWeb3Subscription();
-    this.state.connected = false;
     this.web3 = null;
+    await this.updateData();
+
+    if (isMetaMaskProvider(this.provider)) {
+      if (this.provider.request) {
+        await this.provider.request({
+          method: "wallet_requestPermissions",
+          params: [
+            {
+              eth_accounts: {}
+            }
+          ]
+        });
+      }
+    }
   }
 
   async getBalance(
@@ -208,24 +223,68 @@ export class EthereumService implements IWalletService {
     return balances;
   }
 
+  getBalancerAbiArray() {
+    const networkType = this.networkType === "private" ? "development" : this.networkType === "main" ? "mainnet" : this.networkType;
+    return require("../../../../../BalancerABI."+networkType+".json");
+  }
+
   getBalancerContract() {
     if (!this.web3) {
       throw new Error(
-        "Cannot do swap because there is not yet a connection to Ethereum."
+        "There is not yet a connection to Ethereum."
       );
     }
-    const networkType = this.networkType == "private" ? "development" : this.networkType;
-    const balancerAbiArray = require("../../../../../BalancerABI."+networkType+".json");
+    const balancerAbiArray = this.getBalancerAbiArray();
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
-  async swapExactAmountIn(amount: JSBI, minAmountOut: JSBI): Promise<TxHash> {
-    let ret = await this.getBalancerContract().methods.swapExactAmountIn(amount.toString(10), minAmountOut.toString(10), MAX, unhashedKey).call();
+  getTokenData() {
+    return require("../../../../../TokenData.json");
+  }
+
+  getERC20TokenContract(address: any) {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    return new this.web3.eth.Contract(erc20TokenAbi, address);
+  }
+
+  async getCurrentAccount() {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    const accounts = await this.web3.eth.getAccounts();
+    return accounts[0];
+  }
+
+  async getAllowance(): Promise<number> {
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.allowance(accountFrom, this.getBalancerAbiArray().address).call({from: accountFrom});
+  }
+
+  async approveToken(): Promise<TxHash> {
+    const accountFrom = await this.getCurrentAccount();
+    return this.getERC20TokenContract(this.getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accountFrom});
+  }
+
+  async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
+    const accountFrom = await this.getCurrentAccount();
+    return this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
+  }
+
+  async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
+    const accountFrom = await this.getCurrentAccount();
+    let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountOut;
   }
 
-  async swapExactAmountOut(maxAmountIn: JSBI, tokenAmountOut: JSBI): Promise<TxHash> {
-    let ret =  await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(10), tokenAmountOut.toString(10), MAX, unhashedKey).call();
+  async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<TxHash> {
+    const accountFrom = await this.getCurrentAccount();
+    let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return ret.tokenAmountIn;
   }
 
