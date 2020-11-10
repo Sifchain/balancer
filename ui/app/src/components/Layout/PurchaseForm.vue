@@ -2,7 +2,7 @@
   <div>
     <SifApp>
       <div>
-        <InputGroup v-if="store.wallet.eth.isConnected">
+        <InputGroup v-if="store.wallet.isConnected">
           <div class="token-form text--small">
             <div class="token-form__input">
               <div class="sif-input__wrapper">
@@ -16,7 +16,7 @@
           </div>
         </InputGroup>
 
-        <InputGroup v-if="store.wallet.eth.isConnected">
+        <InputGroup v-if="store.wallet.isConnected">
           <div class="token-form text--small">
             <div class="token-form__input">
               <div class="sif-input__wrapper">
@@ -30,7 +30,7 @@
           </div>
         </InputGroup>
 
-        <InputGroup v-if="store.wallet.eth.isConnected">
+        <InputGroup v-if="store.wallet.isConnected">
           <div>
             <p class="text--small" align="left">
               Price: {{ getRwnPrice() }} USDT per RWN
@@ -41,31 +41,27 @@
           </div>
         </InputGroup>
 
-        <p v-if="!store.wallet.eth.isConnected" class="text--small">
+        <p v-if="!store.wallet.isConnected" class="text--small">
           No wallet connected 🅧
         </p>
 
-        <ActionButton primary block v-if="store.wallet.eth.isConnected" @click="handleDisconnectClicked">
-          Disconnect
-        </ActionButton>
-
-        <p v-if="store.wallet.eth.isConnected" class="text--small">
+        <p v-if="store.wallet.isConnected" class="text--small">
           Connected to {{ getShortenedAddress() }} ✅
         </p>
 
-        <ActionButton primary block v-if="!store.wallet.eth.isConnected" @click="handleConnectClicked">
+        <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
           Connect Wallet
         </ActionButton>
 
-        <ActionButton primary block v-if="store.wallet.eth.isConnected && store.purchase.usdtAllowance <= 0" @click="approveToken">
+        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.usdtAllowance <= 0" @click="approveToken">
           Approve Token
         </ActionButton>
 
-        <ActionButton primary block v-if="store.wallet.eth.isConnected && store.purchase.usdtAllowance > 0" @click="swapExactAmountIn">
+        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.usdtAllowance > 0" @click="swapExactAmountIn">
           Purchase
         </ActionButton>
 
-        <InputGroup v-if="store.wallet.eth.isConnected && store.purchase.usdtAllowance > 0">
+        <InputGroup v-if="store.wallet.isConnected && store.purchase.usdtAllowance > 0">
           <div class="token-form text--small">
             <div class="token-form__input">
               <div class="sif-input__wrapper">
@@ -76,7 +72,7 @@
           </div>
         </InputGroup>
       </div>
-      <p v-if="!store.wallet.eth.isConnected">
+      <p v-if="!store.wallet.isConnected">
         Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
         If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
         Please remember to use the wallet address you provided us in your KYC information.
@@ -93,7 +89,6 @@
   import SifApp from '../Blocks/SifApp.vue';
   import TokenForm from '../Blocks/TokenForm.vue';
   import { useCore } from "@/hooks/useCore";
-  import { computed, ref } from "@vue/reactivity";
   import ConfirmationCode from "@/components/Blocks/ConfirmationCode";
 
   export default {
@@ -102,11 +97,7 @@
       const { api, actions, store } = useCore();
 
       function getShortenedAddress() {
-        return store.wallet.eth.isConnected ? store.wallet.eth.address.slice(0, 8) + "..." : "";
-      }
-
-      async function checkConfirmationCode() {
-        // TODO check code and enable inputs
+        return store.wallet.isConnected && store.wallet.account ? store.wallet.account.slice(0, 8) + "..." : "";
       }
 
       async function handleConnectClicked() {
