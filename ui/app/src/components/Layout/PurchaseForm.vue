@@ -142,16 +142,6 @@
       async function swapExactAmountIn() {
         const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
         console.log("swapExactAmountIn hash:", hash);
-
-        // if (store.wallet.eth.balances.length > 0) {
-        //   if (store.wallet.eth.balances[0].amount >= inputAmountUSDT.value * 10 ** 18) { // use 10**6 for USDT
-        //     const hash = await actions.swapExactAmountIn(amountUSDT.value);
-        //     console.log(hash);
-        //   } else {
-        //     // Low balance
-        //     // TODO update UI
-        //   }
-        // }
       }
 
       async function approveToken() {
