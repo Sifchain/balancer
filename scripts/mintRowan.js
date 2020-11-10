@@ -7,6 +7,11 @@ module.exports = function(cb) {
 }
 
 async function mintRowan(cb) {
+  const networkType = await web3.eth.net.getNetworkType();
+  if(networkType == "mainnet") {
+    console.log("This script should be used only for a test net");
+    cb();
+  }
   try {
     const rowanContract = await mockToken.at(process.env.EROWAN);
     console.log("Rowan address: " + rowanContract.address);
