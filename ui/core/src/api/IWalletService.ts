@@ -3,8 +3,7 @@ import JSBI from "jsbi";
 
 export type IWalletService = {
   getState: () => {
-    address: Address;
-    accounts: Address[];
+    account: string;
     connected: boolean;
     balances: Balance[];
     log: string;

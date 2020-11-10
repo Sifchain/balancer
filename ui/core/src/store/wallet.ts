@@ -1,19 +1,15 @@
 import { reactive } from "@vue/reactivity";
 
-import { Address, Balance } from "../entities";
+import { Balance } from "../entities";
 
 export type WalletStore = {
-  eth: {
-    isConnected: boolean;
-    address: Address;
-    balances: Balance[];
-  };
+  isConnected: boolean;
+  account: string;
+  balances: Balance[];
 };
 
 export const wallet = reactive({
-  eth: {
-    isConnected: false,
-    address: "",
-    balances: [],
-  },
+  isConnected: false,
+  account: "",
+  balances: [],
 }) as WalletStore;

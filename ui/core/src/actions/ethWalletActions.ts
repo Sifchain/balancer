@@ -11,7 +11,7 @@ export default ({
 
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.eth.balances = await api.EthereumService.getBalance();
+      store.wallet.balances = await api.EthereumService.getBalance();
     },
     async disconnectWallet() {
       await api.EthereumService.disconnect();
@@ -45,20 +45,23 @@ export default ({
     },
   };
 
+  console.log("ethWalletActions");
+
+  effect(async () => {
+    console.log("ethWalletActions effect", ethereumState);
+    store.wallet.isConnected = ethereumState.connected;
+  });
+
+  effect(async () => {
+    store.wallet.account = ethereumState.account;
+  });
+
+  effect(async () => {
+    store.wallet.balances = ethereumState.balances;
+  });
+
   effect(async () => {
     store.purchase.usdtAllowance = ethereumState.allowance;
-  });
-
-  effect(async () => {
-    store.wallet.eth.isConnected = ethereumState.connected;
-  });
-
-  effect(async () => {
-    store.wallet.eth.address = ethereumState.address;
-  });
-
-  effect(async () => {
-    store.wallet.eth.balances = ethereumState.balances;
   });
 
   effect(async () => {
