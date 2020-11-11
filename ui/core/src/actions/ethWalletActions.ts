@@ -1,7 +1,6 @@
 import {effect} from "@vue/reactivity";
 import {ActionContext} from "..";
 import B from "../entities/utils/B";
-import { USDT, RWN } from "../constants";
 
 export default ({
   api,
@@ -11,7 +10,7 @@ export default ({
 
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.balances = await api.EthereumService.getBalance();
+      store.wallet.balance = await api.EthereumService.getBalance();
     },
     async disconnectWallet() {
       await api.EthereumService.disconnect();
@@ -24,31 +23,28 @@ export default ({
       minAmountOut: number,
       unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, 6), B(minAmountOut, 18), unhashedKey);
     },
     async swapExactAmountOutCall(
       maxAmountIn: number,
       tokenAmountOut: number,
       unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals), unhashedKey);
+      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, 6), B(tokenAmountOut, 18), unhashedKey);
     },
     async swapExactAmountInSend(
       tokenAmountIn: number,
       minAmountOut: number,
       unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, 6), B(minAmountOut, 18), unhashedKey);
     },
     async approveToken() {
       return await api.EthereumService.approveToken();
     },
   };
 
-  console.log("ethWalletActions");
-
   effect(async () => {
-    console.log("ethWalletActions effect", ethereumState);
     store.wallet.isConnected = ethereumState.connected;
   });
 
@@ -57,7 +53,7 @@ export default ({
   });
 
   effect(async () => {
-    store.wallet.balances = ethereumState.balances;
+    store.wallet.balance = ethereumState.balance;
   });
 
   effect(async () => {
