@@ -7,7 +7,7 @@
             <div class="token-form__input">
               <div class="sif-input__wrapper">
                 <label class="sif-input__label">Contribution amount</label>
-                <input v-model="store.purchase.usdtAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = true">
+                <input :disabled="store.purchase.usdtAllowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = true">
               </div>
             </div>
             <div class="token-form__balance">
@@ -21,7 +21,7 @@
             <div class="token-form__input">
               <div class="sif-input__wrapper">
                 <label class="sif-input__label">Contribution amount</label>
-                <input v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
+                <input :disabled="store.purchase.usdtAllowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
               </div>
             </div>
             <div class="token-form__balance">
@@ -37,6 +37,9 @@
             </p>
             <p class="text--small" align="left">
               Slippage tolerance
+            </p>
+            <p class="text--small" align="left">
+              USDT Balance: {{ store.wallet.balance }}
             </p>
           </div>
         </InputGroup>
@@ -79,7 +82,6 @@
         Any transactions from unapproved wallet addresses will be rejected.
       </p>
     </SifApp>
-
   </div>
 </template>
 
@@ -93,6 +95,14 @@
 
   export default {
     name: "PurchaseForm",
+    created() {
+      this.loadData();
+    },
+    methods: {
+      async loadData() {
+        await useCore().api.EthereumService.updateData();
+      }
+    },
     setup() {
       const { api, actions, store } = useCore();
 
@@ -112,6 +122,7 @@
         const estimate = await actions.swapExactAmountInCall(store.purchase.usdtAmount, 0, store.purchase.unhashedKey) / (10 ** 18);
         console.log("getRowanEstimate:", estimate);
         store.purchase.rwnAmount = estimate;
+        store.purchase.whitelisted = true;
         return estimate
       }
 
@@ -119,11 +130,18 @@
         const estimate = await actions.swapExactAmountOutCall(100000000000, store.purchase.rwnAmount, store.purchase.unhashedKey) / (10 ** 6);
         console.log("getUsdtEstimate:", estimate);
         store.purchase.usdtAmount = estimate;
+        store.purchase.whitelisted = true;
         return estimate
       }
 
       async function getEstimate() {
-        return store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
+        try {
+          return store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
+        } catch (e) {
+          if (e.toString().includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
+            store.purchase.whitelisted = false;
+          }
+        }
       }
 
       function getRwnPrice() {
