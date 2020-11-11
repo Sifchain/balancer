@@ -20,7 +20,7 @@
           <div class="token-form text--small">
             <div class="token-form__input">
               <div class="sif-input__wrapper">
-                <label class="sif-input__label">Contribution amount</label>
+                <label class="sif-input__label">Minimum Received</label>
                 <input :disabled="store.purchase.usdtAllowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
               </div>
             </div>
@@ -37,9 +37,6 @@
             </p>
             <p class="text--small" align="left">
               Slippage tolerance
-            </p>
-            <p class="text--small" align="left">
-              USDT Balance: {{ store.wallet.balance }}
             </p>
           </div>
         </InputGroup>
@@ -180,5 +177,8 @@
 </script>
 
 <style>
-
+  .input-label {
+    display: flex;
+    justify-content: space-between;
+  }
 </style>
