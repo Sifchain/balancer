@@ -4,8 +4,10 @@
 export PATH=$(npm bin):$PATH
 cat env.example >> .env
 ganache-cli -d
+```
 
-Testing swaps in UI:
+## Migrate to local network
+```
 0. `cat env.example >> .env` - Set env vars
 1. `yarn` - Install top-level dependencies
 2. `yarn ganache` - Run ganache-cli (in a separate window)
@@ -18,7 +20,8 @@ Testing swaps in UI:
 9. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
-Migrate to testnet
+## Migrate to testnet
+```
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
 2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
@@ -35,7 +38,8 @@ Migrate to testnet
 13. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
-Migrate to mainnet
+## Migrate to mainnet
+```
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
 2. Copy USDT and ROWAN contract addresses into .env
