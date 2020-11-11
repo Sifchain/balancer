@@ -18,16 +18,38 @@ Testing swaps in UI:
 9. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
-Migrate to ropsten
+Migrate to testnet
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
 2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
-3. `yarn migrate:testnet --network ropsten`
-4. Copy USDT and ROWAN contract addresses into .env
-5. set PRIVATE_KEY in .env to rowan owner.
-6. `yarn mint:rowan --network ropsten`
-7. set PRIVATE_KEY in .env to CONTROLLER
-8. `yarn pool:init --network ropsten`
+3. `yarn migrate:testnet --network <network name>`
+4. Copy newly migrated USDT and ROWAN contract addresses into .env
+5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
+6. set PRIVATE_KEY in .env to rowan owner.
+7. `yarn mint:rowan --network <network name>`
+8. set PRIVATE_KEY in .env to CONTROLLER
+9. `yarn pool:init --network <network name>`
+10. set PRIVATE_KEY in .env to WHITE_LIST_MANAGER
+11. `yarn pool:whitelist --network <network name>`
+12. `yarn build:ui` - Build UI (core & app)
+13. `yarn serve:ui` - Start the app at http://localhost:8080/
+```
+
+Migrate to mainnet
+0. `cat env.example >> .env`
+1. `yarn` - Install dependencies
+2. Copy USDT and ROWAN contract addresses into .env
+3. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
+4. `yarn migrate:mainnet`
+5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
+6. set PRIVATE_KEY in .env to rowan owner.
+7. `yarn mint:rowan --network mainnet`
+8. set PRIVATE_KEY in .env to CONTROLLER. Controller must have USDT and eRowan on balance by that time.
+9. `yarn pool:init --network mainnet`
+10. set PRIVATE_KEY in .env to WHITE_LIST_MANAGER
+11. `yarn pool:whitelist --network mainnet` - Whitelist accounts from whitelist.json
+12. `yarn build:ui` - Build UI (core & app)
+13. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
 ## Slack hook for daemon
