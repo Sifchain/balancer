@@ -10,7 +10,7 @@ export default ({
 
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.balance = await api.EthereumService.getBalance();
+      store.wallet.balances = await api.EthereumService.getBalances();
     },
     async disconnectWallet() {
       await api.EthereumService.disconnect();
@@ -53,7 +53,7 @@ export default ({
   });
 
   effect(async () => {
-    store.wallet.balance = ethereumState.balance;
+    store.wallet.balances = ethereumState.balances;
   });
 
   effect(async () => {
@@ -62,7 +62,7 @@ export default ({
 
   effect(async () => {
     ethereumState.log;
-    await api.EthereumService.getBalance();
+    await api.EthereumService.getBalances();
   });
 
   return actions;

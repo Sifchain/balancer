@@ -8,6 +8,7 @@ import {
   getTokenData,
   isValidNetwork
 } from "./utils/ethereumUtils";
+import { Balance } from "../../entities/Balance";
 
 const MAX = Web3.utils.toTwosComplement(-1);
 
@@ -34,7 +35,7 @@ export function handleConnectToMetaMaskError(err: any) {
 
 const initState = {
   connected: false,
-  balance: "",
+  balances: [],
   account: "",
   log: "unset",
   allowance: 0,
@@ -50,7 +51,7 @@ export class EthereumService implements IWalletService {
   private readonly state: {
     connected: boolean;
     account: string;
-    balance: string;
+    balances: Balance[];
     log: string;
     allowance: number;
   };
@@ -65,27 +66,27 @@ export class EthereumService implements IWalletService {
     return this.state;
   }
 
-  async getBalance() {
+  async getBalances() {
     if (!this.web3) {
       throw new Error(
         "There is not yet a connection to Ethereum."
       );
     }
-    return await getUsdtBalance(this.web3, this.state.account);
+    return [await getUsdtBalance(this.web3, this.state.account)];
   }
 
   async updateData() {
     if (!this.web3) {
       this.state.connected = false;
       this.state.account = "";
-      this.state.balance = "";
+      this.state.balances = [];
       this.state.allowance = 0;
       return;
     }
     this.networkType = await this.web3?.eth.net.getNetworkType();
     this.state.account = await this.getCurrentAccount();
     this.state.connected = !!this.state.account;
-    this.state.balance = await this.getBalance();
+    this.state.balances = await this.getBalances();
     this.state.allowance = await this.getAllowance();
   }
 

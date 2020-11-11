@@ -1,10 +1,11 @@
 import JSBI from "jsbi";
+import { Balance } from "../entities/Balance";
 
 export type IWalletService = {
   getState: () => {
     account: string;
     connected: boolean;
-    balance: string;
+    balances: Balance[];
     log: string;
     allowance: number;
   };
@@ -16,5 +17,5 @@ export type IWalletService = {
   swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<string>;
   approveToken(): Promise<string>;
   getAllowance(): Promise<number>;
-  getBalance(): Promise<string>;
+  getBalances(): Promise<Balance[]>;
 };

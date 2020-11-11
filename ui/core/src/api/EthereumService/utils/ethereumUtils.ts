@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import { Contract } from 'web3-eth-contract';
 import { AbiItem } from "web3-utils";
+import { Balance } from "../../../entities/Balance";
 
 export const erc20TokenAbi: AbiItem[] = [
   // balanceOf
@@ -104,5 +105,6 @@ export function getTokenData() {
 
 export async function getUsdtBalance(web3: Web3, address: string) {
   const contract = getTokenContract(web3, getTokenData().usdtAddress);
-  return await contract.methods.balanceOf(address).call();
+  const tokenAmount = await contract.methods.balanceOf(address).call();
+  return Balance.create(6, tokenAmount);
 }
