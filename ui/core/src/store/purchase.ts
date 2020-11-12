@@ -5,7 +5,7 @@ export type PurchaseStore = {
   whitelisted: boolean;
   usdtAmount: number;
   rwnAmount: number;
-  usdtAllowance: number;
+  allowance: number;
   unhashedKey: string;
 };
 
@@ -14,6 +14,6 @@ export const purchase = reactive({
   whitelisted: false,
   usdtAmount: 1,
   rwnAmount: 0,
-  usdtAllowance: 0,
+  allowance: 0,
   unhashedKey: ""
 }) as PurchaseStore;

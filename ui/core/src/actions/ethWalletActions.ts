@@ -12,9 +12,6 @@ export default ({
     async updateBalances(_?: string) {
       store.wallet.balances = await api.EthereumService.getBalances();
     },
-    async disconnectWallet() {
-      await api.EthereumService.disconnect();
-    },
     async connectToWallet() {
       await api.EthereumService.connect();
     },
@@ -57,7 +54,7 @@ export default ({
   });
 
   effect(async () => {
-    store.purchase.usdtAllowance = ethereumState.allowance;
+    store.purchase.allowance = ethereumState.allowance;
   });
 
   effect(async () => {
