@@ -308,18 +308,6 @@ contract BPool is BMath {
         return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm);
     }
 
-    function getSpotPriceSansFee(address tokenIn, address tokenOut)
-        external view
-        _viewlock_
-        returns (uint spotPrice)
-    {
-        require(_records[tokenIn].bound, "ERR_NOT_BOUND");
-        require(_records[tokenOut].bound, "ERR_NOT_BOUND");
-        Record storage inRecord = _records[tokenIn];
-        Record storage outRecord = _records[tokenOut];
-        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm);
-    }
-
     function exitPool(uint[] calldata minAmountsOut)
         external
         _logs_

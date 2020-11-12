@@ -316,14 +316,13 @@ contract("Full pool test", (accounts) => {
       XXX - 0
     */
 
-    it("getSpotPriceSansFee and getSpotPrice", async () => {
-      const wethPrice = await pool.getSpotPriceSansFee(DAI, WETH);
+    it("getSpotPrice fee check", async () => {
+      const wethPrice = await pool.getSpotPrice(DAI, WETH);
       assert.equal(200, fromWei(wethPrice));
 
-      const wethPriceFee = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceFeeCheck = 10500 / 5 / (52.5 / 5);
+      const wethPriceCheck = 10500 / 5 / (52.5 / 5);
       // 200.6018054162487462
-      assert.equal(fromWei(wethPriceFee), wethPriceFeeCheck);
+      assert.equal(fromWei(wethPrice), wethPriceCheck);
     });
 
     it("Fail swapExactAmountIn unbound or over min max ratios", async () => {
@@ -511,11 +510,11 @@ contract("Full pool test", (accounts) => {
       await truffleAssert.reverts(pool.getSpotPrice(DAI, XXX), "ERR_NOT_BOUND");
       await truffleAssert.reverts(pool.getSpotPrice(XXX, DAI), "ERR_NOT_BOUND");
       await truffleAssert.reverts(
-        pool.getSpotPriceSansFee(DAI, XXX),
+        pool.getSpotPrice(DAI, XXX),
         "ERR_NOT_BOUND"
       );
       await truffleAssert.reverts(
-        pool.getSpotPriceSansFee(XXX, DAI),
+        pool.getSpotPrice(XXX, DAI),
         "ERR_NOT_BOUND"
       );
     });
