@@ -105,7 +105,7 @@ export function getTokenData() {
 
 export function getBalancerAbiArray(networkType: string) {
   const network = networkType === "private" ? "development" : networkType === "main" ? "mainnet" : networkType;
-  return require("../../../../../BalancerABI."+network+".json");
+  return require("../../../../../../BalancerABI."+network+".json");
 }
 
 export async function getUsdtBalance(web3: Web3, address: string) {

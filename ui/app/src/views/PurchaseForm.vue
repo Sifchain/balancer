@@ -1,7 +1,5 @@
 <script>
   import ActionButton from '../components/elements/ActionButton.vue';
-  import TokenForm from '../components/blocks/TokenForm.vue';
-  import ConfirmationCode from "@/components/blocks/ConfirmationCode";
   import { useCore } from "@/hooks/useCore";
 
   export default {
@@ -12,6 +10,7 @@
     methods: {
       async initState() {
         await useCore().api.EthereumService.handleStateChange();
+        console.log("VVVVV =>", store.purchase.allowance)
       }
     },
     setup() {
@@ -59,7 +58,7 @@
       }
 
       async function swapExactAmountIn() {
-        if (store.purchase.whitelisted) {
+        if (store.purchase.whitelisted && store.wallet.validNetwork) {
           const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
           console.log("swapExactAmountIn hash:", hash);
         }
@@ -81,9 +80,7 @@
       };
     },
     components: {
-      ConfirmationCode,
       ActionButton,
-      TokenForm,
     }
   }
 </script>
@@ -95,8 +92,8 @@
         <div>
           <div class="input-group mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="d-flex fd-row j-between text--small">
-              <p>Contribution amount</p>
-              <p v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
+              <p class="text--normal text--italic">Contribution Amount</p>
+              <p class="text--normal text--italic" v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
             </div>
 
             <div v-if="store.wallet.isConnected" class="token-form text--small">
@@ -106,9 +103,9 @@
                 </div>
               </div>
               <div class="token-form__balance">
-                <div class="d-flex fd-row j-center">
+                <div class="d-flex fd-row j-center align-center">
                   <img src="../assets/usdt-symbol.png" class="icon-margin" height="18" width="18">
-                  <p>USDT</p>
+                  <p class="text--medium text--bold color-text">USDT</p>
                 </div>
               </div>
             </div>
@@ -118,14 +115,14 @@
             <div v-if="store.wallet.isConnected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
-                  <label class="sif-input__label">Minimum Received</label>
+                  <label class="text--normal text--italic">Minimum Received</label>
                   <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" step="any" @input="getEstimate" @focus="store.purchase.swapIn = false">
                 </div>
               </div>
               <div class="token-form__balance">
-                <div class="d-flex fd-row j-center">
+                <div class="d-flex fd-row j-center align-center">
                   <img src="../assets/rwn-symbol.svg" class="icon-margin" height="18" width="18">
-                  <p>RWN</p>
+                  <p class="text--medium text--bold color-text">RWN</p>
                 </div>
               </div>
             </div>
@@ -136,32 +133,32 @@
           </div>
 
           <div v-if="store.wallet.validNetwork" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-between text--small">
-              <p>Price</p>
-              <p>{{ getRwnPrice() }} USDT per RWN</p>
+            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-between">
+              <p class="text--small text--italic text--normal">
+                Price
+              </p>
+              <p class="text--small text--italic text--bold">
+                {{ getRwnPrice() }} USDT per RWN
+              </p>
             </div>
           </div>
           <div v-if="store.wallet.validNetwork" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.isConnected }">
-            <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small">
+            <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small text--italic text--normal" align="left">
               Slippage tolerance
             </p>
           </div>
 
           <div class="d-flex fd-row j-center">
-            <p class="text--small text--italic text--normal" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
+            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
               Please enter your 64-digit confirmation code
             </p>
-            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="icon-margin">
-            <img v-else src="../assets/circle-x-disabled.svg" class="icon-margin">
+            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="icon-margin mb-4">
+            <img v-else src="../assets/circle-x-disabled.svg" class="icon-margin mb-4">
           </div>
 
-          <div class="input-group mh-30" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
+          <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected && store.purchase.allowance > 0" class="token-form text--small">
-              <div class="token-form__input">
-                <div class="sif-input__wrapper">
-                  <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
-                </div>
-              </div>
+              <input v-model="store.purchase.unhashedKey" class="code-input" type="text" @input="getEstimate">
             </div>
           </div>
 
@@ -177,7 +174,7 @@
           </ActionButton>
 
           <div v-if="store.wallet.isConnected" class="d-flex fd-row j-center">
-            <p class="text--small">
+            <p class="text--small color-text">
               Connected to {{ getShortenedAddress() }}
             </p>
             <img src="../assets/circle-check.svg" class="icon-margin">
@@ -187,7 +184,7 @@
             Approve Token
           </ActionButton>
 
-          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" @click="swapExactAmountIn">
+          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance > 0" @click="swapExactAmountIn">
             Purchase
           </ActionButton>
         </div>
@@ -230,7 +227,7 @@
 
     &__body-disabled {
       padding: 15px;
-      background: $g_gray_disabled;
+      background: $c_gray_50;
       color: $c_gray_700;
     }
   }
@@ -242,7 +239,21 @@
   }
   .input-group {
     margin-bottom: 20px;
-    padding: 4px 15px 15px 15px;
+    padding: 0 15px 0 15px;
+    border-radius: $br_sm;
+    border-color: $c_gray_150;
+    border-width: 1px;
+    border-style: solid;
+    background: $g_gray;
+    color: $c_gray_700;
+
+    &__disabled {
+      background: $g_gray_disabled;
+    }
+  }
+  .confirmation-code {
+    margin-bottom: 20px;
+    padding: 0;
     border-radius: $br_sm;
     border-color: $c_gray_150;
     border-width: 1px;
@@ -255,14 +266,14 @@
     }
   }
   .price-section {
-    padding: 4px 15px 15px 15px;
+    padding: 0 15px 0 15px;
     border-top-left-radius: $br_sm;
     border-top-right-radius: $br_sm;
     border-color: $c_gray_150;
     border-width: 1px;
     border-style: solid;
-    border-bottom-color: $c_transparent;
-    background: $g_gray;
+    border-bottom-color: $c_gray_25;
+    background: $g_gray_disabled;
     color: $c_gray_700;
 
     &__disabled {
@@ -275,13 +286,70 @@
     border-bottom-left-radius: $br_sm;
     border-bottom-right-radius: $br_sm;
     border-color: $c_gray_150;
+    border-top-color: $c_gray_100;
     border-width: 1px;
     border-style: solid;
-    background: $g_gray;
+    background: $g_gray_light;
     color: $c_gray_700;
 
     &__disabled {
       background: $g_gray_disabled;
+    }
+  }
+  .sif-input {
+    &__wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    height: 30px;
+    width: 100%;
+    padding: 0 8px;
+    border-radius: $br_sm;
+    border: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+  .code-input {
+    &__wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    height: 30px;
+    width: 100%;
+    padding: 0 8px;
+    border-radius: $br_sm;
+    border: none;
+
+    &:focus {
+      outline: none;
+    }
+  }
+  .token-form {
+    display: flex;
+
+    &__input,
+    &__balance {
+      display: flex;
+      justify-content: end;
+      flex-direction: column;
+    }
+
+    &__balance {
+      align-items: flex-end;
+    }
+
+    &__input {
+      align-items: flex-start;
+      flex-grow: 1;
+      margin-right: 10px;
     }
   }
 </style>

@@ -33,6 +33,10 @@
     font-size: $fs_sm;
 }
 
+.text--medium {
+    font-size: $fs_md;
+}
+
 .text--italic {
     font-style: italic;
 }
@@ -47,6 +51,10 @@
 
 .color-white {
     color: $c_white;
+}
+
+.color-text {
+    color: $c_text;
 }
 
 .mh-93 {
@@ -88,4 +96,8 @@
 
 .j-center {
     justify-content: center;
+}
+
+.align-center {
+    align-items: center;
 }

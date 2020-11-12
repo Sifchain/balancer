@@ -36,7 +36,7 @@ export function handleConnectToMetaMaskError(err: any) {
 
 const initState = {
   networkType: "private",
-  validNetwork: false,
+  validNetwork: true,
   connected: false,
   balances: [],
   account: undefined,
