@@ -20,7 +20,7 @@
       const { actions, store } = useCore();
 
       function getShortenedAddress() {
-        return store.wallet.isConnected && store.wallet.account ? store.wallet.account.slice(0, 8) + "..." : "";
+        return store.wallet.isConnected && store.wallet.account ? store.wallet.account.slice(0, 11) + "..." : "";
       }
 
       async function handleConnectClicked() {
@@ -97,15 +97,22 @@
     <SifApp>
       <div>
         <InputGroup class="form-row">
+          <div v-if="store.wallet.isConnected" class="flex-row-between text--small">
+            <p>Contribution amount</p>
+            <p v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
+          </div>
+
           <div v-if="store.wallet.isConnected" class="token-form text--small">
             <div class="token-form__input">
               <div class="sif-input__wrapper">
-                <label class="sif-input__label">Contribution amount</label>
-                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = true">
+                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" step="any" @input="getEstimate" @focus="store.purchase.swapIn = true">
               </div>
             </div>
             <div class="token-form__balance">
-              <span>USDT</span>
+              <div class="flex-row-center">
+                <img src="../assets/usdt-symbol.png" class="form-row-image" height="18" width="18">
+                <p>USDT</p>
+              </div>
             </div>
           </div>
         </InputGroup>
@@ -115,29 +122,34 @@
             <div class="token-form__input">
               <div class="sif-input__wrapper">
                 <label class="sif-input__label">Minimum Received</label>
-                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
+                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" step="any" @input="getEstimate" @focus="store.purchase.swapIn = false">
               </div>
             </div>
             <div class="token-form__balance">
-              <span>RWN</span>
+              <div class="flex-row-center">
+                <img src="../assets/rwn-symbol.svg" class="form-row-image" height="18" width="18">
+                <p>RWN</p>
+              </div>
             </div>
           </div>
         </InputGroup>
 
         <InputGroup class="form-row-large">
-          <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted">
-            <p class="text--small" align="left">
-              Price: {{ getRwnPrice() }} USDT per RWN
-            </p>
-            <p class="text--small" align="left">
-              Slippage tolerance
-            </p>
+          <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="flex-row-between text--small">
+            <p>Price</p>
+            <p>{{ getRwnPrice() }} USDT per RWN</p>
           </div>
+          <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small" align="left">
+            Slippage tolerance
+          </p>
         </InputGroup>
 
-        <p class="text--small" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
-          Please enter your 64-digit confirmation code
-        </p>
+        <div class="flex-row-center">
+          <p class="text--small" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
+            Please enter your 64-digit confirmation code
+          </p>
+          <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="form-row-image">
+        </div>
 
         <InputGroup class="form-row-small">
           <div v-if="store.wallet.isConnected && store.purchase.allowance > 0" class="token-form text--small">
@@ -149,17 +161,23 @@
           </div>
         </InputGroup>
 
-        <p v-if="!store.wallet.isConnected" class="text--small">
-          No wallet connected 🅧
-        </p>
+        <div v-if="!store.wallet.isConnected" class="flex-row-center">
+          <p class="text--small">
+            No wallet connected
+          </p>
+          <img src="../assets/circle-x.svg" class="form-row-image">
+        </div>
 
         <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
           Connect Wallet
         </ActionButton>
 
-        <p v-if="store.wallet.isConnected">
-          Connected to {{ getShortenedAddress() }} ✅
-        </p>
+        <div v-if="store.wallet.isConnected" class="flex-row-center">
+          <p class="text--small">
+            Connected to {{ getShortenedAddress() }}
+          </p>
+          <img src="../assets/circle-check.svg" class="form-row-image">
+        </div>
 
         <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
           Approve Token
@@ -199,5 +217,19 @@
   }
   .form-row-large {
     min-height: 72px;
+  }
+  .flex-row-center {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .flex-row-between {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .form-row-image {
+    margin-left: 8px;
+    margin-right: 8px;
   }
 </style>
