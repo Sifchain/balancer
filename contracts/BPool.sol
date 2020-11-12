@@ -300,6 +300,7 @@ contract BPool is BMath {
         external
         _logs_
         _lock_
+        onlyController
     {
         require(_records[token].bound, "ERR_NOT_BOUND");
         _records[token].balance = IERC20(token).balanceOf(address(this));
