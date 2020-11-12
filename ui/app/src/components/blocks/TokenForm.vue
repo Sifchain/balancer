@@ -10,8 +10,8 @@
 </template>
 
 <script>
-import SifButton from '../Elements/ActionButton';
-import NumericInput from '../Elements/NumericInput';
+import SifButton from '../elements/ActionButton';
+import NumericInput from '../elements/NumericInput';
 
 export default {
   props: {

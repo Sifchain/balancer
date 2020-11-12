@@ -1,107 +1,23 @@
-<template>
-  <div>
-    <SifApp>
-      <div>
-        <InputGroup v-if="store.wallet.isConnected">
-          <div class="token-form text--small">
-            <div class="token-form__input">
-              <div class="sif-input__wrapper">
-                <label class="sif-input__label">Contribution amount</label>
-                <input :disabled="store.purchase.usdtAllowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = true">
-              </div>
-            </div>
-            <div class="token-form__balance">
-              <span>USDT</span>
-            </div>
-          </div>
-        </InputGroup>
-
-        <InputGroup v-if="store.wallet.isConnected">
-          <div class="token-form text--small">
-            <div class="token-form__input">
-              <div class="sif-input__wrapper">
-                <label class="sif-input__label">Minimum Received</label>
-                <input :disabled="store.purchase.usdtAllowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
-              </div>
-            </div>
-            <div class="token-form__balance">
-              <span>RWN</span>
-            </div>
-          </div>
-        </InputGroup>
-
-        <InputGroup v-if="store.wallet.isConnected">
-          <div>
-            <p class="text--small" align="left">
-              Price: {{ getRwnPrice() }} USDT per RWN
-            </p>
-            <p class="text--small" align="left">
-              Slippage tolerance
-            </p>
-          </div>
-        </InputGroup>
-
-        <p v-if="!store.wallet.isConnected" class="text--small">
-          No wallet connected 🅧
-        </p>
-
-        <p v-if="store.wallet.isConnected" class="text--small">
-          Connected to {{ getShortenedAddress() }} ✅
-        </p>
-
-        <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
-          Connect Wallet
-        </ActionButton>
-
-        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.usdtAllowance <= 0" @click="approveToken">
-          Approve Token
-        </ActionButton>
-
-        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.usdtAllowance > 0" @click="swapExactAmountIn">
-          Purchase
-        </ActionButton>
-
-        <InputGroup v-if="store.wallet.isConnected && store.purchase.usdtAllowance > 0">
-          <div class="token-form text--small">
-            <div class="token-form__input">
-              <div class="sif-input__wrapper">
-                <label class="sif-input__label">Confirmation code</label>
-                <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
-              </div>
-            </div>
-          </div>
-        </InputGroup>
-      </div>
-      <p v-if="!store.wallet.isConnected">
-        Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
-        If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
-        Please remember to use the wallet address you provided us in your KYC information.
-        Any transactions from unapproved wallet addresses will be rejected.
-      </p>
-    </SifApp>
-  </div>
-</template>
-
 <script>
-  import ActionButton from '../Elements/ActionButton.vue';
-  import InputGroup from '../Elements/InputGroup.vue';
-  import SifApp from '../Blocks/SifApp.vue';
-  import TokenForm from '../Blocks/TokenForm.vue';
+  import ActionButton from '../components/elements/ActionButton.vue';
+  import InputGroup from '../components/elements/InputGroup.vue';
+  import SifApp from '../components/blocks/SifApp.vue';
+  import TokenForm from '../components/blocks/TokenForm.vue';
+  import ConfirmationCode from "@/components/blocks/ConfirmationCode";
   import { useCore } from "@/hooks/useCore";
-  import ConfirmationCode from "@/components/Blocks/ConfirmationCode";
 
   export default {
     name: "PurchaseForm",
     created() {
-      this.loadData();
+      this.initState();
     },
     methods: {
-      async loadData() {
-        await useCore().api.EthereumService.updateData();
+      async initState() {
+        await useCore().api.EthereumService.handleStateChange();
       }
     },
     setup() {
-      const { api, actions, store } = useCore();
+      const { actions, store } = useCore();
 
       function getShortenedAddress() {
         return store.wallet.isConnected && store.wallet.account ? store.wallet.account.slice(0, 8) + "..." : "";
@@ -109,10 +25,6 @@
 
       async function handleConnectClicked() {
         await actions.connectToWallet();
-      }
-
-      async function handleDisconnectClicked() {
-        await actions.disconnectWallet();
       }
 
       async function getRowanEstimate() {
@@ -142,12 +54,17 @@
       }
 
       function getRwnPrice() {
+        if (!store.purchase.usdtAmount || !store.purchase.rwnAmount) {
+          return "0";
+        }
         return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(2);
       }
 
       async function swapExactAmountIn() {
-        const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
-        console.log("swapExactAmountIn hash:", hash);
+        if (store.purchase.whitelisted) {
+          const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
+          console.log("swapExactAmountIn hash:", hash);
+        }
       }
 
       async function approveToken() {
@@ -157,7 +74,6 @@
 
       return {
         store,
-        handleDisconnectClicked,
         handleConnectClicked,
         swapExactAmountIn,
         getShortenedAddress,
@@ -176,9 +92,112 @@
   }
 </script>
 
-<style>
-  .input-label {
-    display: flex;
-    justify-content: space-between;
+<template>
+  <div>
+    <SifApp>
+      <div>
+        <InputGroup class="form-row">
+          <div v-if="store.wallet.isConnected" class="token-form text--small">
+            <div class="token-form__input">
+              <div class="sif-input__wrapper">
+                <label class="sif-input__label">Contribution amount</label>
+                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = true">
+              </div>
+            </div>
+            <div class="token-form__balance">
+              <span>USDT</span>
+            </div>
+          </div>
+        </InputGroup>
+
+        <InputGroup class="form-row">
+          <div v-if="store.wallet.isConnected" class="token-form text--small">
+            <div class="token-form__input">
+              <div class="sif-input__wrapper">
+                <label class="sif-input__label">Minimum Received</label>
+                <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" @input="getEstimate" @focus="store.purchase.swapIn = false">
+              </div>
+            </div>
+            <div class="token-form__balance">
+              <span>RWN</span>
+            </div>
+          </div>
+        </InputGroup>
+
+        <InputGroup class="form-row-large">
+          <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted">
+            <p class="text--small" align="left">
+              Price: {{ getRwnPrice() }} USDT per RWN
+            </p>
+            <p class="text--small" align="left">
+              Slippage tolerance
+            </p>
+          </div>
+        </InputGroup>
+
+        <p class="text--small" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
+          Please enter your 64-digit confirmation code
+        </p>
+
+        <InputGroup class="form-row-small">
+          <div v-if="store.wallet.isConnected && store.purchase.allowance > 0" class="token-form text--small">
+            <div class="token-form__input">
+              <div class="sif-input__wrapper">
+                <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
+              </div>
+            </div>
+          </div>
+        </InputGroup>
+
+        <p v-if="!store.wallet.isConnected" class="text--small">
+          No wallet connected 🅧
+        </p>
+
+        <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
+          Connect Wallet
+        </ActionButton>
+
+        <p v-if="store.wallet.isConnected">
+          Connected to {{ getShortenedAddress() }} ✅
+        </p>
+
+        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
+          Approve Token
+        </ActionButton>
+
+        <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance > 0" @click="swapExactAmountIn">
+          Purchase
+        </ActionButton>
+      </div>
+    </SifApp>
+    <p class="kyc-help-text" v-if="!store.wallet.isConnected">
+      Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
+      If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
+      Please remember to use the wallet address you provided us in your KYC information.
+      Any transactions from unapproved wallet addresses will be rejected.
+    </p>
+  </div>
+</template>
+
+<style lang="scss">
+  .text-disabled {
+    color: $c_gray_400
+  }
+  .kyc-help-text {
+    width: 410px;
+    margin-top: 16px;
+    padding: 8px;
+    font-weight: lighter;
+    font-size: $fs_sm;
+    color:$c_gray_900
+  }
+  .form-row {
+    min-height: 48px;
+  }
+  .form-row-small {
+    min-height: 24px;
+  }
+  .form-row-large {
+    min-height: 72px;
   }
 </style>

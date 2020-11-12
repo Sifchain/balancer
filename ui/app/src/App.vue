@@ -9,9 +9,8 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, onMounted } from "vue";
-  import { useCore } from "./hooks/useCore";
-  import Main from './components/Layout/Main.vue';
+  import { defineComponent } from "vue";
+  import Main from './views/Main.vue';
 
   export default defineComponent({
     name: "App",

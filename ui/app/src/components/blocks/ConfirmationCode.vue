@@ -7,9 +7,9 @@
 </template>
 
 <script>
-import SifButton from '../Elements/ActionButton';
-import NumericInput from '../Elements/NumericInput';
-import TextInput from "../Elements/TextInput";
+import SifButton from '../elements/ActionButton';
+import NumericInput from '../elements/NumericInput';
+import TextInput from "../elements/TextInput";
 
 export default {
   props: {
