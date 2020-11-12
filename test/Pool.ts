@@ -124,8 +124,12 @@ contract("Full pool test", (accounts) => {
       await truffleAssert.reverts(pool.finalize({ from: controller }), "ERR_MIN_TOKENS");
     });
 
+    it('Fails gulp if not controller', async () => {
+      await truffleAssert.reverts(pool.gulp(WETH), 'ERR_NOT_CONTROLLER.');
+    });
+
     it('Fails gulp on unbound token', async () => {
-      await truffleAssert.reverts(pool.gulp(WETH), 'ERR_NOT_BOUND');
+      await truffleAssert.reverts(pool.gulp(WETH, { from: controller }), 'ERR_NOT_BOUND');
     });
 
     it("Admin binds tokens", async () => {
@@ -146,7 +150,7 @@ contract("Full pool test", (accounts) => {
     });
 
     it('Pool can gulp tokens', async () => {
-      await pool.gulp(WETH);
+      await pool.gulp(WETH, { from: controller });
       const balance = await pool.getBalance(WETH);
       assert.equal(fromWei(balance), 50);
     });
