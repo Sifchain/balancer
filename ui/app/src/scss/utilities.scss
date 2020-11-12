@@ -33,6 +33,31 @@
     font-size: $fs_sm;
 }
 
+.text--italic {
+    font-style: italic;
+}
+
+.text--normal {
+    font-weight: normal;
+}
+
+.mh-70 {
+    min-height: 70px;
+}
+.mh-23 {
+    min-height: 23px;
+}
+.mh-30 {
+    min-height: 30px;
+}
+.mh-75 {
+    min-height: 75px;
+}
+
+.icon-margin {
+    margin-left: 8px;
+    margin-right: 8px;
+}
 
 // display
 .d-flex {
@@ -40,4 +65,12 @@
 }
 .j-between {
     justify-content: space-between;
+}
+
+.fd-row {
+    flex-direction: row;
+}
+
+.j-center {
+    justify-content: center;
 }
