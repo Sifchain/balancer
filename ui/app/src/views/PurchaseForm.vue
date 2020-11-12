@@ -90,12 +90,11 @@
     <div class="purchase-form">
       <div class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.isConnected }">
         <div>
-          <div class="input-group mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
+          <div class="input-group mb-small mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="d-flex fd-row j-between text--small">
               <p class="text--normal text--italic">Contribution Amount</p>
               <p class="text--normal text--italic" v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
             </div>
-
             <div v-if="store.wallet.isConnected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
@@ -109,6 +108,11 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <div>
+            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/arrow-gold.svg">
+            <img v-else src="../assets/arrow-grey.svg">
           </div>
 
           <div class="input-group mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
@@ -137,9 +141,12 @@
               <p class="text--small text--italic text--normal">
                 Price
               </p>
-              <p class="text--small text--italic text--bold">
-                {{ getRwnPrice() }} USDT per RWN
-              </p>
+              <div class="d-flex fd-row j-center align-center">
+                <p class="text--small text--italic text--bold">
+                  {{ getRwnPrice() }} USDT per RWN
+                </p>
+<!--                <img src="../assets/two-arrows.svg" class="icon-margin" height="18" width="18">-->
+              </div>
             </div>
           </div>
           <div v-if="store.wallet.validNetwork" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.isConnected }">
@@ -351,5 +358,8 @@
       flex-grow: 1;
       margin-right: 10px;
     }
+  }
+  .mb-small {
+    margin-bottom: 4px;
   }
 </style>
