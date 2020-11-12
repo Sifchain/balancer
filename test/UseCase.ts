@@ -14,7 +14,6 @@ const {
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
-const swap_fee = 0.0;
 const verbose = true;
 
 const helpers = require("../helpers/whitelistHelper");
@@ -228,7 +227,7 @@ contract("Our use case", (accounts) => {
         fromWei(rowanPoolBalance),
         weightRowan,
         500,
-        swap_fee
+        0.0
       );
 
       if(verbose) {
@@ -274,7 +273,7 @@ contract("Our use case", (accounts) => {
         fromWei(rowanPoolBalance),
         weightRowan,
         20000,
-        swap_fee
+        0.0
       );
 
       if(verbose) {

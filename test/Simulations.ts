@@ -10,7 +10,6 @@ const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff, logState } = require('
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
-const swap_fee = 0.0;
 const hours_in_week = 7 * 24;
 // parameters
 const first_hour_buyers_number = 100;
@@ -32,7 +31,7 @@ async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
     fromWei(rowanPoolBalance),
     weightRowan,
     amount,
-    swap_fee
+    0.0
   );
 
   const txr = await pool.swapExactAmountIn(
