@@ -3,7 +3,8 @@ import { Balance } from "../entities/Balance";
 
 export type IWalletService = {
   getState: () => {
-    networkType?: string;
+    networkType: string;
+    validNetwork: boolean;
     connected: boolean;
     account?: string;
     balances: Balance[];

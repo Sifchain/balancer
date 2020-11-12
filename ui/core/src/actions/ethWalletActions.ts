@@ -46,6 +46,10 @@ export default ({
   });
 
   effect(async () => {
+    store.wallet.validNetwork = ethereumState.validNetwork;
+  });
+
+  effect(async () => {
     store.wallet.account = ethereumState.account;
   });
 

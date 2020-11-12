@@ -131,14 +131,18 @@
             </div>
           </div>
 
-          <div class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.isConnected }">
+          <div v-if="!store.wallet.validNetwork" class="error-section mh-93 d-flex j-center fd-col">
+            <p class="text--small text--italic text--bold color-white">Connected Wallet is on a test network.</p>
+          </div>
+
+          <div v-if="store.wallet.validNetwork" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-between text--small">
               <p>Price</p>
               <p>{{ getRwnPrice() }} USDT per RWN</p>
             </div>
           </div>
-          <div class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.isConnected }">
-            <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small" align="left">
+          <div v-if="store.wallet.validNetwork" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.isConnected }">
+            <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small">
               Slippage tolerance
             </p>
           </div>
@@ -230,10 +234,16 @@
       color: $c_gray_700;
     }
   }
+  .error-section {
+    margin-bottom: 20px;
+    padding: 4px 15px 15px 15px;
+    border-radius: $br_sm;
+    background: $c_red;
+  }
   .input-group {
     margin-bottom: 20px;
     padding: 4px 15px 15px 15px;
-    border-radius: $br_md;
+    border-radius: $br_sm;
     border-color: $c_gray_150;
     border-width: 1px;
     border-style: solid;

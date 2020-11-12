@@ -103,6 +103,11 @@ export function getTokenData() {
   return require("../../../../../../TokenData.json");
 }
 
+export function getBalancerAbiArray(networkType: string) {
+  const network = networkType === "private" ? "development" : networkType === "main" ? "mainnet" : networkType;
+  return require("../../../../../BalancerABI."+network+".json");
+}
+
 export async function getUsdtBalance(web3: Web3, address: string) {
   const contract = getTokenContract(web3, getTokenData().usdtAddress);
   const tokenAmount = await contract.methods.balanceOf(address).call();

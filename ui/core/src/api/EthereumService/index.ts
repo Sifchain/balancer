@@ -6,7 +6,8 @@ import {
   getTokenContract,
   getUsdtBalance,
   getTokenData,
-  isValidNetwork
+  isValidNetwork,
+  getBalancerAbiArray
 } from "./utils/ethereumUtils";
 import { Balance } from "../../entities/Balance";
 
@@ -34,7 +35,8 @@ export function handleConnectToMetaMaskError(err: any) {
 }
 
 const initState = {
-  networkType: undefined,
+  networkType: "private",
+  validNetwork: false,
   connected: false,
   balances: [],
   account: undefined,
@@ -49,7 +51,8 @@ export class EthereumService implements IWalletService {
 
   // This is shared reactive state
   private state: {
-    networkType?: string;
+    networkType: string;
+    validNetwork: boolean;
     connected: boolean;
     account?: string;
     balances: Balance[];
@@ -64,6 +67,10 @@ export class EthereumService implements IWalletService {
     this.web3.givenProvider.on('accountsChanged',  () => {
       this.handleStateChange();
     });
+
+    this.web3.givenProvider.on('chainChanged', () => {
+      this.handleStateChange();
+    });
   }
 
   getState() {
@@ -72,9 +79,7 @@ export class EthereumService implements IWalletService {
 
   async getBalances() {
     if (!this.web3 || !this.state.account) {
-      throw new Error(
-        "There is not yet a connection to Ethereum."
-      );
+      throw new Error("There is not yet a connection to Ethereum.");
     }
     return [await getUsdtBalance(this.web3, this.state.account)];
   }
@@ -87,8 +92,9 @@ export class EthereumService implements IWalletService {
     }
 
     this.state.networkType = await this.web3?.eth.net.getNetworkType();
-    if (!this.isValidNetwork()) {
-      throw new Error("Invalid network.");
+    this.state.validNetwork = isValidNetwork(this.state.networkType);
+    if (!this.state.validNetwork) {
+      return;
     }
 
     this.state.account = await this.getCurrentAccount();
@@ -112,22 +118,22 @@ export class EthereumService implements IWalletService {
     return this.state.connected;
   }
 
-  isValidNetwork() {
-    return this.state.networkType && isValidNetwork(this.state.networkType);
-  }
-
   async connect() {
     try {
-      this.state.networkType = await this.web3?.eth.net.getNetworkType();
-
-      if (!this.isValidNetwork()) {
-        throw new Error("Invalid network.");
+      if (!this.web3) {
+        throw new Error("There is not yet a connection to Ethereum.");
       }
 
-      await this.web3?.givenProvider.request({ method: "eth_requestAccounts" });
+      this.state.networkType = await this.web3.eth.net.getNetworkType();
+      this.state.validNetwork = isValidNetwork(this.state.networkType);
+
+      if (this.state.validNetwork) {
+        await this.web3.givenProvider.request({ method: "eth_requestAccounts" });
+      }
     } catch (err) {
       handleConnectToMetaMaskError(err);
       this.web3 = null;
+      this.state = reactive({ ...initState });
     }
   }
 
@@ -153,18 +159,13 @@ export class EthereumService implements IWalletService {
     this.logsSubscription?.unsubscribe();
   }
 
-  getBalancerAbiArray() {
-    const networkType = this.state.networkType === "private" ? "development" : this.state.networkType === "main" ? "mainnet" : this.state.networkType;
-    return require("../../../../../BalancerABI."+networkType+".json");
-  }
-
   getBalancerContract() {
     if (!this.web3) {
       throw new Error(
         "There is not yet a connection to Ethereum."
       );
     }
-    const balancerAbiArray = this.getBalancerAbiArray();
+    const balancerAbiArray = getBalancerAbiArray(this.state.networkType);
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
   }
 
@@ -184,7 +185,7 @@ export class EthereumService implements IWalletService {
         "There is not yet a connection to Ethereum."
       );
     }
-    return await getTokenContract(this.web3, getTokenData().usdtAddress).methods.allowance(this.state.account, this.getBalancerAbiArray().address).call({from: this.state.account});
+    return await getTokenContract(this.web3, getTokenData().usdtAddress).methods.allowance(this.state.account, getBalancerAbiArray(this.state.networkType).address).call({from: this.state.account});
   }
 
   async approveToken(): Promise<string> {
@@ -194,7 +195,7 @@ export class EthereumService implements IWalletService {
       );
     }
     const accountFrom = await this.getCurrentAccount();
-    return getTokenContract(this.web3, getTokenData().usdtAddress).methods.approve(this.getBalancerAbiArray().address, MAX).send({from: accountFrom});
+    return getTokenContract(this.web3, getTokenData().usdtAddress).methods.approve(getBalancerAbiArray(this.state.networkType).address, MAX).send({from: accountFrom});
   }
 
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {

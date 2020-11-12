@@ -41,6 +41,17 @@
     font-weight: normal;
 }
 
+.text--bold {
+    font-weight: bold;
+}
+
+.color-white {
+    color: $c_white;
+}
+
+.mh-93 {
+    min-height: 93px;
+}
 .mh-70 {
     min-height: 70px;
 }
@@ -69,6 +80,10 @@
 
 .fd-row {
     flex-direction: row;
+}
+
+.fd-col {
+    flex-direction: column;
 }
 
 .j-center {
