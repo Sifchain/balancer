@@ -86,7 +86,6 @@ contract BPool is BMath {
 
     // `finalize` requires CONTROL
     // `finalize` sets `PUBLIC can SWAP`, `PUBLIC can JOIN`
-    uint private _swapFee;
     bool private _finalized;
 
     address[] private _tokens;
@@ -98,7 +97,6 @@ contract BPool is BMath {
         _whiteListContract = _whitelist;
         _controller = controller;
         _factory = controller;
-        _swapFee = SWAP_FEE;
         _publicSwap = false;
         _finalized = false;
     }
@@ -184,14 +182,6 @@ contract BPool is BMath {
 
         require(_records[token].bound, "ERR_NOT_BOUND");
         return _records[token].balance;
-    }
-
-    function getSwapFee()
-        external view
-        _viewlock_
-        returns (uint)
-    {
-        return _swapFee;
     }
 
     function getController()
@@ -385,7 +375,7 @@ contract BPool is BMath {
                             outRecord.balance,
                             outRecord.denorm,
                             tokenAmountOut,
-                            _swapFee
+                            0
                         );
         require(tokenAmountIn <= maxAmountIn, "ERR_LIMIT_IN");
         require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
