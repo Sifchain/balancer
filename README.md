@@ -13,9 +13,10 @@ Testing swaps in UI:
 4. Copy USDT and ROWAN contract addresses into .env (used in step 5 and 6)
 5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. `yarn pool:init` - Init balancer pool
-7. `yarn pool:whitelist` - Whitelist accounts from whitelist.json
-8. `yarn build:ui` - Build UI (core & app)
-9. `yarn serve:ui` - Start the app at http://localhost:8080/
+7. Add addresses and confirmation codes to scripts/whitelist.json to be used for testing
+8. `yarn pool:whitelist` - Whitelist accounts from whitelist.json
+9. `yarn build:ui` - Build UI (core & app)
+10. `yarn serve:ui` - Start the app at http://localhost:8080/
 ```
 
 ## Slack hook for daemon
