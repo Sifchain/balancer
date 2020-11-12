@@ -11,7 +11,7 @@ ganache-cli -d
 0. `cat env.example >> .env` - Set env vars
 1. `yarn` - Install top-level dependencies
 2. `yarn ganache` - Run ganache-cli (in a separate window)
-3. `yarn migrate:chain` - Run migrations and deploy contracts
+3. `yarn migrate:local` - Run migrations and deploy contracts
 4. Copy USDT and ROWAN contract addresses into .env (used in step 5 and 6)
 5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. `yarn pool:init` - Init balancer pool
