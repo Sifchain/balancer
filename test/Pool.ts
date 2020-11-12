@@ -242,11 +242,6 @@ contract("Full pool test", (accounts) => {
       );
     });
 
-    it("Pool swap fee is 0", async () => {
-      const swapFee = await pool.getSwapFee();
-      assert.equal(0, fromWei(swapFee));
-    });
-
     it("Fails nonadmin finalizes pool", async () => {
       await truffleAssert.reverts(
         pool.finalize({ from: user1 }),
