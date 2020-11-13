@@ -186,7 +186,7 @@
           </div>
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0" class="token-form text--small">
+            <div v-if="store.wallet.isConnected" class="token-form text--small">
               <input v-model="store.purchase.unhashedKey" class="code-input" type="text" @input="getEstimate">
             </div>
           </div>
