@@ -209,7 +209,7 @@
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0 && store.purchase.whitelisted" @click="approveToken">
+          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
             Approve Token
           </ActionButton>
 
