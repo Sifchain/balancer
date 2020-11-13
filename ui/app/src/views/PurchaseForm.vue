@@ -195,7 +195,7 @@
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="token-form text--small">
-              <input v-model="store.purchase.unhashedKey" class="code-input" type="text" @input="getEstimate">
+              <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
             </div>
           </div>
 
@@ -389,24 +389,9 @@
 
     &:focus {
       outline: none;
-    }
-  }
-  .code-input {
-    &__wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      width: 100%;
-    }
-
-    height: 30px;
-    width: 100%;
-    padding: 0 8px;
-    border-radius: $br_sm;
-    border: none;
-
-    &:focus {
-      outline: none;
+      border-color: $c_gold;
+      border-width: 1px;
+      border-style: solid;
     }
   }
   .token-form {
