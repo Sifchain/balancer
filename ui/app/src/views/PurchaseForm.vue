@@ -122,8 +122,8 @@
             </div>
           </div>
 
-          <div>
-            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/arrow-gold.svg">
+          <div v-if="store.wallet.isConnected">
+            <img v-if="store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/arrow-gold.svg">
             <img v-else src="../assets/arrow-grey.svg">
           </div>
 
@@ -195,7 +195,7 @@
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="token-form text--small">
-              <input v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
+              <input :disabled="store.purchase.allowance <= 0" v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
             </div>
           </div>
 
