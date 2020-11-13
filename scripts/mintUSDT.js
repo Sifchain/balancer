@@ -8,7 +8,7 @@ module.exports = function(cb) {
 
 async function mintUSDT(cb) {
   const networkType = await web3.eth.net.getNetworkType();
-  if(networkType == "mainnet") {
+  if(networkType == "main") {
     console.log("This script should be used only for a test net");
     cb();
   }
