@@ -10,7 +10,6 @@
     methods: {
       async initState() {
         await useCore().api.EthereumService.handleStateChange();
-        console.log("VVVVV =>", store.purchase.allowance)
       }
     },
     setup() {
@@ -57,9 +56,14 @@
         return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(2);
       }
 
+      function slippageCoefficient() {
+        return 1 - store.purchase.slippagePercent / 100;
+      }
+
       async function swapExactAmountIn() {
         if (store.purchase.whitelisted && store.wallet.validNetwork) {
-          const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * 0.95, store.purchase.unhashedKey);
+          console.log("VVVVV", slippageCoefficient());
+          const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
           console.log("swapExactAmountIn hash:", hash);
         }
       }
@@ -103,7 +107,7 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center">
-                  <img src="../assets/usdt-symbol.png" class="icon-margin" height="18" width="18">
+                  <img src="../assets/usdt-symbol.png" class="mr-8 ml-8" height="18" width="18">
                   <p class="text--medium text--bold color-text">USDT</p>
                 </div>
               </div>
@@ -125,7 +129,7 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center">
-                  <img src="../assets/rwn-symbol.svg" class="icon-margin" height="18" width="18">
+                  <img src="../assets/rwn-symbol.svg" class="ml-8 mr-8" height="18" width="18">
                   <p class="text--medium text--bold color-text">RWN</p>
                 </div>
               </div>
@@ -145,7 +149,7 @@
                 <p class="text--small text--italic text--bold">
                   {{ getRwnPrice() }} USDT per RWN
                 </p>
-<!--                <img src="../assets/two-arrows.svg" class="icon-margin" height="18" width="18">-->
+                <img src="../assets/arrows-grey.svg" class="ml-8" height="9" width="10">
               </div>
             </div>
           </div>
@@ -153,14 +157,32 @@
             <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small text--italic text--normal" align="left">
               Slippage tolerance
             </p>
+            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-start">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 0.1 }" @click="store.purchase.slippagePercent = 0.1">
+                <p class="text--standard text--normal text--regular">
+                  0.1%
+                </p>
+              </div>
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 0.5 }"  @click="store.purchase.slippagePercent = 0.5">
+                <p class="text--standard text--normal text--regular">
+                  0.5%
+                </p>
+              </div>
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 1.0 }" @click="store.purchase.slippagePercent = 1.0">
+                <p class="text--standard text--normal text--regular">
+                  1.0%
+                </p>
+              </div>
+<!--              <input v-model="store.purchase.slippagePercent" class="slippage-item slippage-item__custom text&#45;&#45;standard text&#45;&#45;normal text&#45;&#45;regular color-text" type="text" @input="getEstimate">-->
+            </div>
           </div>
 
           <div class="d-flex fd-row j-center">
             <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
               Please enter your 64-digit confirmation code
             </p>
-            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="icon-margin mb-4">
-            <img v-else src="../assets/circle-x-disabled.svg" class="icon-margin mb-4">
+            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
+            <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
           </div>
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
@@ -173,7 +195,7 @@
             <p class="text--small">
               No wallet connected
             </p>
-            <img src="../assets/circle-x.svg" class="icon-margin">
+            <img src="../assets/circle-x.svg" class="mr-8 ml-8">
           </div>
 
           <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
@@ -184,7 +206,7 @@
             <p class="text--small color-text">
               Connected to {{ getShortenedAddress() }}
             </p>
-            <img src="../assets/circle-check.svg" class="icon-margin">
+            <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
           <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0 && store.purchase.whitelisted" @click="approveToken">
@@ -270,6 +292,46 @@
 
     &__disabled {
       background: $g_gray_disabled;
+    }
+  }
+  .slippage-item {
+    height: 30px;
+    width: 55px;
+    padding: 8px;
+    margin: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: $br_sm;
+    border-color: $c_gray_400;
+    border-width: 1px;
+    border-style: solid;
+    background: $c_white;
+    color: $c_gray_900;
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    &__custom {
+      width: 158px;
+      padding: 0 8px 0 100px;
+      flex-direction: row;
+      justify-content: end;
+
+      &:hover {
+        cursor: default;
+      }
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &__selected {
+      background: $c_gold;
+      color: $c_white;
+      border: none;
     }
   }
   .price-section {

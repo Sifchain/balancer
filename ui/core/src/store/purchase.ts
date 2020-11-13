@@ -7,6 +7,7 @@ export type PurchaseStore = {
   rwnAmount: number;
   allowance: number;
   unhashedKey: string;
+  slippagePercent: number;
 };
 
 export const purchase = reactive({
@@ -15,5 +16,6 @@ export const purchase = reactive({
   usdtAmount: 1,
   rwnAmount: 0,
   allowance: 0,
-  unhashedKey: ""
+  unhashedKey: "",
+  slippagePercent: 0.5
 }) as PurchaseStore;
