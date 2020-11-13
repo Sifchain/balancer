@@ -45,6 +45,15 @@
         } catch (e) {
           if (e.toString().includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
             store.purchase.whitelisted = false;
+          } else if (e.toString().includes("ERR_MAX_IN_RATIO")) {
+            store.purchase.usdtAmount = Math.floor(store.purchase.usdtAmount / 10);
+            await getRowanEstimate();
+          } else if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
+            store.purchase.rwnAmount = Math.floor(store.purchase.rwnAmount / 10);
+            await getUsdtEstimate();
+          } else if (e.toString().includes("ERR_MIN_SWAP_AMOUNT")) {
+            store.purchase.usdtAmount = 1;
+            await getRowanEstimate();
           }
         }
       }
@@ -62,7 +71,6 @@
 
       async function swapExactAmountIn() {
         if (store.purchase.whitelisted && store.wallet.validNetwork) {
-          console.log("VVVVV", slippageCoefficient());
           const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
           console.log("swapExactAmountIn hash:", hash);
         }
