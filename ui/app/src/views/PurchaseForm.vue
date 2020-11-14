@@ -24,23 +24,27 @@
       }
 
       async function getRowanEstimate() {
-        if (store.purchase.usdtAmount.toString().length <= 0 || isNaN(store.purchase.usdtAmount)) {
-          store.purchase.usdtAmount = 0;
+        if (store.purchase.usdtAmount.length <= 0) {
+          store.purchase.usdtAmount = "0";
+        } else {
+          store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
         }
-        const estimate = await actions.swapExactAmountInCall(store.purchase.usdtAmount, 0, store.purchase.unhashedKey) / (10 ** 18);
+        const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount), 0, store.purchase.unhashedKey) / (10 ** 18);
         console.log("getRowanEstimate:", estimate);
-        store.purchase.rwnAmount = estimate;
+        store.purchase.rwnAmount = estimate.toString();
         store.purchase.whitelisted = true;
         store.purchase.state = PurchaseState.Enabled;
       }
 
       async function getUsdtEstimate() {
-        if (store.purchase.rwnAmount.toString().length <= 0 || isNaN(store.purchase.rwnAmount)) {
-          store.purchase.rwnAmount = 0;
+        if (store.purchase.rwnAmount.length <= 0) {
+          store.purchase.rwnAmount = "0";
+        } else {
+          store.purchase.rwnAmount = parseFloat(store.purchase.rwnAmount).toString();
         }
-        const estimate = await actions.swapExactAmountOutCall(100000000000, store.purchase.rwnAmount, store.purchase.unhashedKey) / (10 ** 6);
+        const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount), store.purchase.unhashedKey) / (10 ** 6);
         console.log("getUsdtEstimate:", estimate);
-        store.purchase.usdtAmount = estimate;
+        store.purchase.usdtAmount = estimate.toString();
         store.purchase.whitelisted = true;
         store.purchase.state = PurchaseState.Enabled;
       }
@@ -52,10 +56,10 @@
           if (e.toString().includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
             store.purchase.whitelisted = false;
           } else if (e.toString().includes("ERR_MAX_IN_RATIO")) {
-            store.purchase.usdtAmount = Math.floor(store.purchase.usdtAmount / 10);
+            store.purchase.usdtAmount = Math.floor(parseFloat(store.purchase.usdtAmount) / 10).toString();
             await getRowanEstimate();
           } else if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
-            store.purchase.rwnAmount = Math.floor(store.purchase.rwnAmount / 10);
+            store.purchase.rwnAmount = Math.floor(parseFloat(store.purchase.rwnAmount) / 10).toString();
             await getUsdtEstimate();
           } else if (e.toString().includes("ERR_MIN_SWAP_AMOUNT")) {
             store.purchase.whitelisted = true;
@@ -77,15 +81,15 @@
 
       function tryAgain() {
         store.purchase.state = PurchaseState.Disabled;
-        store.purchase.usdtAmount = 0;
-        store.purchase.rwnAmount = 0;
+        store.purchase.usdtAmount = "0";
+        store.purchase.rwnAmount = "0";
       }
 
       async function swapExactAmountIn() {
         if (store.purchase.whitelisted && store.wallet.validNetwork) {
           try {
             store.purchase.state = PurchaseState.Pending;
-            const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
+            const hash = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
             store.purchase.state = PurchaseState.Completed;
             console.log("swapExactAmountIn hash:", hash);
           } catch (e) {

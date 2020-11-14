@@ -11,8 +11,8 @@ export enum PurchaseState {
 export type PurchaseStore = {
   swapIn: boolean;
   whitelisted: boolean;
-  usdtAmount: number;
-  rwnAmount: number;
+  usdtAmount: string;
+  rwnAmount: string;
   allowance: number;
   unhashedKey: string;
   slippagePercent: number;
@@ -22,8 +22,8 @@ export type PurchaseStore = {
 export const purchase = reactive({
   swapIn: true,
   whitelisted: false,
-  usdtAmount: 0,
-  rwnAmount: 0,
+  usdtAmount: "",
+  rwnAmount: "",
   allowance: 0,
   unhashedKey: "",
   slippagePercent: 0.5,
