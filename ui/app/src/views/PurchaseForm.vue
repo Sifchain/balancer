@@ -24,21 +24,25 @@
       }
 
       async function getRowanEstimate() {
+        if (store.purchase.usdtAmount.toString().length <= 0 || isNaN(store.purchase.usdtAmount)) {
+          store.purchase.usdtAmount = 0;
+        }
         const estimate = await actions.swapExactAmountInCall(store.purchase.usdtAmount, 0, store.purchase.unhashedKey) / (10 ** 18);
         console.log("getRowanEstimate:", estimate);
         store.purchase.rwnAmount = estimate;
         store.purchase.whitelisted = true;
         store.purchase.state = PurchaseState.Enabled;
-        return estimate
       }
 
       async function getUsdtEstimate() {
+        if (store.purchase.rwnAmount.toString().length <= 0 || isNaN(store.purchase.rwnAmount)) {
+          store.purchase.rwnAmount = 0;
+        }
         const estimate = await actions.swapExactAmountOutCall(100000000000, store.purchase.rwnAmount, store.purchase.unhashedKey) / (10 ** 6);
         console.log("getUsdtEstimate:", estimate);
         store.purchase.usdtAmount = estimate;
         store.purchase.whitelisted = true;
         store.purchase.state = PurchaseState.Enabled;
-        return estimate
       }
 
       async function getEstimate() {
@@ -124,7 +128,17 @@
             <div v-if="store.wallet.isConnected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
-                  <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.usdtAmount" class="sif-input" type="number" step="any" @input="getEstimate" @focus="store.purchase.swapIn = true">
+                  <input
+                          class="sif-input"
+                          type="number"
+                          step="any"
+                          min="0"
+                          lang="en"
+                          :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
+                          v-model="store.purchase.usdtAmount"
+                          @input="getEstimate"
+                          @focus="store.purchase.swapIn = true"
+                  >
                 </div>
               </div>
               <div class="token-form__balance">
@@ -146,7 +160,17 @@
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
                   <label class="text--normal text--italic">Minimum Received</label>
-                  <input :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted" v-model="store.purchase.rwnAmount" class="sif-input" type="number" step="any" @input="getEstimate" @focus="store.purchase.swapIn = false">
+                  <input
+                          class="sif-input"
+                          type="number"
+                          step="any"
+                          min="0"
+                          lang="en"
+                          :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
+                          v-model="store.purchase.rwnAmount"
+                          @input="getEstimate"
+                          @focus="store.purchase.swapIn = false"
+                  >
                 </div>
               </div>
               <div class="token-form__balance">
@@ -209,7 +233,11 @@
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="token-form text--small">
-              <input :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted" v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
+              <input
+                      placeholder="confirmation code"
+                      :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted"
+                      v-model="store.purchase.unhashedKey"
+                      class="sif-input" type="text" @input="getEstimate">
             </div>
           </div>
 
@@ -244,7 +272,7 @@
       <div v-else class="purchase-form__transaction">
         <div v-if="store.purchase.state === PurchaseState.Pending">
           <div class="purchase-form__transaction__loading">
-            <img src="../assets/transaction-waiting.svg" width="66" height="66">
+            <img src="../assets/transaction-waiting.svg">
           </div>
           <div class="purchase-form__transaction__title">
             <p>Waiting For Confirmation</p>
@@ -258,7 +286,7 @@
         </div>
         <div v-if="store.purchase.state === PurchaseState.Failed">
           <div class="purchase-form__transaction__loading">
-            <img src="../assets/transaction-failed.svg" width="66" height="66">
+            <img src="../assets/transaction-failed.svg">
           </div>
           <div class="purchase-form__transaction__title-failed">
             <p>Transaction Failed.</p>
@@ -275,7 +303,7 @@
         </div>
         <div v-if="store.purchase.state === PurchaseState.Completed">
           <div class="purchase-form__transaction__loading">
-            <img src="../assets/transaction-approved.svg" width="66" height="66">
+            <img src="../assets/transaction-approved.svg">
           </div>
           <div class="purchase-form__transaction__title-completed">
             <p>Transaction submitted</p>
