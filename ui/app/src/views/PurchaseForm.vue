@@ -1,6 +1,6 @@
 <script>
-  import ActionButton from '../components/elements/ActionButton.vue';
   import { useCore } from "@/hooks/useCore";
+  import { PurchaseState } from "ui-core/src/store/purchase";
 
   export default {
     name: "PurchaseForm",
@@ -28,6 +28,7 @@
         console.log("getRowanEstimate:", estimate);
         store.purchase.rwnAmount = estimate;
         store.purchase.whitelisted = true;
+        store.purchase.state = PurchaseState.Enabled;
         return estimate
       }
 
@@ -36,6 +37,7 @@
         console.log("getUsdtEstimate:", estimate);
         store.purchase.usdtAmount = estimate;
         store.purchase.whitelisted = true;
+        store.purchase.state = PurchaseState.Enabled;
         return estimate
       }
 
@@ -52,8 +54,8 @@
             store.purchase.rwnAmount = Math.floor(store.purchase.rwnAmount / 10);
             await getUsdtEstimate();
           } else if (e.toString().includes("ERR_MIN_SWAP_AMOUNT")) {
-            store.purchase.usdtAmount = 1;
-            await getRowanEstimate();
+            store.purchase.whitelisted = true;
+            store.purchase.state = PurchaseState.Disabled;
           }
         }
       }
@@ -69,10 +71,20 @@
         return 1 - store.purchase.slippagePercent / 100;
       }
 
+      function tryAgain() {
+        store.purchase.state = PurchaseState.Disabled;
+      }
+
       async function swapExactAmountIn() {
         if (store.purchase.whitelisted && store.wallet.validNetwork) {
-          const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
-          console.log("swapExactAmountIn hash:", hash);
+          try {
+            store.purchase.state = PurchaseState.Pending;
+            const hash = await actions.swapExactAmountInSend(store.purchase.usdtAmount, store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
+            store.purchase.state = PurchaseState.Completed;
+            console.log("swapExactAmountIn hash:", hash);
+          } catch (e) {
+            store.purchase.state = PurchaseState.Failed;
+          }
         }
       }
 
@@ -83,6 +95,7 @@
 
       return {
         store,
+        PurchaseState,
         handleConnectClicked,
         swapExactAmountIn,
         getShortenedAddress,
@@ -91,9 +104,7 @@
         getRwnPrice,
       };
     },
-    components: {
-      ActionButton,
-    }
+    components: {}
   }
 </script>
 
@@ -102,7 +113,7 @@
     <div class="purchase-form">
       <div class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.isConnected }">
         <div>
-          <div class="input-group mb-small mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
+          <div class="input-group mh-70 mb-4" v-bind:class="{ 'input-group__disabled mb-20': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="d-flex fd-row j-between text--small">
               <p class="text--normal text--italic">Contribution Amount</p>
               <p class="text--normal text--italic" v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
@@ -127,7 +138,7 @@
             <img v-else src="../assets/arrow-grey.svg">
           </div>
 
-          <div class="input-group mh-70" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
+          <div class="input-group mh-70 mb-20" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
@@ -195,35 +206,35 @@
 
           <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="token-form text--small">
-              <input :disabled="store.purchase.allowance <= 0" v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
+              <input :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted" v-model="store.purchase.unhashedKey" class="sif-input" type="text" @input="getEstimate">
             </div>
           </div>
 
-          <div v-if="!store.wallet.isConnected" class="d-flex fd-row j-center">
+          <div v-if="!store.wallet.isConnected" class="d-flex fd-row j-center mb-4">
             <p class="text--small">
               No wallet connected
             </p>
             <img src="../assets/circle-x.svg" class="mr-8 ml-8">
           </div>
 
-          <ActionButton primary block v-if="!store.wallet.isConnected" @click="handleConnectClicked">
+          <button class="btn" v-if="!store.wallet.isConnected" @click="handleConnectClicked">
             Connect Wallet
-          </ActionButton>
+          </button>
 
-          <div v-if="store.wallet.isConnected" class="d-flex fd-row j-center">
+          <div v-if="store.wallet.isConnected" class="d-flex fd-row j-center mb-4">
             <p class="text--small color-text">
               Connected to {{ getShortenedAddress() }}
             </p>
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
+          <button class="btn" v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
             Approve Token
-          </ActionButton>
+          </button>
 
-          <ActionButton primary block v-if="store.wallet.isConnected && store.purchase.allowance > 0" @click="swapExactAmountIn">
+          <button class="btn" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.whitelisted }" v-if="store.wallet.isConnected && store.purchase.allowance > 0" @click="swapExactAmountIn">
             Purchase
-          </ActionButton>
+          </button>
         </div>
       </div>
     </div>
@@ -275,7 +286,6 @@
     background: $c_red;
   }
   .input-group {
-    margin-bottom: 20px;
     padding: 0 15px 0 15px;
     border-radius: $br_sm;
     border-color: $c_gray_150;
@@ -414,7 +424,54 @@
       margin-right: 10px;
     }
   }
-  .mb-small {
-    margin-bottom: 4px;
+  .btn {
+    @include resetButton;
+    position: relative;
+    display: inline-block;
+    height: 30px;
+    width: 100%;
+    padding: 0 15px;
+    overflow: hidden;
+    font: inherit;
+    font-size: $fs_md;
+    line-height: $lh_btn;
+    text-transform: uppercase;
+    border-radius: $br_sm;
+    transform: perspective(1px) translateZ(0);
+    cursor: pointer;
+    color: white;
+    background: $c_gold;
+
+    &::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: $g_gold;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity $trans_fast;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+
+    &__disabled {
+      cursor: default;
+      pointer-events: none;
+      background: $c_gray_400;
+      color: $c_white;
+
+      &::before {
+        background: transparent;
+      }
+    }
+  }
+  .mb-20 {
+    margin-bottom: 20px;
   }
 </style>
