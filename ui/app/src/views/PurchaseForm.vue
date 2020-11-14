@@ -73,6 +73,8 @@
 
       function tryAgain() {
         store.purchase.state = PurchaseState.Disabled;
+        store.purchase.usdtAmount = 0;
+        store.purchase.rwnAmount = 0;
       }
 
       async function swapExactAmountIn() {
@@ -102,6 +104,7 @@
         getEstimate,
         approveToken,
         getRwnPrice,
+        tryAgain,
       };
     },
     components: {}
@@ -111,7 +114,7 @@
 <template>
   <div>
     <div class="purchase-form">
-      <div class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.isConnected }">
+      <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.isConnected }">
         <div>
           <div class="input-group mh-70 mb-4" v-bind:class="{ 'input-group__disabled mb-20': !store.wallet.isConnected }">
             <div v-if="store.wallet.isConnected" class="d-flex fd-row j-between text--small">
@@ -237,6 +240,57 @@
           </button>
         </div>
       </div>
+
+      <div v-else class="purchase-form__transaction">
+        <div v-if="store.purchase.state === PurchaseState.Pending">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-waiting.svg" width="66" height="66">
+          </div>
+          <div class="purchase-form__transaction__title">
+            <p>Waiting For Confirmation</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Swapping <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span> for <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span></p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Confirm transaction in your wallet</p>
+          </div>
+        </div>
+        <div v-if="store.purchase.state === PurchaseState.Failed">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-failed.svg" width="66" height="66">
+          </div>
+          <div class="purchase-form__transaction__title-failed">
+            <p>Transaction Failed.</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Transaction has not been confirmed in the wallet.</p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Please try again.</p>
+          </div>
+          <div class="purchase-form__transaction__retry" @click="tryAgain">
+            <p>Try again</p>
+          </div>
+        </div>
+        <div v-if="store.purchase.state === PurchaseState.Completed">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-approved.svg" width="66" height="66">
+          </div>
+          <div class="purchase-form__transaction__title-completed">
+            <p>Transaction submitted</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Purchased <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Thank You for participating in our Token Sale.</p>
+          </div>
+          <div class="purchase-form__transaction__check">
+            <p>Check transaction on <a href="https://etherscan.io/" target="_blank" style="color: #000000">Blockexplorer</a></p>
+          </div>
+        </div>
+      </div>
     </div>
     <p class="kyc-help-text" v-if="!store.wallet.isConnected">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
@@ -257,7 +311,7 @@
     padding: 8px;
     font-weight: normal;
     font-size: $fs_sm;
-    color:$c_gray_900
+    color:$c_text
   }
   .purchase-form {
     width: 410px;
@@ -266,6 +320,81 @@
     border-color: $c_gray_150;
     border-width: 1px;
     border-style: solid;
+
+    &__transaction {
+      height: 370px;
+      padding: 15px;
+      background: $c_gray_50;
+      color: $c_gray_700;
+
+      &__loading {
+        margin-top: 80px;
+        margin-bottom: 16px;
+      }
+
+      &__title {
+        color: $c_gold;
+        font-style: italic;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      &__title-failed {
+        color: $c_red;
+        font-style: italic;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      &__title-completed {
+        color: $c_light_green;
+        font-style: italic;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      &__text {
+        font-style: italic;
+        font-weight: normal;
+        font-size: 16px;
+        color: $c_text;
+      }
+
+      &__span {
+        font-style: italic;
+        font-weight: bold;
+        font-size: 16px;
+        color: $c_text;
+      }
+
+      &__hint {
+        font-style: italic;
+        font-weight: normal;
+        font-size: 12px;
+        color: $c_text;
+      }
+
+      &__retry {
+        margin-top: 60px;
+        font-style: italic;
+        font-weight: bold;
+        font-size: 12px;
+        color: $c_text;
+        text-decoration: underline;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      &__check {
+        margin-top: 60px;
+        font-style: italic;
+        font-weight: normal;
+        font-size: 12px;
+        color: $c_text;
+      }
+    }
 
     &__body {
       padding: 15px;
@@ -325,7 +454,7 @@
     border-width: 1px;
     border-style: solid;
     background: $c_white;
-    color: $c_gray_900;
+    color: $c_text;
 
     &:hover {
       cursor: pointer;

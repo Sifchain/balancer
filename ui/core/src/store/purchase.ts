@@ -3,9 +3,9 @@ import { reactive } from "@vue/reactivity";
 export enum PurchaseState {
   Disabled = 0,
   Enabled = 1,
-  Pending = 1,
-  Failed = 2,
-  Completed
+  Pending = 2,
+  Failed = 3,
+  Completed = 4,
 }
 
 export type PurchaseStore = {
