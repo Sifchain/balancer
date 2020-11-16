@@ -29,7 +29,7 @@
         } else {
           store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
         }
-        const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount), 0, store.purchase.unhashedKey) / (10 ** 18);
+        const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount) * inSlippageCoefficient(), 0, store.purchase.unhashedKey) / (10 ** 18);
         console.log("getRowanEstimate:", estimate);
         store.purchase.rwnAmount = estimate.toString();
         store.purchase.whitelisted = true;
@@ -42,7 +42,7 @@
         } else {
           store.purchase.rwnAmount = parseFloat(store.purchase.rwnAmount).toString();
         }
-        const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount), store.purchase.unhashedKey) / (10 ** 6);
+        const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount) * outSlippageCoefficient(), store.purchase.unhashedKey) / (10 ** 6);
         console.log("getUsdtEstimate:", estimate);
         store.purchase.usdtAmount = estimate.toString();
         store.purchase.whitelisted = true;
@@ -75,8 +75,17 @@
         return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(2);
       }
 
-      function slippageCoefficient() {
+      function setSlippageAndEstimate(slippage) {
+        store.purchase.slippagePercent = slippage;
+        getEstimate()
+      }
+
+      function inSlippageCoefficient() {
         return 1 - store.purchase.slippagePercent / 100;
+      }
+
+      function outSlippageCoefficient() {
+        return 1 + store.purchase.slippagePercent / 100;
       }
 
       function tryAgain() {
@@ -89,7 +98,7 @@
         if (store.purchase.whitelisted && store.wallet.validNetwork) {
           try {
             store.purchase.state = PurchaseState.Pending;
-            const hash = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), store.purchase.rwnAmount * slippageCoefficient(), store.purchase.unhashedKey);
+            const hash = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             store.purchase.state = PurchaseState.Completed;
             console.log("swapExactAmountIn hash:", hash);
           } catch (e) {
@@ -113,6 +122,7 @@
         approveToken,
         getRwnPrice,
         tryAgain,
+        setSlippageAndEstimate,
       };
     },
     components: {}
@@ -208,22 +218,32 @@
               Slippage tolerance
             </p>
             <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-start">
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 0.1 }" @click="store.purchase.slippagePercent = 0.1">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.1' }" @click="setSlippageAndEstimate('0.1')">
                 <p class="text--standard text--normal text--regular">
                   0.1%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 0.5 }"  @click="store.purchase.slippagePercent = 0.5">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }"  @click="setSlippageAndEstimate('0.5')">
                 <p class="text--standard text--normal text--regular">
                   0.5%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === 1.0 }" @click="store.purchase.slippagePercent = 1.0">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' }" @click="setSlippageAndEstimate('1.0')">
                 <p class="text--standard text--normal text--regular">
                   1.0%
                 </p>
               </div>
-<!--              <input v-model="store.purchase.slippagePercent" class="slippage-item slippage-item__custom text&#45;&#45;standard text&#45;&#45;normal text&#45;&#45;regular color-text" type="text" @input="getEstimate">-->
+              <div class="sif-input__wrapper custom-slippage-input-container">
+                <input
+                        v-model="store.purchase.slippagePercent"
+                        class="sif-input num_percent"
+                        type="number"
+                        step="any"
+                        min="0"
+                        @input="getEstimate"
+                >
+                <span>%</span>
+              </div>
             </div>
           </div>
 
@@ -241,7 +261,10 @@
                       placeholder="confirmation code"
                       :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted"
                       v-model="store.purchase.unhashedKey"
-                      class="sif-input" type="text" @input="getEstimate">
+                      class="sif-input"
+                      type="text"
+                      @input="getEstimate"
+              >
             </div>
           </div>
 
@@ -492,21 +515,6 @@
       cursor: pointer;
     }
 
-    &__custom {
-      width: 158px;
-      padding: 0 8px 0 100px;
-      flex-direction: row;
-      justify-content: end;
-
-      &:hover {
-        cursor: default;
-      }
-
-      &:focus {
-        outline: none;
-      }
-    }
-
     &__selected {
       background: $c_gold;
       color: $c_white;
@@ -557,6 +565,10 @@
     padding: 0 8px;
     border-radius: $br_sm;
     border: none;
+    font-size: 15px;
+    font-weight: normal;
+    font-style: normal;
+    color: $c_text;
 
     &:focus {
       outline: none;
@@ -634,5 +646,23 @@
   }
   .mb-20 {
     margin-bottom: 20px;
+  }
+  .custom-slippage-input-container { position:relative; }
+  .custom-slippage-input-container span {
+    position: absolute;
+    right: 4px;
+    top: 9px;
+    font-weight: normal;
+    font-style: normal;
+    color: $c_text;
+  }
+  .num_percent {
+    margin: 5px;
+    text-align: right;
+    padding-right: 20px;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    color: $c_text;
   }
 </style>
