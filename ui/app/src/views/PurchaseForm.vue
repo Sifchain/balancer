@@ -24,47 +24,39 @@
       }
 
       async function getRowanEstimate() {
-        if (store.purchase.usdtAmount.length <= 0) {
-          store.purchase.usdtAmount = "0";
-        } else {
+        if (store.purchase.usdtAmount.length > 0) {
           store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
+          const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount) * inSlippageCoefficient(), 0, store.purchase.unhashedKey) / (10 ** 18);
+          store.purchase.rwnAmount = estimate.toString();
+          store.purchase.state = PurchaseState.Enabled;
         }
-        const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount) * inSlippageCoefficient(), 0, store.purchase.unhashedKey) / (10 ** 18);
-        console.log("getRowanEstimate:", estimate);
-        store.purchase.rwnAmount = estimate.toString();
-        store.purchase.whitelisted = true;
-        store.purchase.state = PurchaseState.Enabled;
       }
 
       async function getUsdtEstimate() {
-        if (store.purchase.rwnAmount.length <= 0) {
-          store.purchase.rwnAmount = "0";
-        } else {
+        if (store.purchase.rwnAmount.length > 0) {
           store.purchase.rwnAmount = parseFloat(store.purchase.rwnAmount).toString();
+          const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount) * outSlippageCoefficient(), store.purchase.unhashedKey) / (10 ** 6);
+          store.purchase.usdtAmount = estimate.toString();
+          store.purchase.state = PurchaseState.Enabled;
         }
-        const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount) * outSlippageCoefficient(), store.purchase.unhashedKey) / (10 ** 6);
-        console.log("getUsdtEstimate:", estimate);
-        store.purchase.usdtAmount = estimate.toString();
-        store.purchase.whitelisted = true;
-        store.purchase.state = PurchaseState.Enabled;
       }
 
       async function getEstimate() {
         try {
-          return store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
-        } catch (e) {
-          if (e.toString().includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
-            store.purchase.whitelisted = false;
-          } else if (e.toString().includes("ERR_MAX_IN_RATIO")) {
-            store.purchase.usdtAmount = Math.floor(parseFloat(store.purchase.usdtAmount) / 10).toString();
-            await getRowanEstimate();
-          } else if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
-            store.purchase.rwnAmount = Math.floor(parseFloat(store.purchase.rwnAmount) / 10).toString();
-            await getUsdtEstimate();
-          } else if (e.toString().includes("ERR_MIN_SWAP_AMOUNT")) {
-            store.purchase.whitelisted = true;
+          if (store.purchase.usdtAmount.length <= 0 || store.purchase.rwnAmount.length <= 0) {
+            await actions.swapExactAmountInCall(10, 0, store.purchase.unhashedKey) / (10 ** 18);
             store.purchase.state = PurchaseState.Disabled;
           }
+          store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
+          store.purchase.whitelisted = true;
+        } catch (e) {
+          const error = e.toString();
+          if (error.includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
+            store.purchase.whitelisted = false;
+          } else if (error.includes("ERR_MAX_IN_RATIO") || error.includes("ERR_MAX_OUT_RATIO") || error.includes("ERR_MIN_SWAP_AMOUNT")) {
+            store.purchase.whitelisted = true;
+          }
+          store.purchase.state = PurchaseState.Disabled;
         }
       }
 
@@ -81,11 +73,11 @@
       }
 
       function inSlippageCoefficient() {
-        return 1 - store.purchase.slippagePercent / 100;
+        return 1 - parseFloat(store.purchase.slippagePercent) / 100;
       }
 
       function outSlippageCoefficient() {
-        return 1 + store.purchase.slippagePercent / 100;
+        return 1 + parseFloat(store.purchase.slippagePercent) / 100;
       }
 
       function tryAgain() {
@@ -148,6 +140,7 @@
                           step="any"
                           min="0"
                           lang="en"
+                          placeholder="0"
                           :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
                           v-model="store.purchase.usdtAmount"
                           @input="getEstimate"
@@ -180,6 +173,7 @@
                           step="any"
                           min="0"
                           lang="en"
+                          placeholder="0"
                           :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
                           v-model="store.purchase.rwnAmount"
                           @input="getEstimate"
@@ -305,7 +299,7 @@
             <p>Waiting For Confirmation</p>
           </div>
           <div class="purchase-form__transaction__text mb-8">
-            <p>Swapping <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span> for <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span></p>
+            <p>Swapping <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Confirm transaction in your wallet</p>
@@ -659,7 +653,7 @@
   .num_percent {
     margin: 5px;
     text-align: right;
-    padding-right: 20px;
+    padding-right: 22px;
     font-size: 14px;
     font-weight: normal;
     font-style: normal;
