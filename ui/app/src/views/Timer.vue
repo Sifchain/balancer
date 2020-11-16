@@ -70,14 +70,26 @@
     padding: 64px; // 16 px
   }
   .timer-header {
-    padding-bottom: 16px;
     display: flex;
     justify-content: space-evenly;
+    border-top-left-radius: $br_sm;
+    border-top-right-radius: $br_sm;
+    border-color: $c_gray_100;
+    border-width: 1px;
+    border-style: solid;
+    border-bottom-color: $c_gray_25;
   }
   .timer {
-    padding-bottom: 32px;
+    padding-top: 14px;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-evenly;
+    border-bottom-left-radius: $br_sm;
+    border-bottom-right-radius: $br_sm;
+    border-color: $c_gray_100;
+    border-width: 1px;
+    border-style: solid;
   }
   .timer-footer {
     padding-top: 8px;
