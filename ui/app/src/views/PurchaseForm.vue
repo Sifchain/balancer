@@ -255,7 +255,7 @@
                       placeholder="confirmation code"
                       :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted"
                       v-model="store.purchase.unhashedKey"
-                      class="sif-input"
+                      class="sif-input text-tiny"
                       type="text"
                       @input="getEstimate"
               >

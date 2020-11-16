@@ -1,3 +1,83 @@
+// text
+.text-tiny {
+    font-size: $fs_tiny !important;
+}
+.text--small {
+    font-size: $fs_sm;
+}
+.text--standard {
+    font-size: $fs;
+}
+.text--medium {
+    font-size: $fs_md;
+}
+.text--italic {
+    font-style: italic;
+}
+.text--regular {
+    font-style: normal;
+}
+.text--normal {
+    font-weight: normal;
+}
+.text--bold {
+    font-weight: bold;
+}
+
+// colors
+.color-white {
+    color: $c_white;
+}
+.color-text {
+    color: $c_text;
+}
+
+// display
+.d-flex {
+    display: flex;
+}
+.j-between {
+    justify-content: space-between;
+}
+.j-start {
+    justify-content: start;
+}
+.fd-row {
+    flex-direction: row;
+}
+.fd-col {
+    flex-direction: column;
+}
+.j-center {
+    justify-content: center;
+}
+.align-center {
+    align-items: center;
+}
+
+// dimens
+.mh-93 {
+    min-height: 93px;
+}
+.mh-70 {
+    min-height: 70px;
+}
+.mh-23 {
+    min-height: 23px;
+}
+.mh-30 {
+    min-height: 30px;
+}
+.mh-75 {
+    min-height: 75px;
+}
+.ml-8 {
+    margin-left: 8px;
+}
+.mr-8 {
+    margin-right: 8px;
+}
+
 @for $i from 0 through 10 {
     .mt-#{$i} {
         margin-top: $i * 0.1rem;
@@ -26,82 +106,4 @@
     .pr-#{$i} {
         padding-right: $i * 0.1rem;
     }
-}
-
-// text utilities
-.text--small {
-    font-size: $fs_sm;
-}
-.text--standard {
-    font-size: $fs;
-}
-.text--medium {
-    font-size: $fs_md;
-}
-.text--italic {
-    font-style: italic;
-}
-.text--regular {
-    font-style: normal;
-}
-.text--normal {
-    font-weight: normal;
-}
-.text--bold {
-    font-weight: bold;
-}
-
-.color-white {
-    color: $c_white;
-}
-
-.color-text {
-    color: $c_text;
-}
-
-.mh-93 {
-    min-height: 93px;
-}
-.mh-70 {
-    min-height: 70px;
-}
-.mh-23 {
-    min-height: 23px;
-}
-.mh-30 {
-    min-height: 30px;
-}
-.mh-75 {
-    min-height: 75px;
-}
-.ml-8 {
-    margin-left: 8px;
-}
-.mr-8 {
-    margin-right: 8px;
-}
-
-// display
-.d-flex {
-    display: flex;
-}
-.j-between {
-    justify-content: space-between;
-}
-.j-start {
-    justify-content: start;
-}
-.fd-row {
-    flex-direction: row;
-}
-.fd-col {
-    flex-direction: column;
-}
-
-.j-center {
-    justify-content: center;
-}
-
-.align-center {
-    align-items: center;
 }
