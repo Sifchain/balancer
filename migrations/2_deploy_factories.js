@@ -19,6 +19,12 @@ module.exports = async function (deployer, networkName) {
     };
     let data = JSON.stringify(obj);
     fs.writeFileSync(`BalancerABI.${networkName}.json`, data);
+    let whitelistObj = {
+      abi: whiteListContract.abi,
+      address: whiteListContract.address,
+    };
+    let whitelistData = JSON.stringify(whitelistObj);
+    fs.writeFileSync(`WhitelistABI.${networkName}.json`, whitelistData);
   } catch (error) {
     console.log("Error deploying:::: ", error);
   }
