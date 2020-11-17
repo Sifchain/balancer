@@ -16,11 +16,11 @@
       const { actions, store } = useCore();
 
       function getShortenedAddress() {
-        return store.wallet.isConnected && store.wallet.account ? store.wallet.account.slice(0, 11) + "..." : "";
+        return store.wallet.connected && store.wallet.account ? store.wallet.account.slice(0, 11) + "..." : "";
       }
 
       async function handleConnectClicked() {
-        await actions.connectToWallet();
+        store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
       }
 
       async function getRowanEstimate() {
@@ -29,6 +29,8 @@
           const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount) * inSlippageCoefficient(), 0, store.purchase.unhashedKey) / (10 ** 18);
           store.purchase.rwnAmount = estimate.toString();
           store.purchase.state = PurchaseState.Enabled;
+        } else {
+          store.purchase.state = PurchaseState.Disabled;
         }
       }
 
@@ -38,33 +40,28 @@
           const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount) * outSlippageCoefficient(), store.purchase.unhashedKey) / (10 ** 6);
           store.purchase.usdtAmount = estimate.toString();
           store.purchase.state = PurchaseState.Enabled;
+        } else {
+          store.purchase.state = PurchaseState.Disabled;
         }
+      }
+
+      async function validateKey() {
+        store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
       }
 
       async function getEstimate() {
         try {
-          if (store.purchase.usdtAmount.length <= 0 || store.purchase.rwnAmount.length <= 0) {
-            await actions.swapExactAmountInCall(10, 0, store.purchase.unhashedKey) / (10 ** 18);
-            store.purchase.state = PurchaseState.Disabled;
-          }
           store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
-          store.purchase.whitelisted = true;
         } catch (e) {
-          const error = e.toString();
-          if (error.includes("ERR_NOT_WHITELISTED/INVALID_KEY")) {
-            store.purchase.whitelisted = false;
-          } else if (error.includes("ERR_MAX_IN_RATIO") || error.includes("ERR_MAX_OUT_RATIO") || error.includes("ERR_MIN_SWAP_AMOUNT")) {
-            store.purchase.whitelisted = true;
-          }
           store.purchase.state = PurchaseState.Disabled;
         }
       }
 
       function getRwnPrice() {
-        if (!store.purchase.usdtAmount || !store.purchase.rwnAmount) {
+        if (store.purchase.state === PurchaseState.Disabled) {
           return "0";
         }
-        return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(2);
+        return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(3);
       }
 
       function setSlippageAndEstimate(slippage) {
@@ -87,12 +84,11 @@
       }
 
       async function swapExactAmountIn() {
-        if (store.purchase.whitelisted && store.wallet.validNetwork) {
+        if (store.purchase.validKey && store.wallet.validNetwork) {
           try {
             store.purchase.state = PurchaseState.Pending;
-            const hash = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             store.purchase.state = PurchaseState.Completed;
-            console.log("swapExactAmountIn hash:", hash);
           } catch (e) {
             store.purchase.state = PurchaseState.Failed;
           }
@@ -100,8 +96,7 @@
       }
 
       async function approveToken() {
-        const hash = await actions.approveToken();
-        console.log("approveToken hash:", hash);
+        await actions.approveToken();
       }
 
       return {
@@ -115,6 +110,7 @@
         getRwnPrice,
         tryAgain,
         setSlippageAndEstimate,
+        validateKey,
       };
     },
     components: {}
@@ -124,14 +120,16 @@
 <template>
   <div>
     <div class="purchase-form">
-      <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.isConnected }">
+      <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.connected }">
         <div>
-          <div class="input-group mh-70 mb-4" v-bind:class="{ 'input-group__disabled mb-20': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected" class="d-flex fd-row j-between text--small">
-              <p class="text--normal text--italic">Contribution Amount</p>
+          <div class="input-group mh-70 mb-4" v-bind:class="{ 'input-group__disabled mb-20': !store.wallet.connected }">
+            <div v-if="store.wallet.connected" class="d-flex fd-row j-between text--small">
+              <p class="text--normal text--italic">
+                Contribution Amount
+              </p>
               <p class="text--normal text--italic" v-if="store.wallet.balances && store.wallet.balances.length > 0">Balance: {{store.wallet.balances[0].toFixed(2)}}</p>
             </div>
-            <div v-if="store.wallet.isConnected" class="token-form text--small">
+            <div v-if="store.wallet.connected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
                   <input
@@ -141,7 +139,7 @@
                           min="0"
                           lang="en"
                           placeholder="0"
-                          :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
+                          :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
                           v-model="store.purchase.usdtAmount"
                           @input="getEstimate"
                           @focus="store.purchase.swapIn = true"
@@ -157,16 +155,18 @@
             </div>
           </div>
 
-          <div v-if="store.wallet.isConnected">
-            <img v-if="store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/arrow-gold.svg">
+          <div v-if="store.wallet.connected">
+            <img v-if="store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/arrow-gold.svg">
             <img v-else src="../assets/arrow-grey.svg">
           </div>
 
-          <div class="input-group mh-70 mb-20" v-bind:class="{ 'input-group__disabled': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected" class="token-form text--small">
+          <div class="input-group mh-70 mb-20" v-bind:class="{ 'input-group__disabled': !store.wallet.connected }">
+            <div v-if="store.wallet.connected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
-                  <label class="text--normal text--italic">Minimum Received</label>
+                  <label class="text--normal text--italic">
+                    Minimum Received
+                  </label>
                   <input
                           class="sif-input"
                           type="number"
@@ -174,7 +174,7 @@
                           min="0"
                           lang="en"
                           placeholder="0"
-                          :disabled="store.purchase.allowance <= 0 || !store.purchase.whitelisted"
+                          :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
                           v-model="store.purchase.rwnAmount"
                           @input="getEstimate"
                           @focus="store.purchase.swapIn = false"
@@ -194,8 +194,14 @@
             <p class="text--small text--italic text--bold color-white">Connected Wallet is on a test network.</p>
           </div>
 
-          <div v-if="store.wallet.validNetwork" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-between">
+          <div v-if="store.wallet.validNetwork && store.wallet.connected && !store.wallet.whitelisted" class="error-section mh-93 d-flex j-center fd-col">
+            <p class="text--small text--italic text--bold color-white">
+              Connected Wallet has not passed KYC/AML process. Please connect a wallet that has passed KYC/AML. To get on the complete the KYC/AML process, please go <a href=" https://sifchain.finance/token-sale-info" target="_blank" style="color: #FFF">here</a>.
+            </p>
+          </div>
+
+          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.wallet.whitelisted)" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.connected }">
+            <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-between">
               <p class="text--small text--italic text--normal">
                 Price
               </p>
@@ -207,11 +213,11 @@
               </div>
             </div>
           </div>
-          <div v-if="store.wallet.validNetwork" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.isConnected }">
-            <p v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="text--small text--italic text--normal" align="left">
+          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.wallet.whitelisted)" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.connected }">
+            <p v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="text--small text--italic text--normal" align="left">
               Slippage tolerance
             </p>
-            <div v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" class="d-flex fd-row j-start">
+            <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-start">
               <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.1' }" @click="setSlippageAndEstimate('0.1')">
                 <p class="text--standard text--normal text--regular">
                   0.1%
@@ -242,49 +248,49 @@
           </div>
 
           <div class="d-flex fd-row j-center">
-            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.isConnected }">
+            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
               Please enter your 64-digit confirmation code
             </p>
-            <img v-if="store.wallet.isConnected && store.purchase.allowance > 0 && store.purchase.whitelisted" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
+            <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
             <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
           </div>
 
-          <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.isConnected }">
-            <div v-if="store.wallet.isConnected" class="token-form text--small">
+          <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
+            <div v-if="store.wallet.connected" class="token-form text--small">
               <input
                       placeholder="confirmation code"
-                      :disabled="store.purchase.allowance <= 0 || store.purchase.whitelisted"
+                      :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
                       v-model="store.purchase.unhashedKey"
                       class="sif-input text-tiny"
                       type="text"
-                      @input="getEstimate"
+                      @input="validateKey"
               >
             </div>
           </div>
 
-          <div v-if="!store.wallet.isConnected" class="d-flex fd-row j-center mb-4">
+          <div v-if="!store.wallet.connected || !store.wallet.whitelisted" class="d-flex fd-row j-center mb-4">
             <p class="text--small">
               No wallet connected
             </p>
             <img src="../assets/circle-x.svg" class="mr-8 ml-8">
           </div>
 
-          <button class="btn" v-if="!store.wallet.isConnected" @click="handleConnectClicked">
+          <button class="btn" v-if="!store.wallet.connected || !store.wallet.whitelisted" @click="handleConnectClicked">
             Connect Wallet
           </button>
 
-          <div v-if="store.wallet.isConnected" class="d-flex fd-row j-center mb-4">
+          <div v-if="store.wallet.connected && store.wallet.whitelisted" class="d-flex fd-row j-center mb-4">
             <p class="text--small color-text">
               Connected to {{ getShortenedAddress() }}
             </p>
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <button class="btn" v-if="store.wallet.isConnected && store.purchase.allowance <= 0" @click="approveToken">
+          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" @click="approveToken">
             Approve Token
           </button>
 
-          <button class="btn" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.whitelisted }" v-if="store.wallet.isConnected && store.purchase.allowance > 0" @click="swapExactAmountIn">
+          <button class="btn" v-if="store.wallet.connected && store.wallet.allowance > 0" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.validKey }" @click="swapExactAmountIn">
             Purchase
           </button>
         </div>
@@ -341,7 +347,7 @@
         </div>
       </div>
     </div>
-    <p class="kyc-help-text" v-if="!store.wallet.isConnected">
+    <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
       If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
       Please remember to use the wallet address you provided us in your KYC information.
