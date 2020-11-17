@@ -3,9 +3,10 @@ import { Balance } from "../entities/Balance";
 
 export type IWalletService = {
   getState: () => {
-    networkType: string;
+    whitelisted: boolean;
     validNetwork: boolean;
     connected: boolean;
+    networkType: string;
     account?: string;
     balances: Balance[];
     log: string;
@@ -13,10 +14,13 @@ export type IWalletService = {
   };
   isConnected(): boolean;
   connect(): Promise<void>;
+  disconnect(): Promise<void>;
   swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
   swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
   swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<string>;
   approveToken(): Promise<string>;
   getAllowance(): Promise<number>;
   getBalances(): Promise<Balance[]>;
+  isWhitelisted(): Promise<boolean>;
+  isValidKey(unhashedKey: string): Promise<boolean>;
 };

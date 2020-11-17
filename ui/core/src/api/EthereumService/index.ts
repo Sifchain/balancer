@@ -7,7 +7,8 @@ import {
   getUsdtBalance,
   getTokenData,
   isValidNetwork,
-  getBalancerAbiArray
+  getBalancerAbiArray,
+  getWhitelistAbiArray
 } from "./utils/ethereumUtils";
 import { Balance } from "../../entities/Balance";
 
@@ -35,9 +36,10 @@ export function handleConnectToMetaMaskError(err: any) {
 }
 
 const initState = {
-  networkType: "private",
+  whitelisted: true,
   validNetwork: true,
   connected: false,
+  networkType: "private",
   balances: [],
   account: undefined,
   log: "unset",
@@ -51,9 +53,10 @@ export class EthereumService implements IWalletService {
 
   // This is shared reactive state
   private state: {
-    networkType: string;
+    whitelisted: boolean;
     validNetwork: boolean;
     connected: boolean;
+    networkType: string;
     account?: string;
     balances: Balance[];
     log: string;
@@ -102,10 +105,12 @@ export class EthereumService implements IWalletService {
     if (this.state.account) {
       this.state.balances = await this.getBalances();
       this.state.allowance = await this.getAllowance();
+      this.state.whitelisted = await this.isWhitelisted();
       this.addWeb3Subscription();
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
+      this.state.whitelisted = false;
       this.removeWeb3Subscription();
     }
   }
@@ -135,6 +140,20 @@ export class EthereumService implements IWalletService {
       this.web3 = null;
       this.state = reactive({ ...initState });
     }
+  }
+
+  async disconnect() {
+    await this.web3?.givenProvider.request({
+      method: "wallet_requestPermissions",
+      params: [
+        {
+          eth_accounts: {}
+        }
+      ]
+    });
+    this.removeWeb3Subscription();
+    this.web3 = null;
+    this.state = reactive({ ...initState });
   }
 
   addWeb3Subscription() {
@@ -167,6 +186,16 @@ export class EthereumService implements IWalletService {
     }
     const balancerAbiArray = getBalancerAbiArray(this.state.networkType);
     return new this.web3.eth.Contract(balancerAbiArray.abi, balancerAbiArray.address);
+  }
+
+  getWhitelistContract() {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    const whitelistAbiArray = getWhitelistAbiArray(this.state.networkType);
+    return new this.web3.eth.Contract(whitelistAbiArray.abi, whitelistAbiArray.address);
   }
 
   async getCurrentAccount() {
@@ -205,14 +234,24 @@ export class EthereumService implements IWalletService {
 
   async swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {
     const accountFrom = await this.getCurrentAccount();
-    let ret = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
-    return ret.tokenAmountOut;
+    const res = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
+    return res.tokenAmountOut;
   }
 
   async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<string> {
     const accountFrom = await this.getCurrentAccount();
-    let ret = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
-    return ret.tokenAmountIn;
+    const res = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
+    return res.tokenAmountIn;
+  }
+
+  async isWhitelisted(): Promise<boolean> {
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getWhitelistContract().methods.isWhitelisted(accountFrom).call();
+  }
+
+  async isValidKey(unhashedKey: string): Promise<boolean> {
+    const accountFrom = await this.getCurrentAccount();
+    return await this.getWhitelistContract().methods.presentKey(accountFrom, unhashedKey).call();
   }
 
   static create(): IWalletService {

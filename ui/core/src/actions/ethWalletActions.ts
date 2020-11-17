@@ -15,6 +15,9 @@ export default ({
     async connectToWallet() {
       await api.EthereumService.connect();
     },
+    async disconnectWallet() {
+      await api.EthereumService.disconnect();
+    },
     async swapExactAmountInCall(
       tokenAmountIn: number,
       minAmountOut: number,
@@ -39,10 +42,16 @@ export default ({
     async approveToken() {
       return await api.EthereumService.approveToken();
     },
+    async isWhitelisted() {
+      return await api.EthereumService.isWhitelisted();
+    },
+    async isValidKey(unhashedKey: string) {
+      return await api.EthereumService.isValidKey(unhashedKey);
+    }
   };
 
   effect(async () => {
-    store.wallet.isConnected = ethereumState.connected;
+    store.wallet.connected = ethereumState.connected;
   });
 
   effect(async () => {
@@ -58,12 +67,11 @@ export default ({
   });
 
   effect(async () => {
-    store.purchase.allowance = ethereumState.allowance;
+    store.wallet.allowance = ethereumState.allowance;
   });
 
   effect(async () => {
-    ethereumState.log;
-    await api.EthereumService.getBalances();
+    store.wallet.whitelisted = ethereumState.whitelisted;
   });
 
   return actions;
