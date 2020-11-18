@@ -282,7 +282,7 @@
         </div>
       </div>
 
-      <div v-else class="purchase-form__transaction">
+      <div v-else class="purchase-form__transaction" v-bind:class="{ 'purchase-form__transaction__failed': store.purchase.state === PurchaseState.Failed, 'purchase-form__transaction__completed': store.purchase.state === PurchaseState.Completed }">
         <div v-if="store.purchase.state === PurchaseState.Pending">
           <div class="purchase-form__transaction__loading">
             <img src="../assets/transaction-waiting.svg">
@@ -367,6 +367,20 @@
       padding: 15px;
       background: $c_gray_50;
       color: $c_gray_700;
+
+      &__failed {
+        border-radius: $br_lg;
+        border-color: $c_red;
+        border-width: 1px;
+        border-style: solid;
+      }
+
+      &__completed {
+        border-radius: $br_lg;
+        border-color: $c_light_green;
+        border-width: 1px;
+        border-style: solid;
+      }
 
       &__loading {
         margin-top: 80px;
