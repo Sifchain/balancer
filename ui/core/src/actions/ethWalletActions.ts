@@ -25,13 +25,13 @@ export default ({
     ) {
       return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, 6), B(minAmountOut, 18), unhashedKey);
     },
-    async swapExactAmountOutCall(
-      maxAmountIn: number,
-      tokenAmountOut: number,
-      unhashedKey: string
-    ) {
-      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, 6), B(tokenAmountOut, 18), unhashedKey);
-    },
+    // async swapExactAmountOutCall(
+    //   maxAmountIn: number,
+    //   tokenAmountOut: number,
+    //   unhashedKey: string
+    // ) {
+    //   return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, 6), B(tokenAmountOut, 18), unhashedKey);
+    // },
     async swapExactAmountInSend(
       tokenAmountIn: number,
       minAmountOut: number,

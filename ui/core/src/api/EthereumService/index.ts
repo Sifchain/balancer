@@ -16,7 +16,6 @@ const MAX = Web3.utils.toTwosComplement(-1);
 
 export function handleConnectToMetaMaskError(err: any) {
   const { code, message } = err;
-  // TODO show popup dialog
   if (code) {
     if (code === -32002) {
       // Permissions request already pending; please wait.
@@ -27,11 +26,6 @@ export function handleConnectToMetaMaskError(err: any) {
     }
   } else {
     console.log(err.toString());
-    // if (err.toString().contains("Invalid network.")) {
-    //   // Invalid network.
-    // } else {
-    //   // Provider not loaded.
-    // }
   }
 }
 
@@ -236,12 +230,6 @@ export class EthereumService implements IWalletService {
     const accountFrom = await this.getCurrentAccount();
     const res = await this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
     return res.tokenAmountOut;
-  }
-
-  async swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<string> {
-    const accountFrom = await this.getCurrentAccount();
-    const res = await this.getBalancerContract().methods.swapExactAmountOut(maxAmountIn.toString(), tokenAmountOut.toString(), MAX, unhashedKey).call({from: accountFrom});
-    return res.tokenAmountIn;
   }
 
   async isWhitelisted(): Promise<boolean> {

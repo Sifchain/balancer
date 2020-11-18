@@ -9,7 +9,6 @@ export enum PurchaseState {
 }
 
 export type PurchaseStore = {
-  swapIn: boolean;
   validKey: boolean;
   usdtAmount: string;
   rwnAmount: string;
@@ -19,7 +18,6 @@ export type PurchaseStore = {
 };
 
 export const purchase = reactive({
-  swapIn: true,
   validKey: false,
   usdtAmount: "",
   rwnAmount: "",

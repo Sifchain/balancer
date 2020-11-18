@@ -34,24 +34,13 @@
         }
       }
 
-      async function getUsdtEstimate() {
-        if (store.purchase.rwnAmount.length > 0) {
-          store.purchase.rwnAmount = parseFloat(store.purchase.rwnAmount).toString();
-          const estimate = await actions.swapExactAmountOutCall(100000000000, parseFloat(store.purchase.rwnAmount) * outSlippageCoefficient(), store.purchase.unhashedKey) / (10 ** 6);
-          store.purchase.usdtAmount = estimate.toString();
-          store.purchase.state = PurchaseState.Enabled;
-        } else {
-          store.purchase.state = PurchaseState.Disabled;
-        }
-      }
-
       async function validateKey() {
         store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
       }
 
       async function getEstimate() {
         try {
-          store.purchase.swapIn ? await getRowanEstimate() : await getUsdtEstimate();
+          await getRowanEstimate();
         } catch (e) {
           store.purchase.state = PurchaseState.Disabled;
         }
@@ -73,9 +62,6 @@
         return 1 - parseFloat(store.purchase.slippagePercent) / 100;
       }
 
-      function outSlippageCoefficient() {
-        return 1 + parseFloat(store.purchase.slippagePercent) / 100;
-      }
 
       function tryAgain() {
         store.purchase.state = PurchaseState.Disabled;
@@ -174,7 +160,7 @@
                           min="0"
                           lang="en"
                           placeholder="0"
-                          :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
+                          :disabled="true"
                           v-model="store.purchase.rwnAmount"
                           @input="getEstimate"
                           @focus="store.purchase.swapIn = false"

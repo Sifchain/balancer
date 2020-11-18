@@ -17,7 +17,6 @@ export type IWalletService = {
   disconnect(): Promise<void>;
   swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
   swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
-  swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<string>;
   approveToken(): Promise<string>;
   getAllowance(): Promise<number>;
   getBalances(): Promise<Balance[]>;
