@@ -330,12 +330,6 @@ contract("Full pool test", (accounts) => {
         "ERR_NOT_BOUND"
       );
       await pool.setTokenIntOut(WETH, DAI, { from: controller });
-      await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("26.5"), toWei("5000"), toWei("200"), unhashedKey, {
-          from: user2,
-        }),
-        "ERR_MAX_IN_RATIO"
-      );
 
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("5.3"), toWei("1000"), toWei("200"), unhashedKey, {

@@ -407,7 +407,6 @@ contract BPool is BMath {
         Record storage inRecord = _records[address(_tokenIn)];
         Record storage outRecord = _records[address(_tokenOut)];
 
-        require(tokenAmountIn <= bmul(inRecord.balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
         require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
         uint spotPriceBefore = calcSpotPrice(
@@ -457,7 +456,6 @@ contract BPool is BMath {
     {
         require(_finalized, "ERR_NOT_FINALIZED");
         require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
-        require(tokenAmountIn <= bmul(_records[_tokenOut].balance, MAX_IN_RATIO), "ERR_MAX_IN_RATIO");
 
         Record storage inRecord = _records[_tokenOut];
 
