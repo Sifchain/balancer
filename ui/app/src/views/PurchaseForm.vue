@@ -23,6 +23,10 @@
         store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
       }
 
+      async function validateKey() {
+        store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
+      }
+
       async function getRowanEstimate() {
         if (store.purchase.usdtAmount.length > 0) {
           store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
@@ -34,12 +38,9 @@
         }
       }
 
-      async function validateKey() {
-        store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
-      }
-
       async function getEstimate() {
         try {
+          await getPurchaseError();
           await getRowanEstimate();
         } catch (e) {
           store.purchase.state = PurchaseState.Disabled;
@@ -62,6 +63,31 @@
         return 1 - parseFloat(store.purchase.slippagePercent) / 100;
       }
 
+      async function getPurchaseError() {
+        try {
+          const balances = await actions.getPoolBalances();
+          if (balances.length !== 2) {
+            store.purchase.error = undefined;
+          } else {
+            const usdtBalance = balances[0];
+            const rwnBalance = balances[1];
+            const maxUsdt = parseFloat(usdtBalance.toExact()) / 2;
+            const maxRwn = parseFloat(rwnBalance.toExact()) / 10;
+
+            if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
+              store.purchase.error = "Insufficient balance";
+            } else if (parseFloat(store.purchase.usdtAmount) > maxUsdt) {
+              store.purchase.error = `Maximum contribution amount is ${maxUsdt} USDT`;
+            } else if (parseFloat(store.purchase.rwnAmount) > maxRwn) {
+              store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
+            } else {
+              store.purchase.error = undefined;
+            }
+          }
+        } catch (e) {
+          store.purchase.error = undefined;
+        }
+      }
 
       function tryAgain() {
         store.purchase.state = PurchaseState.Disabled;
@@ -279,6 +305,12 @@
           <button class="btn" v-if="store.wallet.connected && store.wallet.allowance > 0" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.validKey }" @click="swapExactAmountIn">
             Purchase
           </button>
+
+          <div class="purchase-error-message" v-if="store.purchase.state === PurchaseState.Disabled && store.purchase.error !== undefined">
+            <p>
+              {{store.purchase.error}}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -664,5 +696,10 @@
     font-weight: normal;
     font-style: normal;
     color: $c_text;
+  }
+  .purchase-error-message {
+    margin: 5px;
+    color: $c_red;
+    font-size: $fs_sm;
   }
 </style>
