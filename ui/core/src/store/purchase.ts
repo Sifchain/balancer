@@ -15,6 +15,7 @@ export type PurchaseStore = {
   unhashedKey: string;
   slippagePercent: string;
   state: PurchaseState;
+  error?: string;
 };
 
 export const purchase = reactive({
@@ -24,4 +25,5 @@ export const purchase = reactive({
   unhashedKey: "",
   slippagePercent: "0.5",
   state: PurchaseState.Disabled,
+  error: undefined
 }) as PurchaseStore;

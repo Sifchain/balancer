@@ -242,6 +242,12 @@ export class EthereumService implements IWalletService {
     return await this.getWhitelistContract().methods.presentKey(accountFrom, unhashedKey).call();
   }
 
+  async getPoolBalances(): Promise<Balance[]> {
+    const usdtBalance = await this.getBalancerContract().methods.getBalance(getTokenData().usdtAddress).call();
+    const rwnBalance = await this.getBalancerContract().methods.getBalance(getTokenData().rowanAddress).call();
+    return [Balance.create(6, usdtBalance), Balance.create(18, rwnBalance)];
+  }
+
   static create(): IWalletService {
     return new EthereumService();
   }

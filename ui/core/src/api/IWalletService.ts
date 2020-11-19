@@ -20,6 +20,7 @@ export type IWalletService = {
   approveToken(): Promise<string>;
   getAllowance(): Promise<number>;
   getBalances(): Promise<Balance[]>;
+  getPoolBalances(): Promise<Balance[]>;
   isWhitelisted(): Promise<boolean>;
   isValidKey(unhashedKey: string): Promise<boolean>;
 };
