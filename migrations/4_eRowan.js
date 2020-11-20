@@ -1,7 +1,6 @@
 // Only deploy this mock token locally
 const MockRowanToken = artifacts.require("MockRowanToken");
 const { toWei } = web3.utils;
-const fs = require("fs");
 
 module.exports = async function (deployer) {
   await deployer.deploy(MockRowanToken, "eRowan", "RWN", 18);

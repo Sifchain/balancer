@@ -1,7 +1,6 @@
 // Only deploy this mock token locally
 const MockUSDTToken = artifacts.require("MockRowanToken");
 const { toWei } = web3.utils;
-const fs = require("fs");
 
 module.exports = async function (deployer) {
   await deployer.deploy(MockUSDTToken, "USDT Stablecoin", "USDT", 6);

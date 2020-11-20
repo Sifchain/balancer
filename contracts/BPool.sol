@@ -202,7 +202,7 @@ contract BPool is BMath {
         _factory = manager;
     }
 
-    function setTokenIntOut(address tokenIn, address tokenOut)
+    function setTokenInOut(address tokenIn, address tokenOut)
         external
         _logs_
         _lock_

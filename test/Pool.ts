@@ -1,7 +1,6 @@
 const truffleAssert = require("truffle-assertions");
 const {
   calcOutGivenIn,
-  calcInGivenOut,
   calcRelativeDiff,
 } = require("./../utils.ts");
 const BPool = artifacts.require("BPool");
@@ -15,8 +14,8 @@ const errorDelta = 10 ** -8;
 const MAX = web3.utils.toTwosComplement(-1);
 
 const helpers = require("../helpers/whitelistHelper");
-const unhashedKey = "CnatGeusHtis"
-const hashedKey = helpers.hash(unhashedKey)
+const unhashedKey = "CnatGeusHtis";
+const hashedKey = helpers.hash(unhashedKey);
 
 contract("Full pool test", (accounts) => {
   const admin = process.env.WHITE_LIST_MANAGER;
@@ -206,12 +205,12 @@ contract("Full pool test", (accounts) => {
       await whitelist.whitelistUser(user2, hashedKey, { from: admin });
 
       const controller = await pool.getController();
-      await pool.setTokenIntOut(WETH, DAI, { from: controller });
+      await pool.setTokenInOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
-      await pool.setTokenIntOut(DAI, WETH, { from: controller });
+      await pool.setTokenInOut(DAI, WETH, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
@@ -281,11 +280,11 @@ contract("Full pool test", (accounts) => {
     it("User1 joins pool", async () => {
       const controller = await pool.getController();
       await pool.setController(user1, { from: controller });
-      await pool.setTokenIntOut(XXX, WETH, { from: user1 });
+      await pool.setTokenInOut(XXX, WETH, { from: user1 });
       await pool.joinswapExternAmountIn(toWei("2.5"), { from: user1 });
-      await pool.setTokenIntOut(XXX, MKR, { from: user1 });
+      await pool.setTokenInOut(XXX, MKR, { from: user1 });
       await pool.joinswapExternAmountIn(toWei("1"), { from: user1 });
-      await pool.setTokenIntOut(XXX, DAI, { from: user1 });
+      await pool.setTokenInOut(XXX, DAI, { from: user1 });
       await pool.joinswapExternAmountIn(toWei("500"), { from: user1 });
       const daiBalance = await pool.getBalance(DAI);
       assert.equal(10500, fromWei(daiBalance));
@@ -312,14 +311,14 @@ contract("Full pool test", (accounts) => {
 
     it("Fail swapExactAmountIn unbound or over min max ratios", async () => {
       const controller = await pool.getController();
-      await pool.setTokenIntOut(WETH, XXX, { from: controller });
+      await pool.setTokenInOut(WETH, XXX, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("100"), toWei("200"), unhashedKey, {
           from: user2,
         }),
         "ERR_NOT_BOUND"
       );
-      await pool.setTokenIntOut(WETH, DAI, { from: controller });
+      await pool.setTokenInOut(WETH, DAI, { from: controller });
 
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("5.3"), toWei("1000"), toWei("200"), unhashedKey, {
@@ -400,12 +399,12 @@ contract("Full pool test", (accounts) => {
 
     it("Fails calling any swap on unbound token", async () => {
       const controller = await pool.getController();
-      await pool.setTokenIntOut(XXX, DAI, { from: controller });
+      await pool.setTokenInOut(XXX, DAI, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
-      await pool.setTokenIntOut(DAI, XXX, { from: controller });
+      await pool.setTokenInOut(DAI, XXX, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"

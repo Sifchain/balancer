@@ -3,10 +3,9 @@ const MockRowanToken = artifacts.require('MockRowanToken');
 const OwnableWhitelist = artifacts.require('OwnableWhitelist');
 const fs = require('fs');
 
-const truffleAssert = require('truffle-assertions');
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff, logState } = require('./../utils.ts');
+const { calcOutGivenIn, calcRelativeDiff } = require('./../utils.ts');
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
@@ -19,8 +18,8 @@ const subsequent_trade_amount = 10000;
 const fileName = `first.${first_hour_buyers_number}.${first_trade_amount}.subseq.${subsequent_hour_buyers_number}.${subsequent_trade_amount}:`
 
 const helpers = require("../helpers/whitelistHelper");
-const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
-const hashedKey = helpers.hash(unhashedKey)
+const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
+const hashedKey = helpers.hash(unhashedKey);
 
 async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
   const usdtPoolBalance = await pool.getBalance(USDT);
@@ -93,7 +92,7 @@ contract('Our use case', (accounts) => {
     await pool.finalize({ from: controller });
 
     await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
-    await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
+    await pool.setTokenInOut(USDT, ROWAN, {from: controller});
 
   });
 
@@ -120,7 +119,7 @@ contract('Our use case', (accounts) => {
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
         for (let j = 0; j < subsequent_hour_buyers_number; j++) {
           console.log(`Hour: ${i + 2}`);
-          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount);
+          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey);
           const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
           console.log(`Swap Interation ${i *subsequent_hour_buyers_number + j + first_hour_buyers_number + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
           fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});

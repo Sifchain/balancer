@@ -7,7 +7,6 @@ const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const {
   calcOutGivenIn,
-  calcInGivenOut,
   calcRelativeDiff,
   logState,
 } = require("./../utils.ts");
@@ -17,8 +16,8 @@ const weightRowan = 10;
 const verbose = true;
 
 const helpers = require("../helpers/whitelistHelper");
-const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`
-const hashedKey = helpers.hash(unhashedKey)
+const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
+const hashedKey = helpers.hash(unhashedKey);
 
 contract("Our use case", (accounts) => {
   const controller = process.env.CONTROLLER;
@@ -178,7 +177,7 @@ contract("Our use case", (accounts) => {
     });
 
     it('Fails to swapExactAmountIn with less than min swap amount', async () => {
-      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
+      await pool.setTokenInOut(USDT, ROWAN, {from: controller});
       // Attempt to spend 0 USDT should fail, because user has to invest at least 1 USDT.
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, unhashedKey, { from: user }),
