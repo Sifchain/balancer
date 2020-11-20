@@ -186,37 +186,6 @@ contract("Our use case", (accounts) => {
       );
     });
 
-    it('Fails to swapExactAmountOut with less than min swap amount', async () => {
-      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
-      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('30'), MAX, unhashedKey, { from: user }),
-        'ERR_MIN_SWAP_AMOUNT',
-      );
-    });
-
-    it('Fails to swapExactAmountOut with incorrect unhashed key', async () => {
-      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
-      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('30'), MAX, "incorrect_key", { from: user }),
-        'ERR_NOT_WHITELISTED/INVALID_KEY',
-      );
-    });
-
-    it('Fails to swapExactAmountOut with address that is not whitelisted', async () => {
-      await pool.setTokenIntOut(USDT, ROWAN, {from: controller});
-      // Attempt to buy 30 RWN priced $0.03 should fail, because user has to invest at least 1 USDT.
-      // (e.g. $1 / $0.03 per RWN = 33.33333333 RWN)
-      assert.equal(await whitelist.isWhitelisted(user2), false)
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('30'), MAX, unhashedKey, { from: user2 }),
-        'ERR_NOT_WHITELISTED/INVALID_KEY',
-      );
-    });
-
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
       const usdtPoolBalance = await pool.getBalance(USDT);
@@ -256,52 +225,6 @@ contract("Our use case", (accounts) => {
       assert.equal(
         Number(fromWei(userRowanBalance)),
         Number(fromWei(log.args.tokenAmountOut))
-      );
-
-      assert.isAtMost(relDif.toNumber(), errorDelta);
-    });
-
-    it("Swap iteration using swapExactAmountOut", async () => {
-      // Attempt to buy 20,000 RWN priced $0.03 should succeed (e.g. 20,000 RWN * $0.03 per RWN = $600)
-      await usdt.mint(user, toWei("1000", "mwei"));
-      const userRowanBalanceInitial = await rowan.balanceOf(user);
-      const usdtPoolBalance = await pool.getBalance(USDT);
-      const rowanPoolBalance = await pool.getBalance(ROWAN);
-      const expected = calcInGivenOut(
-        fromWei(usdtPoolBalance, "mwei"),
-        weightUsdt,
-        fromWei(rowanPoolBalance),
-        weightRowan,
-        20000,
-        0.0
-      );
-
-      if(verbose) {
-        console.log('Before swap:');
-        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
-      }
-
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      const txr = await pool.swapExactAmountOut(MAX, toWei("20000"), MAX, unhashedKey, {
-        from: user,
-      });
-
-      if(verbose) {
-        console.log('After swap:');
-        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
-      }
-
-      const log = txr.logs[0];
-      assert.equal(log.event, "LOG_SWAP");
-
-      const actual = fromWei(log.args.tokenAmountIn, "mwei");
-      const relDif = calcRelativeDiff(expected, actual);
-
-      const userRowanBalance = await rowan.balanceOf(user);
-      assert.equal(
-        Number(fromWei(userRowanBalance)),
-        Number(fromWei(log.args.tokenAmountOut)) +
-          Number(fromWei(userRowanBalanceInitial))
       );
 
       assert.isAtMost(relDif.toNumber(), errorDelta);

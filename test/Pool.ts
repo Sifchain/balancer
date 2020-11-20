@@ -216,16 +216,6 @@ contract("Full pool test", (accounts) => {
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
         "ERR_SWAP_NOT_PUBLIC"
       );
-      await pool.setTokenIntOut(WETH, DAI, { from: controller });
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
-      );
-      await pool.setTokenIntOut(DAI, WETH, { from: controller });
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
-      );
     });
 
     it("Fails calling any join exit swap before finalizing", async () => {
@@ -337,13 +327,6 @@ contract("Full pool test", (accounts) => {
         }),
         "ERR_LIMIT_OUT."
       );
-
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("5"), toWei("1000"), toWei("200"), unhashedKey, {
-          from: user2,
-        }),
-        "ERR_LIMIT_IN."
-      );
     });
 
     /*
@@ -361,21 +344,6 @@ contract("Full pool test", (accounts) => {
       );
       assert.equal(await pool.getBalance(WETH), toWei("52.5"));
       assert.equal(await pool.getBalance(DAI), toWei("10500"));
-    });
-
-    /*
-      Current DAI in pool is 10,500, hence the max swap amount should be 1,050 DAI (10%).
-      Attempt to swap WETH to 1,051 DAI should fail.
-    */
-    it('Fail swapExactAmountOut over max swap ratio', async () => {
-      assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
-      assert.equal((await pool.getBalance(DAI)), toWei('10500'));
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(MAX, toWei('1051'), toWei('200'), unhashedKey, {from: user2}),
-        'ERR_MAX_OUT_RATIO',
-      );
-      assert.equal((await pool.getBalance(WETH)), toWei('52.5'));
-      assert.equal((await pool.getBalance(DAI)), toWei('10500'));
     });
 
     it('swapExactAmountIn', async () => {
@@ -423,34 +391,6 @@ contract("Full pool test", (accounts) => {
       assert.equal(0.333333333333333333, fromWei(daiNormWeight));
     });
 
-    it("swapExactAmountOut", async () => {
-      const controller = await pool.getController();
-      await pool.setTokenIntOut(WETH, MKR, { from: controller });
-      // ETH -> 1 MKR
-      const expected = calcInGivenOut(55, 5, 21, 5, 1, 0);
-      const txr = await pool.swapExactAmountOut(
-        toWei("3"),
-        toWei("1.0"),
-        toWei("500"),
-        unhashedKey,
-        { from: user2 }
-      );
-      const log = txr.logs[0];
-      assert.equal(log.event, "LOG_SWAP");
-      // 2.758274824473420261
-
-      const actual = fromWei(log.args[3]);
-      const relDif = calcRelativeDiff(expected, actual);
-      if (verbose) {
-        console.log("swapExactAmountOut");
-        console.log(`expected: ${expected})`);
-        console.log(`actual  : ${actual})`);
-        console.log(`relDif  : ${relDif})`);
-      }
-
-      assert.isAtMost(relDif.toNumber(), errorDelta);
-    });
-
     it("Fails exit pool with limits", async () => {
       await truffleAssert.reverts(
         pool.exitPool([toWei("30"), toWei("30"), toWei("30")], { from: controller }),
@@ -468,16 +408,6 @@ contract("Full pool test", (accounts) => {
       await pool.setTokenIntOut(DAI, XXX, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
-        "ERR_NOT_BOUND"
-      );
-      await pool.setTokenIntOut(XXX, DAI, { from: controller });
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
-        "ERR_NOT_BOUND"
-      );
-      await pool.setTokenIntOut(DAI, XXX, { from: controller });
-      await truffleAssert.reverts(
-        pool.swapExactAmountOut(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, { from: user2 }),
         "ERR_NOT_BOUND"
       );
       await truffleAssert.reverts(
