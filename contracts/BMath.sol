@@ -78,35 +78,4 @@ contract BMath is BConst, BNum {
         tokenAmountOut = bmul(outRecord.balance, bar);
         return tokenAmountOut;
     }
-
-    /**********************************************************************************************
-    // calcInGivenOut                                                                            //
-    // aI = tokenAmountIn                                                                        //
-    // bO = tokenBalanceOut               /  /     bO      \    (wO / wI)      \                 //
-    // bI = tokenBalanceIn          bI * |  | ------------  | ^            - 1  |                //
-    // aO = tokenAmountOut    aI =        \  \ ( bO - aO ) /                   /                 //
-    // wI = tokenWeightIn           --------------------------------------------                 //
-    // wO = tokenWeightOut                          ( 1 - sF )                                   //
-    // sF = swapFee                                                                              //
-    **********************************************************************************************/
-    function calcInGivenOut(
-        uint tokenBalanceIn,
-        uint tokenWeightIn,
-        uint tokenBalanceOut,
-        uint tokenWeightOut,
-        uint tokenAmountOut,
-        uint swapFee
-    )
-        public pure
-        returns (uint tokenAmountIn)
-    {
-        uint weightRatio = bdiv(tokenWeightOut, tokenWeightIn);
-        uint diff = bsub(tokenBalanceOut, tokenAmountOut);
-        uint y = bdiv(tokenBalanceOut, diff);
-        uint foo = bpow(y, weightRatio);
-        foo = bsub(foo, BONE);
-        tokenAmountIn = bsub(BONE, swapFee);
-        tokenAmountIn = bdiv(bmul(tokenBalanceIn, foo), tokenAmountIn);
-        return tokenAmountIn;
-    }
 }

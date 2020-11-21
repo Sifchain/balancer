@@ -11,7 +11,7 @@ const weightUsdt = 1;
 
 module.exports = function(cb) {
   addLiquidity(cb);
-}
+};
 
 async function addLiquidity(cb) {
   try {
@@ -39,10 +39,10 @@ async function addLiquidity(cb) {
     // now finalize
     res = await bpool.finalize({ from: controller });
     console.log('\n\n\n\n\n\n\ntx Pool finalized: ' + JSON.stringify(res));
-    res = await bpool.setTokenIntOut(process.env.USDT, process.env.EROWAN, { from: controller });
-    console.log('\n\n\n\n\n\n\ntx setTokenIntOut: ' + JSON.stringify(res));
+    res = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
+    console.log('\n\n\n\n\n\n\ntx setTokenInOut: ' + JSON.stringify(res));
   } catch (error) {
       console.log("ERROR:: ", error)
   }
-  cb(); 
+  cb();
 }

@@ -6,11 +6,11 @@ const {
 
 const helpers = require("../helpers/whitelistHelper");
 
-const unhashedKey = "SuperSecretString"
-const unhashedKeyArray = helpers.genHashedKeys(unhashedKey, 4)
+const unhashedKey = "SuperSecretString";
+const unhashedKeyArray = helpers.genHashedKeys(unhashedKey, 4);
 
-const hashedKey = helpers.hash(unhashedKey)
-const hashedKeyArray = unhashedKeyArray.map(e => {return helpers.hash(e) })
+const hashedKey = helpers.hash(unhashedKey);
+const hashedKeyArray = unhashedKeyArray.map(e => {return helpers.hash(e) });
 
 
 contract("OwnableWhitelist", (accounts) => {
@@ -109,10 +109,10 @@ contract("OwnableWhitelist", (accounts) => {
     it("Check if the key is equal to the unhashed key", async () => {
       assert.equal(await whitelist.checkHash(hashedKey, unhashedKey), true);
     });
-    
+
     it("Owner can remove a user from the whitelist", async () => {
       assert.equal(await whitelist.isWhitelisted(user1), true);
-  
+
       await whitelist.removeWhitelistedUser(user1, hashedKey, { from: admin });
 
       assert.equal(await whitelist.isWhitelisted(user1), false);

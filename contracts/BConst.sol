@@ -34,7 +34,6 @@ contract BConst {
     uint public constant MAX_BPOW_BASE     = (2 * BONE) - 1 wei;
     uint public constant BPOW_PRECISION    = BONE / 10**10;
 
-    uint public constant MAX_IN_RATIO      = BONE / 2;
     // Max out ratio should be 10% of the pool
     uint public constant MAX_OUT_RATIO     = BONE / 10;
 }
