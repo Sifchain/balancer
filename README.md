@@ -28,7 +28,7 @@ ganache-cli -d
 2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
 3. `yarn migrate:testnet --network <network name>`
 4. Copy newly migrated USDT and ROWAN contract addresses into .env
-5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
+5. `yarn tokendata --network <network name>` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. set PRIVATE_KEY in .env to rowan owner.
 7. `yarn mint:rowan --network <network name>`
 8. set PRIVATE_KEY in .env to CONTROLLER
@@ -46,7 +46,7 @@ ganache-cli -d
 2. Copy USDT and ROWAN contract addresses into .env
 3. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY and INFURA_KEY in .env
 4. `yarn migrate:mainnet`
-5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
+5. `yarn tokendata --network mainnet` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. set PRIVATE_KEY in .env to rowan owner.
 7. `yarn mint:rowan --network mainnet`
 8. set PRIVATE_KEY in .env to CONTROLLER. Controller must have USDT and eRowan on balance by that time.
