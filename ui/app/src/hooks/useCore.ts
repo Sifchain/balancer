@@ -2,13 +2,9 @@ import {
   createStore,
   createApi,
   createActions,
-  getWeb3Provider,
 } from "../../../core";
 
-const api = createApi({
-  getWeb3Provider
-});
-
+const api = createApi();
 const store = createStore();
 const actions = createActions({ store, api });
 

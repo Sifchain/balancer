@@ -1,17 +1,29 @@
 import { reactive } from "@vue/reactivity";
 
+export enum PurchaseState {
+  Disabled = 0,
+  Enabled = 1,
+  Pending = 2,
+  Failed = 3,
+  Completed = 4,
+}
+
 export type PurchaseStore = {
-  swapIn: boolean;
-  usdtAmount: number;
-  rwnAmount: number;
-  usdtAllowance: number;
+  validKey: boolean;
+  usdtAmount: string;
+  rwnAmount: string;
   unhashedKey: string;
+  slippagePercent: string;
+  state: PurchaseState;
+  error?: string;
 };
 
 export const purchase = reactive({
-  swapIn: true,
-  usdtAmount: 100,
-  rwnAmount: 0,
-  usdtAllowance: 0,
-  unhashedKey: ""
+  validKey: false,
+  usdtAmount: "",
+  rwnAmount: "",
+  unhashedKey: "",
+  slippagePercent: "0.5",
+  state: PurchaseState.Disabled,
+  error: undefined
 }) as PurchaseStore;

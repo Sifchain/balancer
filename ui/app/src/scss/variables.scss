@@ -2,13 +2,18 @@
  *  COLORS and GRADIENTS:
  */
 
+$c_red: #B51A1A;
 $c_gold: #CAA93A;
 $c_gold_dark: #9C7919;
 $c_blue: #5F88D9;
+$c_light_green: #9EC54D;
 $c_green: #8CC63F;
 $c_white: #ffffff;
+$c_gray_25: #FDFDFD;
 $c_gray_50: #FAFAFA;  // use for btn on white, use for non-white panels
+$c_gray_75: #F7F7F7;
 $c_gray_100: #F4F4F4;
+$c_gray_150: #E8E8E8;
 $c_gray_200: #E6E6E6;
 $c_gray_300: #DEDEDE;
 $c_gray_400: #CCC;
@@ -16,13 +21,15 @@ $c_gray_700: #818181; // switch bg, disabled font on dark, gradients
 $c_gray_800: #333;
 $c_gray_900: #272727;
 $c_black: #000;
+$c_transparent: #00000000;
 
 // main copy color
 $c_text: $c_gray_900;
 
 $g_gold: linear-gradient(to right, $c_gold, $c_gold_dark);
-$g_gray: linear-gradient(180deg, $c_gray_50 0%, $c_gray_300 100%);
-$g_gray_reverse: linear-gradient(180deg, $c_gray_200 0%, $c_gray_50 100%);
+$g_gray: linear-gradient(180deg, $c_gray_50 0%, $c_gray_200 100%);
+$g_gray_disabled: linear-gradient(180deg, $c_gray_75 0%, $c_gray_25 100%);
+$g_gray_light: linear-gradient(180deg, $c_white 0%, $c_gray_150 100%);
 
 
 /*
@@ -38,7 +45,7 @@ $bs_dropdown: 0px 3px 10px #00000033;
  */
 
  // border radius
-$br_sm: 6px;
+$br_sm: 5px;
 $br_md: 10px;
 $br_lg: 15px;
 

@@ -1,11 +1,13 @@
-import { TxHash, Address, Asset, Balance, Token } from "../entities";
 import JSBI from "jsbi";
+import { Balance } from "../entities/Balance";
 
 export type IWalletService = {
   getState: () => {
-    address: Address;
-    accounts: Address[];
+    whitelisted: boolean;
+    validNetwork: boolean;
     connected: boolean;
+    networkType: string;
+    account?: string;
     balances: Balance[];
     log: string;
     allowance: number;
@@ -13,10 +15,12 @@ export type IWalletService = {
   isConnected(): boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
-  swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
-  swapExactAmountOutCall(maxAmountIn: JSBI, tokenAmountOut: JSBI, unhashedKey: string): Promise<TxHash>;
-  approveToken(): Promise<TxHash>;
+  swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
+  swapExactAmountInCall(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
+  approveToken(): Promise<string>;
   getAllowance(): Promise<number>;
-  getBalance(address?: Address, asset?: Asset | Token): Promise<Balance[]>;
+  getBalances(): Promise<Balance[]>;
+  getPoolBalances(): Promise<Balance[]>;
+  isWhitelisted(): Promise<boolean>;
+  isValidKey(unhashedKey: string): Promise<boolean>;
 };

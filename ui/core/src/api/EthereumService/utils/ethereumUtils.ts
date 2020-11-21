@@ -1,15 +1,7 @@
 import Web3 from "web3";
-import {
-  IpcProvider,
-  provider,
-  WebsocketProvider,
-} from "web3-core";
-// @ts-ignore
-import {Contract} from 'web3-eth-contract';
-// @ts-ignore
+import { Contract } from 'web3-eth-contract';
 import { AbiItem } from "web3-utils";
-import { USDT } from "../../../constants";
-import { ChainId, createToken, Address, Asset, Balance, Token } from "../../../entities";
+import { Balance } from "../../../entities/Balance";
 
 export const erc20TokenAbi: AbiItem[] = [
   // balanceOf
@@ -103,41 +95,26 @@ export function isValidNetwork(networkType: string): boolean {
   return networkType === "private" // TODO use "main" for production, "private" or "ropsten" for testing
 }
 
-export function isToken(value?: Asset | Token): value is Token {
-  return value ? Object.keys(value).includes("address") : false;
+export function getTokenContract(web3: Web3, address: string): Contract {
+  return new web3.eth.Contract(erc20TokenAbi, address);
 }
 
-// @ts-ignore
-export function getTokenContract(web3: Web3, asset: Token): Contract {
-  return new web3.eth.Contract(erc20TokenAbi, asset.address);
+export function getTokenData() {
+  return require("../../../../../../TokenData.json");
 }
 
-export async function getTokenBalance(
-  web3: Web3,
-  address: Address,
-  asset: Token
-) {
-  const contract = getTokenContract(web3, asset);
-  const tokenBalance = await contract.methods.balanceOf(address).call();
-  return Balance.create(asset, tokenBalance);
+export function getBalancerAbiArray(networkType: string) {
+  const network = networkType === "private" ? "development" : networkType === "main" ? "mainnet" : networkType;
+  return require("../../../../../../BalancerABI."+network+".json");
 }
 
-export function isEventEmittingProvider(
-  provider?: provider
-): provider is WebsocketProvider | IpcProvider {
-  if (!provider || typeof provider === "string") return false;
-  return typeof (provider as any).on === "function";
+export function getWhitelistAbiArray(networkType: string) {
+  const network = networkType === "private" ? "development" : networkType === "main" ? "mainnet" : networkType;
+  return require("../../../../../../WhitelistABI."+network+".json");
 }
 
-export async function getEthereumBalance(web3: Web3, address: Address) {
-  const ethBalance = await web3.eth.getBalance(address);
-  return Balance.create(USDT, ethBalance);
-}
-
-export async function getSupportedTokens(): Promise<Token[]> {
-  const tokenData = require("../../../../../../TokenData.json");
-  return [
-    createToken(18, "RWN", "eRowan", ChainId.ETHEREUM, tokenData.rowanAddress),
-    createToken(6, "USDT", "USDT Stablecoin", ChainId.ETHEREUM, tokenData.usdtAddress),
-  ];
+export async function getUsdtBalance(web3: Web3, address: string) {
+  const contract = getTokenContract(web3, getTokenData().usdtAddress);
+  const tokenAmount = await contract.methods.balanceOf(address).call();
+  return Balance.create(6, tokenAmount);
 }

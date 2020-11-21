@@ -1,7 +1,6 @@
 import {effect} from "@vue/reactivity";
 import {ActionContext} from "..";
 import B from "../entities/utils/B";
-import { USDT, RWN } from "../constants";
 
 export default ({
   api,
@@ -11,59 +10,64 @@ export default ({
 
   const actions = {
     async updateBalances(_?: string) {
-      store.wallet.eth.balances = await api.EthereumService.getBalance();
-    },
-    async disconnectWallet() {
-      await api.EthereumService.disconnect();
+      store.wallet.balances = await api.EthereumService.getBalances();
     },
     async connectToWallet() {
       await api.EthereumService.connect();
+    },
+    async disconnectWallet() {
+      await api.EthereumService.disconnect();
     },
     async swapExactAmountInCall(
       tokenAmountIn: number,
       minAmountOut: number,
       unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
-    },
-    async swapExactAmountOutCall(
-      maxAmountIn: number,
-      tokenAmountOut: number,
-      unhashedKey: string
-    ) {
-      return await api.EthereumService.swapExactAmountOutCall(B(maxAmountIn, USDT.decimals), B(tokenAmountOut, RWN.decimals), unhashedKey);
+      return await api.EthereumService.swapExactAmountInCall(B(tokenAmountIn, 6), B(minAmountOut, 18), unhashedKey);
     },
     async swapExactAmountInSend(
       tokenAmountIn: number,
       minAmountOut: number,
       unhashedKey: string
     ) {
-      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, USDT.decimals), B(minAmountOut, RWN.decimals), unhashedKey);
+      return await api.EthereumService.swapExactAmountInSend(B(tokenAmountIn, 6), B(minAmountOut, 18), unhashedKey);
     },
     async approveToken() {
       return await api.EthereumService.approveToken();
     },
+    async isWhitelisted() {
+      return await api.EthereumService.isWhitelisted();
+    },
+    async isValidKey(unhashedKey: string) {
+      return await api.EthereumService.isValidKey(unhashedKey);
+    },
+    async getPoolBalances() {
+      return await api.EthereumService.getPoolBalances();
+    }
   };
 
   effect(async () => {
-    store.purchase.usdtAllowance = ethereumState.allowance;
+    store.wallet.connected = ethereumState.connected;
   });
 
   effect(async () => {
-    store.wallet.eth.isConnected = ethereumState.connected;
+    store.wallet.validNetwork = ethereumState.validNetwork;
   });
 
   effect(async () => {
-    store.wallet.eth.address = ethereumState.address;
+    store.wallet.account = ethereumState.account;
   });
 
   effect(async () => {
-    store.wallet.eth.balances = ethereumState.balances;
+    store.wallet.balances = ethereumState.balances;
   });
 
   effect(async () => {
-    ethereumState.log;
-    await api.EthereumService.getBalance();
+    store.wallet.allowance = ethereumState.allowance;
+  });
+
+  effect(async () => {
+    store.wallet.whitelisted = ethereumState.whitelisted;
   });
 
   return actions;
