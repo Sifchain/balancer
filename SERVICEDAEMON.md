@@ -9,11 +9,11 @@ EROWAN='eRowan address on mainnet'
 USDT='USDT address on mainnet'
 ```
 
-2. Make sure that the controller address in the .env file is set to your address. Also make sure that the private key in the .env file is your private key.
+2. Make sure that the controller address in the .env file is set to your address. Also make sure that the private key in the .env file is CONTROLLER private key.
 
 3. Then run the command to execute this script not on a schedule:
 ```
-truffle exec scripts/serviceDaemon.js --network mainnet
+truffle exec scripts/serviceDaemon.js --network <network name>
 ```
 
 4. Set Up the Slack hook for daemon
@@ -30,6 +30,6 @@ in the slack key variable in your .env file.
 4. To run this cronjob, start at the root directory, then run this command:
 
 ```
-node scripts/cron.js
+node scripts/cron.js <network name>
 ```
 
