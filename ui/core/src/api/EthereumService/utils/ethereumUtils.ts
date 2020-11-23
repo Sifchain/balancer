@@ -92,7 +92,7 @@ export const erc20TokenAbi: AbiItem[] = [
 ];
 
 export function isValidNetwork(networkType: string): boolean {
-  return networkType === "private" // TODO use "main" for production, "private" or "ropsten" for testing
+  return networkType === "ropsten" // TODO use "main" for production
 }
 
 export function getTokenContract(web3: Web3, address: string): Contract {
