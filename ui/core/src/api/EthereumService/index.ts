@@ -162,7 +162,6 @@ export class EthereumService implements IWalletService {
       {},
       (error, result) => {
         this.handleStateChange();
-        console.log("logsSubscription", error, result);
       }
     );
   }
