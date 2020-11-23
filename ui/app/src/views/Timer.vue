@@ -15,7 +15,7 @@
           </div>
           <div class="timer-footer">
             <p class="start-time">The Sifchain Token Sale will start on</p>
-            <p class="start-date">November 19th, 12:00am GMT</p>
+            <p class="start-date">December 10th, 12:00am GMT</p>
           </div>
         </div>
       </div>
@@ -37,7 +37,7 @@
     },
     methods: {
       updateTimer() {
-        const tokenSaleStartDate = Date.UTC(2020, 10, 19, 0, 0, 0, 0); // Nov 19, 2020
+        const tokenSaleStartDate = Date.UTC(2020, 11, 10, 0, 0, 0, 0); // Dec 10, 2020
         const timeDifference = tokenSaleStartDate - Date.now();
         this.days = timeDifference > 0 ? Math.floor(timeDifference / 86400000) : 0;
         this.hours = timeDifference > 0 ? Math.floor((timeDifference % 86400000) / 3600000) : 0;
