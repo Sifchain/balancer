@@ -92,15 +92,15 @@ export const erc20TokenAbi: AbiItem[] = [
 ];
 
 export function isValidNetwork(networkType: string): boolean {
-  return networkType === "ropsten" // TODO use "main" for production
+  return networkType === getTokenSaleData().network
 }
 
 export function getTokenContract(web3: Web3, address: string): Contract {
   return new web3.eth.Contract(erc20TokenAbi, address);
 }
 
-export function getTokenData() {
-  return require("../../../../../../TokenData.json");
+export function getTokenSaleData() {
+  return require("../../../../../../TokenSaleData.json");
 }
 
 export function getBalancerAbiArray(networkType: string) {
@@ -114,7 +114,7 @@ export function getWhitelistAbiArray(networkType: string) {
 }
 
 export async function getUsdtBalance(web3: Web3, address: string) {
-  const contract = getTokenContract(web3, getTokenData().usdtAddress);
+  const contract = getTokenContract(web3, getTokenSaleData().usdtAddress);
   const tokenAmount = await contract.methods.balanceOf(address).call();
   return Balance.create(6, tokenAmount);
 }

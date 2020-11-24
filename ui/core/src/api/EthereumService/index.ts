@@ -5,7 +5,7 @@ import JSBI from "jsbi";
 import {
   getTokenContract,
   getUsdtBalance,
-  getTokenData,
+  getTokenSaleData,
   isValidNetwork,
   getBalancerAbiArray,
   getWhitelistAbiArray
@@ -42,8 +42,6 @@ const initState = {
 
 export class EthereumService implements IWalletService {
   private web3: Web3 | null = null;
-  private blockSubscription: any;
-  private logsSubscription: any;
 
   // This is shared reactive state
   private state: {
@@ -84,7 +82,6 @@ export class EthereumService implements IWalletService {
   async handleStateChange() {
     if (!this.web3) {
       this.state = reactive({ ...initState });
-      this.removeWeb3Subscription();
       return;
     }
 
@@ -100,12 +97,10 @@ export class EthereumService implements IWalletService {
       this.state.balances = await this.getBalances();
       this.state.allowance = await this.getAllowance();
       this.state.whitelisted = await this.isWhitelisted();
-      this.addWeb3Subscription();
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
       this.state.whitelisted = false;
-      this.removeWeb3Subscription();
     }
   }
 
@@ -145,30 +140,8 @@ export class EthereumService implements IWalletService {
         }
       ]
     });
-    this.removeWeb3Subscription();
     this.web3 = null;
     this.state = reactive({ ...initState });
-  }
-
-  addWeb3Subscription() {
-    this.blockSubscription = this.web3?.eth.subscribe(
-      "newBlockHeaders",
-      (error, result) => {
-        this.state.log = result?.hash ?? "null";
-      }
-    );
-    this.logsSubscription = this.web3?.eth.subscribe(
-      "logs",
-      {},
-      (error, result) => {
-        this.handleStateChange();
-      }
-    );
-  }
-
-  removeWeb3Subscription() {
-    this.blockSubscription?.unsubscribe();
-    this.logsSubscription?.unsubscribe();
   }
 
   getBalancerContract() {
@@ -207,7 +180,7 @@ export class EthereumService implements IWalletService {
         "There is not yet a connection to Ethereum."
       );
     }
-    return await getTokenContract(this.web3, getTokenData().usdtAddress).methods.allowance(this.state.account, getBalancerAbiArray(this.state.networkType).address).call({from: this.state.account});
+    return await getTokenContract(this.web3, getTokenSaleData().usdtAddress).methods.allowance(this.state.account, getBalancerAbiArray(this.state.networkType).address).call({from: this.state.account});
   }
 
   async approveToken(): Promise<string> {
@@ -217,7 +190,7 @@ export class EthereumService implements IWalletService {
       );
     }
     const accountFrom = await this.getCurrentAccount();
-    return getTokenContract(this.web3, getTokenData().usdtAddress).methods.approve(getBalancerAbiArray(this.state.networkType).address, MAX).send({from: accountFrom});
+    return getTokenContract(this.web3, getTokenSaleData().usdtAddress).methods.approve(getBalancerAbiArray(this.state.networkType).address, MAX).send({from: accountFrom});
   }
 
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {
@@ -242,8 +215,8 @@ export class EthereumService implements IWalletService {
   }
 
   async getPoolBalances(): Promise<Balance[]> {
-    const usdtBalance = await this.getBalancerContract().methods.getBalance(getTokenData().usdtAddress).call();
-    const rwnBalance = await this.getBalancerContract().methods.getBalance(getTokenData().rowanAddress).call();
+    const usdtBalance = await this.getBalancerContract().methods.getBalance(getTokenSaleData().usdtAddress).call();
+    const rwnBalance = await this.getBalancerContract().methods.getBalance(getTokenSaleData().rwnAddress).call();
     return [Balance.create(6, usdtBalance), Balance.create(18, rwnBalance)];
   }
 

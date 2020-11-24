@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="66" height="66.328" viewBox="0 0 66 66.328">
-  <g id="Gruppe_1453" data-name="Gruppe 1453" transform="translate(-925 -375.672)">
-    <g id="Ellipse_34" data-name="Ellipse 34" transform="translate(925 376)" fill="none" stroke="#e8e8e8" stroke-width="2">
-      <circle cx="33" cy="33" r="33" stroke="none"/>
-      <circle cx="33" cy="33" r="32" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="65.721" height="65.721" viewBox="0 0 65.721 65.721">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rechteck_2181" data-name="Rechteck 2181" width="65.721" height="65.721" transform="translate(0 0)" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="Gruppe_1562" data-name="Gruppe 1562" transform="translate(0 0)">
+    <g id="Gruppe_1561" data-name="Gruppe 1561" clip-path="url(#clip-path)">
+      <path id="Pfad_2212" data-name="Pfad 2212" d="M32.861,1A31.861,31.861,0,1,1,1,32.861,31.861,31.861,0,0,1,32.861,1Z" fill="none" stroke="#e8e8e8" stroke-width="2"/>
+      <path id="Pfad_2213" data-name="Pfad 2213" d="M64.721,32.861A31.861,31.861,0,1,1,32.861,1" fill="none" stroke="#caa93a" stroke-linecap="round" stroke-width="2"/>
     </g>
-    <path id="Pfad_1933" data-name="Pfad 1933" d="M731.376,590.977a31.951,31.951,0,1,1-31.951-31.951" transform="translate(258.527 -182.354)" fill="none" stroke="#caa93a" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/>
   </g>
 </svg>
