@@ -121,7 +121,10 @@
       }
 
       async function approveToken() {
+        store.purchase.approving = true;
         await actions.approveToken();
+        store.purchase.approving = false;
+        await api.EthereumService.handleStateChange();
       }
 
       return {
@@ -309,8 +312,8 @@
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" @click="approveToken">
-            Approve Token
+          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" v-bind:class="{ 'btn__disabled': store.purchase.approving }" @click="approveToken">
+            {{ store.purchase.approving ? "Approving..." : "Approve Token" }}
           </button>
 
           <button class="btn" v-if="store.wallet.connected && store.wallet.allowance > 0" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.validKey }" @click="swapExactAmountIn">
