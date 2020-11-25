@@ -35,10 +35,7 @@ export default ({
     async approveToken() {
       return await api.EthereumService.approveToken();
     },
-    async isWhitelisted() {
-      return await api.EthereumService.isWhitelisted();
-    },
-    async isValidKey(unhashedKey: string) {
+    async validateKey(unhashedKey: string) {
       return await api.EthereumService.isValidKey(unhashedKey);
     },
     async getPoolBalances() {

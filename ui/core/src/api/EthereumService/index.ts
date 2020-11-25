@@ -100,7 +100,7 @@ export class EthereumService implements IWalletService {
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
-      this.state.whitelisted = false;
+      this.state.whitelisted = true;
     }
   }
 
