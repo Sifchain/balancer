@@ -108,7 +108,9 @@
           }, 50);
           try {
             store.purchase.state = PurchaseState.Pending;
-            await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const { transactionHash } = tx;
+            store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
           } catch (e) {
@@ -372,7 +374,8 @@
             <p>Thank You for participating in our Token Sale.</p>
           </div>
           <div class="purchase-form__transaction__check">
-            <p>Check transaction on <a href="https://etherscan.io/" target="_blank" style="color: #000000">Blockexplorer</a></p>
+<!--            TODO: change to https://etherscan.io/tx/ before mainnet -->
+            <p>Check transaction on <a v-bind:href="'https://ropsten.etherscan.io/tx/' + store.purchase.txHash" target="_blank" style="color: #000000">Blockexplorer</a></p>
           </div>
         </div>
       </div>

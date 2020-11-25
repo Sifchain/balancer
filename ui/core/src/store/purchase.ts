@@ -17,6 +17,7 @@ export type PurchaseStore = {
   state: PurchaseState;
   progress: number;
   error?: string;
+  txHash: string;
 };
 
 export const purchase = reactive({
@@ -27,5 +28,6 @@ export const purchase = reactive({
   slippagePercent: "0.5",
   state: PurchaseState.Disabled,
   progress: 0,
-  error: undefined
+  error: undefined,
+  txHash: ""
 }) as PurchaseStore;
