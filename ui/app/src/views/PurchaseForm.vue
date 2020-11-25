@@ -24,7 +24,7 @@
       }
 
       async function validateKey() {
-        store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
+        store.purchase.validKey = await actions.validateKey(store.purchase.unhashedKey);
       }
 
       async function getRowanEstimate() {
@@ -381,7 +381,7 @@
     </div>
     <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
-      If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
+      If you have not been approved, you may apply <a href="https://tokensale.sifchain.finance" target="_blank" style="color: #000000">here</a>.
       Please remember to use the wallet address you provided us in your KYC information.
       Any transactions from unapproved wallet addresses will be rejected.
     </p>
@@ -393,7 +393,6 @@
     color: $c_gray_400
   }
   .kyc-help-text {
-    width: 410px;
     margin-top: 16px;
     padding: 8px;
     font-weight: normal;
@@ -401,7 +400,6 @@
     color:$c_text
   }
   .purchase-form {
-    width: 410px;
     border-radius: $br_lg;
     overflow: hidden;
     border-color: $c_gray_150;
