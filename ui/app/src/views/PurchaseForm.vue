@@ -165,7 +165,6 @@
                           :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
                           v-model="store.purchase.usdtAmount"
                           @input="getEstimate"
-                          @focus="store.purchase.swapIn = true"
                   >
                 </div>
               </div>
@@ -200,7 +199,6 @@
                           :disabled="true"
                           v-model="store.purchase.rwnAmount"
                           @input="getEstimate"
-                          @focus="store.purchase.swapIn = false"
                   >
                 </div>
               </div>
