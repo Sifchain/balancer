@@ -1,13 +1,14 @@
 require('dotenv').config();
-const { USDT, EROWAN } = process.env;
+const { USDT, EROWAN, NETWORK } = process.env;
 const fs = require("fs");
 
 module.exports = function (cb) {
   let obj = {
     usdtAddress: USDT,
-    rowanAddress: EROWAN,
+    rwnAddress: EROWAN,
+    network: NETWORK,
   };
   let data = JSON.stringify(obj);
-  fs.writeFileSync(`TokenData.json`, data);
+  fs.writeFileSync(`TokenSaleData.json`, data);
   cb();
 };

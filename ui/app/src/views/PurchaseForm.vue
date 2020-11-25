@@ -13,7 +13,7 @@
       }
     },
     setup() {
-      const { actions, store } = useCore();
+      const { actions, api, store } = useCore();
 
       function getShortenedAddress() {
         return store.wallet.connected && store.wallet.account ? store.wallet.account.slice(0, 11) + "..." : "";
@@ -97,13 +97,24 @@
 
       async function swapExactAmountIn() {
         if (store.purchase.validKey && store.wallet.validNetwork) {
+          const timer = window.setInterval(() => {
+            if (store.purchase.state === PurchaseState.Pending) {
+              if (store.purchase.progress >= 350) {
+                store.purchase.progress = 0;
+              } else {
+                store.purchase.progress += 10;
+              }
+            }
+          }, 50);
           try {
             store.purchase.state = PurchaseState.Pending;
             await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             store.purchase.state = PurchaseState.Completed;
+            await api.EthereumService.handleStateChange();
           } catch (e) {
             store.purchase.state = PurchaseState.Failed;
           }
+          window.clearInterval(timer);
         }
       }
 
@@ -317,7 +328,7 @@
       <div v-else class="purchase-form__transaction" v-bind:class="{ 'purchase-form__transaction__failed': store.purchase.state === PurchaseState.Failed, 'purchase-form__transaction__completed': store.purchase.state === PurchaseState.Completed }">
         <div v-if="store.purchase.state === PurchaseState.Pending">
           <div class="purchase-form__transaction__loading">
-            <img src="../assets/transaction-waiting.svg">
+            <img src="../assets/transaction-waiting.svg" :style="`transform: rotate(${store.purchase.progress}deg);`">
           </div>
           <div class="purchase-form__transaction__title">
             <p>Waiting For Confirmation</p>
@@ -347,6 +358,9 @@
           </div>
         </div>
         <div v-if="store.purchase.state === PurchaseState.Completed">
+          <div class="purchase-form__transaction__close" @click="tryAgain">
+            <img src="../assets/close.svg">
+          </div>
           <div class="purchase-form__transaction__loading">
             <img src="../assets/transaction-approved.svg">
           </div>
@@ -395,6 +409,7 @@
     border-style: solid;
 
     &__transaction {
+      position: relative;
       height: 370px;
       padding: 15px;
       background: $c_gray_50;
@@ -405,6 +420,16 @@
         border-color: $c_red;
         border-width: 1px;
         border-style: solid;
+      }
+
+      &__close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
 
       &__completed {
