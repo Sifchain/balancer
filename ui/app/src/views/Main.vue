@@ -1,10 +1,7 @@
 <template>
   <main class="wrapper">
     <img class="header" src="../assets/header.svg">
-    <div class="content">
-      <Timer v-if="showTimer" />
-      <PurchaseForm v-else />
-    </div>
+    <slot></slot>
     <img class="footer" src="../assets/footer.png">
   </main>
 </template>
@@ -48,10 +45,6 @@
     height: 130px;
     margin-top: 64px;
     margin-bottom: 32px;
-  }
-  .content {
-    width: 96%;
-    max-width: 410px;
   }
   .footer {
     width: 100%;

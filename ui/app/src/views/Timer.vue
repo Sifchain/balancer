@@ -1,26 +1,22 @@
 <template>
-  <div>
-    <div class="main-container">
-      <div class="container">
-        <div>
-          <div class="timer-header">
-            <div class="time-header">DAYS</div>
-            <div class="time-header">HOURS</div>
-            <div class="time-header">MIN</div>
-          </div>
-          <div class="timer">
-            <div class="time">{{days}}</div>
-            <div class="time">{{hours}}</div>
-            <div class="time">{{minutes}}</div>
-          </div>
-          <div class="timer-footer">
-            <p class="start-time">The Sifchain Token Sale will start on</p>
-            <p class="start-date">December 10th, 12:00am GMT</p>
-          </div>
+    <div class="timer-container">
+      <div>
+        <div class="timer-header">
+          <div class="time-header">DAYS</div>
+          <div class="time-header">HOURS</div>
+          <div class="time-header">MIN</div>
+        </div>
+        <div class="timer">
+          <div class="time">{{days}}</div>
+          <div class="time">{{hours}}</div>
+          <div class="time">{{minutes}}</div>
+        </div>
+        <div class="timer-footer">
+          <p class="start-time">The Sifchain Token Sale will start on</p>
+          <p class="start-date">December 10th, 12:00am GMT</p>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
@@ -53,21 +49,15 @@
 </script>
 
 <style lang="scss" scoped>
-  .main-container {
-    display: table;
-    margin: 0 auto;
-  }
-  .container {
+  .timer-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 421px; // 100%
-    height: 392px; // none
-    background-size: contain; // none
-    background-repeat: no-repeat; // none
-    background-position: center; // none
+    height: 392px;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
     background-image: url("../assets/timer-background.svg");
-    padding: 64px; // 16 px
   }
   .timer-header {
     display: flex;
