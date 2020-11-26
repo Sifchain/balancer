@@ -394,7 +394,7 @@
 
 <style lang="scss">
   .text-disabled {
-    color: $c_gray_400
+    color: $c_gray_400 !important;
   }
   .kyc-help-text {
     margin-top: 16px;
@@ -704,7 +704,7 @@
     }
   }
   .mb-20 {
-    margin-bottom: 20px;
+    margin-bottom: 20px !important;
   }
   .custom-slippage-input-container { position:relative; }
   .custom-slippage-input-container span {
