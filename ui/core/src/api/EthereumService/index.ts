@@ -59,13 +59,15 @@ export class EthereumService implements IWalletService {
     this.state = reactive({ ...initState });
     this.web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
 
-    this.web3.givenProvider.on('accountsChanged',  () => {
-      this.handleStateChange();
-    });
+    if (this.web3 && this.web3.givenProvider) {
+      this.web3.givenProvider.on('accountsChanged',  () => {
+        this.handleStateChange();
+      });
 
-    this.web3.givenProvider.on('chainChanged', () => {
-      this.handleStateChange();
-    });
+      this.web3.givenProvider.on('chainChanged', () => {
+        this.handleStateChange();
+      });
+    }
   }
 
   getState() {
@@ -100,7 +102,7 @@ export class EthereumService implements IWalletService {
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
-      this.state.whitelisted = false;
+      this.state.whitelisted = true;
     }
   }
 

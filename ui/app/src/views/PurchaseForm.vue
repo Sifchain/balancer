@@ -24,7 +24,7 @@
       }
 
       async function validateKey() {
-        store.purchase.validKey = await actions.isValidKey(store.purchase.unhashedKey);
+        store.purchase.validKey = await actions.validateKey(store.purchase.unhashedKey);
       }
 
       async function getRowanEstimate() {
@@ -108,7 +108,9 @@
           }, 50);
           try {
             store.purchase.state = PurchaseState.Pending;
-            await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const { transactionHash } = tx;
+            store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
           } catch (e) {
@@ -119,7 +121,10 @@
       }
 
       async function approveToken() {
+        store.purchase.approving = true;
         await actions.approveToken();
+        store.purchase.approving = false;
+        await api.EthereumService.handleStateChange();
       }
 
       return {
@@ -165,7 +170,6 @@
                           :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
                           v-model="store.purchase.usdtAmount"
                           @input="getEstimate"
-                          @focus="store.purchase.swapIn = true"
                   >
                 </div>
               </div>
@@ -200,7 +204,6 @@
                           :disabled="true"
                           v-model="store.purchase.rwnAmount"
                           @input="getEstimate"
-                          @focus="store.purchase.swapIn = false"
                   >
                 </div>
               </div>
@@ -309,8 +312,8 @@
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" @click="approveToken">
-            Approve Token
+          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" v-bind:class="{ 'btn__disabled': store.purchase.approving }" @click="approveToken">
+            {{ store.purchase.approving ? "Approving..." : "Approve Token" }}
           </button>
 
           <button class="btn" v-if="store.wallet.connected && store.wallet.allowance > 0" v-bind:class="{ 'btn__disabled': store.purchase.state === PurchaseState.Disabled || !store.purchase.validKey }" @click="swapExactAmountIn">
@@ -374,14 +377,15 @@
             <p>Thank You for participating in our Token Sale.</p>
           </div>
           <div class="purchase-form__transaction__check">
-            <p>Check transaction on <a href="https://etherscan.io/" target="_blank" style="color: #000000">Blockexplorer</a></p>
+<!--            TODO: change to https://etherscan.io/tx/ before mainnet -->
+            <p>Check transaction on <a v-bind:href="'https://ropsten.etherscan.io/tx/' + store.purchase.txHash" target="_blank" style="color: #000000">Blockexplorer</a></p>
           </div>
         </div>
       </div>
     </div>
     <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
-      If you have not been approved, you may apply <a href="https://sifchain.finance/" target="_blank" style="color: #000000">here</a>.
+      If you have not been approved, you may apply <a href="https://tokensale.sifchain.finance" target="_blank" style="color: #000000">here</a>.
       Please remember to use the wallet address you provided us in your KYC information.
       Any transactions from unapproved wallet addresses will be rejected.
     </p>
@@ -390,10 +394,9 @@
 
 <style lang="scss">
   .text-disabled {
-    color: $c_gray_400
+    color: $c_gray_400 !important;
   }
   .kyc-help-text {
-    width: 410px;
     margin-top: 16px;
     padding: 8px;
     font-weight: normal;
@@ -401,7 +404,6 @@
     color:$c_text
   }
   .purchase-form {
-    width: 410px;
     border-radius: $br_lg;
     overflow: hidden;
     border-color: $c_gray_150;
@@ -702,7 +704,7 @@
     }
   }
   .mb-20 {
-    margin-bottom: 20px;
+    margin-bottom: 20px !important;
   }
   .custom-slippage-input-container { position:relative; }
   .custom-slippage-input-container span {

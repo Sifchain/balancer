@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import Home from "@/views/Home.vue";
-import Timer from "@/views/Timer.vue";
+import Wrapper from "@/views/Wrapper.vue";
+import TestWrapper from "@/views/TestWrapper.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    name: "Home",
-    component: Home,
+    name: "Wrapper",
+    component: Wrapper,
   },
   {
     path: "/timer",
-    name: "Timer",
-    component: Timer,
+    name: "TestWrapper",
+    component: TestWrapper,
   },
 ];
 
