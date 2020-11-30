@@ -150,6 +150,28 @@
     <div class="purchase-form">
       <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.connected }">
         <div>
+
+          <div class="d-flex fd-row j-center">
+            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
+              Please enter your 64-digit confirmation code
+            </p>
+            <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
+            <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
+          </div>
+
+          <div class="confirmation-code mh-30 mb-20" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
+            <div v-if="store.wallet.connected" class="token-form text--small">
+              <input
+                      placeholder="confirmation code"
+                      :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
+                      v-model="store.purchase.unhashedKey"
+                      class="sif-input text-tiny"
+                      type="text"
+                      @input="validateKey"
+              >
+            </div>
+          </div>
+
           <div class="input-group mh-70 mb-4" v-bind:class="{ 'input-group__disabled mb-20': !store.wallet.connected }">
             <div v-if="store.wallet.connected" class="d-flex fd-row j-between text--small">
               <p class="text--normal text--italic">
@@ -270,27 +292,6 @@
                 >
                 <span>%</span>
               </div>
-            </div>
-          </div>
-
-          <div class="d-flex fd-row j-center">
-            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
-              Please enter your 64-digit confirmation code
-            </p>
-            <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
-            <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
-          </div>
-
-          <div class="confirmation-code mh-30" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
-            <div v-if="store.wallet.connected" class="token-form text--small">
-              <input
-                      placeholder="confirmation code"
-                      :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
-                      v-model="store.purchase.unhashedKey"
-                      class="sif-input text-tiny"
-                      type="text"
-                      @input="validateKey"
-              >
             </div>
           </div>
 
