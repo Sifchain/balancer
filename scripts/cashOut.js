@@ -5,7 +5,7 @@ const { fromWei } = web3.utils;
 
 module.exports = function(cb) {
   cashOut(cb);
-}
+};
 
 async function cashOut(cb) {
     try {
