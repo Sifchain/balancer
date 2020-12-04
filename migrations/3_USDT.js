@@ -7,6 +7,6 @@ module.exports = async function (deployer) {
   const usdtContract = await MockUSDTToken.deployed();
   const controller = process.env.CONTROLLER;
   const user = process.env.USER_ACCOUNT;
-  await usdtContract.mint(controller, toWei("46000", "mwei"));
+  await usdtContract.mint(controller, toWei("26250", "mwei"));
   await usdtContract.mint(user, toWei("50000000", "mwei"));
 };

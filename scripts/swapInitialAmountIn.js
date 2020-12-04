@@ -4,8 +4,8 @@ const pool_address = BPool.address;
 const { toWei } = web3.utils;
 
 // parameters
-const tokenRowanAmount = 15000000;
-const tokenUSDTAmount = 45000;
+const tokenRowanAmount = 8750000;
+const tokenUSDTAmount = 26250;
 const weightRowan = 10;
 const weightUsdt = 1;
 
@@ -23,7 +23,7 @@ async function addLiquidity(cb) {
     console.log("eRowan address: " + eRowanContract.address);
     console.log("USDT address: " + usdtContract.address);
 
-    // first approve and let the bpool have access to 120,000,000 eRowan tokens
+    // first approve and let the bpool have access to 8,750,000 eRowan tokens
     let res = await eRowanContract.approve(pool_address, toWei(tokenRowanAmount.toString()), { from: controller });
     console.log('tx Rowan approved: ' + JSON.stringify(res));
 

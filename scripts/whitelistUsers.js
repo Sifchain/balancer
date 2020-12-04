@@ -12,11 +12,11 @@ const helpers = require("../helpers/whitelistHelper");
 module.exports = function (cb) {
   async function bulkwhitelistUsers() {
     try {
-      const whitelistAddresses = usersToWhitelist.map(e => {return e.address})
-      const whitelistHashedKeys = usersToWhitelist.map(e => {return helpers.hash(e.key)})
+      const whitelistAddresses = usersToWhitelist.map(e => {return e.address});
+      const whitelistHashedKeys = usersToWhitelist.map(e => {return helpers.hash(e.key)});
       let whitelist = await OwnableWhitelist.at(whitelist_address);
-      console.log("whitelistAddresses: ", whitelistAddresses)
-      console.log("whitelistHashedKeys: ", whitelistHashedKeys)
+      console.log("whitelistAddresses: ", whitelistAddresses);
+      console.log("whitelistHashedKeys: ", whitelistHashedKeys);
       let res = await whitelist.bulkWhitelistUsers(
         whitelistAddresses, whitelistHashedKeys, {
         from: process.env.WHITE_LIST_MANAGER,

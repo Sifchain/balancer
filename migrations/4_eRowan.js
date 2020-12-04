@@ -6,5 +6,5 @@ module.exports = async function (deployer) {
   await deployer.deploy(MockRowanToken, "eRowan", "RWN", 18);
   const eRowanContract = await MockRowanToken.deployed();
   const controller = process.env.CONTROLLER;
-  await eRowanContract.mint(controller, toWei("120000000"));
+  await eRowanContract.mint(controller, toWei("70000000"));
 };
