@@ -46,8 +46,8 @@ contract("Our use case", (accounts) => {
     POOL = pool.address;
 
     // admin balances
-    await rowan.mint(controller, toWei("120000000"));
-    await usdt.mint(controller, toWei("45000", "mwei"));
+    await rowan.mint(controller, toWei("70000000"));
+    await usdt.mint(controller, toWei("26250", "mwei"));
 
     // user balances
     await usdt.mint(user, toWei("500", "mwei"));
@@ -58,12 +58,12 @@ contract("Our use case", (accounts) => {
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei("15000000"), toWei(weightRowan.toString()), {
+    await pool.bind(ROWAN, toWei("8750000"), toWei(weightRowan.toString()), {
       from: controller,
     });
     await pool.bind(
       USDT,
-      toWei("45000", "mwei"),
+      toWei("26250", "mwei"),
       toWei(weightUsdt.toString()),
       { from: controller }
     );
@@ -231,13 +231,13 @@ contract("Our use case", (accounts) => {
 
     it("Fails to provide liquidity if it is not controller", async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("625000"), { from: user }),
+        pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: user }),
         "ERR_NOT_CONTROLLER"
       );
     });
 
     it("Liquidity iteration", async () => {
-      await pool.joinswapExternAmountIn(toWei("625000"), { from: controller });
+      await pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: controller });
       if (verbose) {
         console.log("After adding liquidity:");
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);

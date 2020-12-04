@@ -74,8 +74,8 @@ contract('Our use case', (accounts) => {
     POOL = pool.address;
 
     // admin balances
-    await rowan.mint(controller, toWei('120000000'));
-    await usdt.mint(controller, toWei('45000', 'mwei'));
+    await rowan.mint(controller, toWei('70000000'));
+    await usdt.mint(controller, toWei('26250', 'mwei'));
 
     // user balances
     await usdt.mint(user, toWei('100000000', 'mwei'));
@@ -86,8 +86,8 @@ contract('Our use case', (accounts) => {
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
-    await pool.bind(USDT, toWei('45000', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
+    await pool.bind(ROWAN, toWei('8750000'), toWei(weightRowan.toString()), { from: controller });
+    await pool.bind(USDT, toWei('26250', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
 
     await pool.finalize({ from: controller });
 
@@ -113,7 +113,7 @@ contract('Our use case', (accounts) => {
       }
 
       for (let i = 0; i < hours_in_week; i++) {
-        await pool.joinswapExternAmountIn(toWei('625000'), { from: controller });
+        await pool.joinswapExternAmountIn(toWei('364583333333', 'micro'), { from: controller });
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`Liquidity iteration ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
