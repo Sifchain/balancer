@@ -121,9 +121,13 @@
       }
 
       async function approveToken() {
-        store.purchase.approving = true;
-        await actions.approveToken();
-        store.purchase.approving = false;
+        try {
+          store.purchase.approving = true;
+          await actions.approveToken();
+          store.purchase.approving = false;
+        } catch (e) {
+          store.purchase.approving = false;
+        }
         await api.EthereumService.handleStateChange();
       }
 
