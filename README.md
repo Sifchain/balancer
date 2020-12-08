@@ -66,3 +66,9 @@ ganache-cli -d
 ## Slack hook for daemon
 Go to the .env file and paste the ending lines of your slack hook key into it minus the first slash for your unique code.
 Then add the slack failure channel hook key in and start the daemon.
+
+## Finalize sales
+```
+0. set PRIVATE_KEY in .env to CONTROLLER
+1. `yarn pool:exit --network <network name>`
+2. `yarn burn:rowan --network <network name>`
