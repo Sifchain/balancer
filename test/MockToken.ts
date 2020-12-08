@@ -2,8 +2,8 @@ const MockRowanToken = artifacts.require("MockRowanToken");
 
 contract("MockRowanToken", (accounts) => {
   const admin = accounts[0];
-  const _name = "eRowan";
-  const _symbol = "RWN";
+  const _name = "erowan";
+  const _symbol = "erowan";
   const _decimals = 18;
   let rowan;
 
