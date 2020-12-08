@@ -11,6 +11,7 @@
     "pool:exit": "truffle exec scripts/cashOut.js",
     "mint:usdt": "truffle exec scripts/mintUSDT.js",
     "mint:rowan": "truffle exec scripts/mintRowan.js",
+    "burn:rowan": "truffle exec scripts/burnRowan.js",
     "compile": "truffle compile",
     "ganache": "yarn ganache-cli -d",
     "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
