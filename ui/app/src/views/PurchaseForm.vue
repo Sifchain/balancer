@@ -114,16 +114,24 @@
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
           } catch (e) {
-            store.purchase.state = PurchaseState.Failed;
+            if (e.toString().includes("Transaction has been reverted by the EVM")) {
+              store.purchase.state = PurchaseState.Reverted;
+            } else {
+              store.purchase.state = PurchaseState.Failed;
+            }
           }
           window.clearInterval(timer);
         }
       }
 
       async function approveToken() {
-        store.purchase.approving = true;
-        await actions.approveToken();
-        store.purchase.approving = false;
+        try {
+          store.purchase.approving = true;
+          await actions.approveToken();
+          store.purchase.approving = false;
+        } catch (e) {
+          store.purchase.approving = false;
+        }
         await api.EthereumService.handleStateChange();
       }
 
@@ -329,7 +337,7 @@
         </div>
       </div>
 
-      <div v-else class="purchase-form__transaction" v-bind:class="{ 'purchase-form__transaction__failed': store.purchase.state === PurchaseState.Failed, 'purchase-form__transaction__completed': store.purchase.state === PurchaseState.Completed }">
+      <div v-else class="purchase-form__transaction" v-bind:class="{ 'purchase-form__transaction__failed': store.purchase.state === PurchaseState.Failed || store.purchase.state === PurchaseState.Reverted, 'purchase-form__transaction__completed': store.purchase.state === PurchaseState.Completed }">
         <div v-if="store.purchase.state === PurchaseState.Pending">
           <div class="purchase-form__transaction__loading">
             <img src="../assets/transaction-waiting.svg" :style="`transform: rotate(${store.purchase.progress}deg);`">
@@ -356,6 +364,23 @@
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Please try again.</p>
+          </div>
+          <div class="purchase-form__transaction__retry" @click="tryAgain">
+            <p>Try again</p>
+          </div>
+        </div>
+        <div v-if="store.purchase.state === PurchaseState.Reverted">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-failed.svg">
+          </div>
+          <div class="purchase-form__transaction__title-failed">
+            <p>Transaction Failed.</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Transaction has been reverted.</p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Please try to increase slippage tolerance.</p>
           </div>
           <div class="purchase-form__transaction__retry" @click="tryAgain">
             <p>Try again</p>

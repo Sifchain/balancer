@@ -5,7 +5,8 @@ export enum PurchaseState {
   Enabled = 1,
   Pending = 2,
   Failed = 3,
-  Completed = 4,
+  Reverted = 4,
+  Completed = 5,
 }
 
 export type PurchaseStore = {
