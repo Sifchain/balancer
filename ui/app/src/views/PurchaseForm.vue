@@ -31,12 +31,12 @@
         try {
           const numericSlippage = parseFloat(store.purchase.slippagePercent);
           if (isNaN(numericSlippage)) {
-            store.purchase.slippagePercent = "1.0";
+            store.purchase.slippagePercent = "";
           } else if (numericSlippage < 0 && store.purchase.slippagePercent.length > 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
           }
         } catch (e) {
-          store.purchase.slippagePercent = "1.0";
+          store.purchase.slippagePercent = "";
         }
       }
 
@@ -87,7 +87,11 @@
       }
 
       function inSlippageCoefficient() {
-        return 1 - parseFloat(store.purchase.slippagePercent) / 100;
+        let numericSlippage = parseFloat(store.purchase.slippagePercent);
+        if (isNaN(numericSlippage)) {
+          numericSlippage = 0;
+        }
+        return 1 - numericSlippage / 100;
       }
 
       function tryAgain() {
