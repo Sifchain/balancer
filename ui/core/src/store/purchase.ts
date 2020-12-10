@@ -5,7 +5,8 @@ export enum PurchaseState {
   Enabled = 1,
   Pending = 2,
   Failed = 3,
-  Completed = 4,
+  Reverted = 4,
+  Completed = 5,
 }
 
 export type PurchaseStore = {
@@ -26,7 +27,7 @@ export const purchase = reactive({
   usdtAmount: "",
   rwnAmount: "",
   unhashedKey: "",
-  slippagePercent: "0.5",
+  slippagePercent: "1.0",
   state: PurchaseState.Disabled,
   progress: 0,
   error: undefined,
