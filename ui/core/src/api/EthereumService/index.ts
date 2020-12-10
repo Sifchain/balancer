@@ -175,6 +175,17 @@ export class EthereumService implements IWalletService {
     return accounts[0];
   }
 
+  getTransactionAmount(address: string, data: string): string | undefined {
+    if (!this.web3) {
+      throw new Error(
+        "There is not yet a connection to Ethereum."
+      );
+    }
+    if (getTokenSaleData().rwnAddress === address && this.web3.utils.isHex(data)) {
+      return Balance.create(18, data).toExact();
+    }
+  }
+
   async getAllowance(): Promise<number> {
     if (!this.web3) {
       throw new Error(
