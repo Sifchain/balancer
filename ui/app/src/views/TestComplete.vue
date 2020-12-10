@@ -1,17 +1,17 @@
 <template>
   <div class="content">
-    <Timer />
+    <Complete />
   </div>
 </template>
 
 <script>
-  import Timer from "@/views/Timer.vue";
+  import Complete from "@/views/Complete.vue";
   import { defineComponent } from "vue";
 
   export default defineComponent({
-    name: "TestWrapper",
+    name: "TestComplete",
     components: {
-      Timer
+      Complete
     },
   });
 </script>
