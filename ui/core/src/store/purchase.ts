@@ -19,6 +19,7 @@ export type PurchaseStore = {
   progress: number;
   error?: string;
   txHash: string;
+  txAmount?: string;
   approving: boolean;
 };
 
@@ -32,5 +33,6 @@ export const purchase = reactive({
   progress: 0,
   error: undefined,
   txHash: "",
+  txAmount: undefined,
   approving: false
 }) as PurchaseStore;
