@@ -128,7 +128,6 @@ export class EthereumService implements IWalletService {
       }
     } catch (err) {
       handleConnectToMetaMaskError(err);
-      this.web3 = null;
       this.state = reactive({ ...initState });
     }
   }
