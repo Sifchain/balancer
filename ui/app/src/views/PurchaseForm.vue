@@ -27,6 +27,19 @@
         store.purchase.validKey = await actions.validateKey(store.purchase.unhashedKey);
       }
 
+      function validateSlippage() {
+        try {
+          const numericSlippage = parseFloat(store.purchase.slippagePercent);
+          if (isNaN(numericSlippage)) {
+            store.purchase.slippagePercent = "1.0";
+          } else if (numericSlippage < 0 && store.purchase.slippagePercent.length > 0) {
+            store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
+          }
+        } catch (e) {
+          store.purchase.slippagePercent = "1.0";
+        }
+      }
+
       async function getRowanEstimate() {
         if (store.purchase.usdtAmount.length > 0) {
           store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
@@ -39,22 +52,25 @@
       }
 
       async function getEstimate() {
-        try {
-          await getRowanEstimate();
-        } catch (e) {
-          if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
-            const balances = await actions.getPoolBalances();
-            if (balances.length === 2) {
-              const rwnBalance = balances[1];
-              const maxRwn = parseInt(rwnBalance.toExact()) / 10;
-              store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
-            }
-          }
-          store.purchase.state = PurchaseState.Disabled;
-        }
         if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
           store.purchase.state = PurchaseState.Disabled;
+        } else {
+          try {
+            validateSlippage();
+            await getRowanEstimate();
+            store.purchase.error = undefined;
+          } catch (e) {
+            if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
+              const balances = await actions.getPoolBalances();
+              if (balances.length === 2) {
+                const rwnBalance = balances[1];
+                const maxRwn = parseInt(rwnBalance.toExact()) / 10;
+                store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
+              }
+            }
+            store.purchase.state = PurchaseState.Disabled;
+          }
         }
       }
 
@@ -259,19 +275,19 @@
               Slippage tolerance
             </p>
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-start">
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.1' }" @click="setSlippageAndEstimate('0.1')">
-                <p class="text--standard text--normal text--regular">
-                  0.1%
-                </p>
-              </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }"  @click="setSlippageAndEstimate('0.5')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }" @click="setSlippageAndEstimate('0.5')">
                 <p class="text--standard text--normal text--regular">
                   0.5%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' }" @click="setSlippageAndEstimate('1.0')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' }"  @click="setSlippageAndEstimate('1.0')">
                 <p class="text--standard text--normal text--regular">
                   1.0%
+                </p>
+              </div>
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '2.0' }" @click="setSlippageAndEstimate('2.0')">
+                <p class="text--standard text--normal text--regular">
+                  2.0%
                 </p>
               </div>
               <div class="sif-input__wrapper custom-slippage-input-container">
