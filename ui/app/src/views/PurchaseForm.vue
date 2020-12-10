@@ -110,7 +110,15 @@
           try {
             store.purchase.state = PurchaseState.Pending;
             const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
-            const { transactionHash } = tx;
+            const { transactionHash, events } = tx;
+            const address = events["3"]["address"];
+            const data = events["3"]["raw"]["data"];
+            const amount = api.EthereumService.getTransactionAmount(address, data);
+            if (amount) {
+              store.purchase.txAmount = amount;
+            } else {
+              store.purchase.txAmount = store.purchase.rwnAmount;
+            }
             store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
@@ -398,7 +406,7 @@
             <p>Transaction submitted</p>
           </div>
           <div class="purchase-form__transaction__text mb-8">
-            <p>Purchased <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
+            <p>Purchased <span class="purchase-form__transaction__span">{{ store.purchase.txAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Thank You for participating in our Token Sale.</p>
