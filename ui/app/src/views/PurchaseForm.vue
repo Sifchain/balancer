@@ -69,15 +69,10 @@
           if (balances.length !== 2) {
             store.purchase.error = undefined;
           } else {
-            const usdtBalance = balances[0];
             const rwnBalance = balances[1];
-            const maxUsdt = parseFloat(usdtBalance.toExact()) / 2;
             const maxRwn = parseFloat(rwnBalance.toExact()) / 10;
-
             if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
               store.purchase.error = "Insufficient balance";
-            } else if (parseFloat(store.purchase.usdtAmount) > maxUsdt) {
-              store.purchase.error = `Maximum contribution amount is ${maxUsdt} USDT`;
             } else if (parseFloat(store.purchase.rwnAmount) > maxRwn) {
               store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
             } else {
