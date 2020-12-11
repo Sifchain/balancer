@@ -36,9 +36,6 @@ async function addLiquidity(cb) {
     res = await bpool.bind(usdtContract.address, toWei(tokenUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
     console.log('\n\n\n\n\n\n\ntx USDT bound: ' + JSON.stringify(res));
 
-    // now finalize
-    res = await bpool.finalize({ from: controller });
-    console.log('\n\n\n\n\n\n\ntx Pool finalized: ' + JSON.stringify(res));
     res = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
     console.log('\n\n\n\n\n\n\ntx setTokenInOut: ' + JSON.stringify(res));
   } catch (error) {

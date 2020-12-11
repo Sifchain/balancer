@@ -7,6 +7,7 @@
     "tokendata": "truffle exec scripts/getTokenData.js",
     "pool:service": "node scripts/cron.js",
     "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
+    "pool:startSales": "truffle exec scripts/startSales.js",
     "pool:whitelist": "truffle exec scripts/whitelistUsers.js",
     "pool:exit": "truffle exec scripts/cashOut.js",
     "mint:usdt": "truffle exec scripts/mintUSDT.js",
