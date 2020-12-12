@@ -115,9 +115,9 @@
             store.purchase.state = PurchaseState.Pending;
             const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             const { transactionHash, events } = tx;
-            const address = events["3"]["address"];
-            const data = events["3"]["raw"]["data"];
-            const amount = api.EthereumService.getTransactionAmount(address, data);
+            const tokenOut = events["LOG_SWAP"]["returnValues"]["tokenOut"];
+            const tokenAmountOut = events["LOG_SWAP"]["returnValues"]["tokenAmountOut"];
+            const amount = api.EthereumService.getTransactionAmount(tokenOut, tokenAmountOut);
             if (amount) {
               store.purchase.txAmount = amount;
             } else {

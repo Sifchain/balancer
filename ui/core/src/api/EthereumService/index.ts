@@ -181,7 +181,7 @@ export class EthereumService implements IWalletService {
         "There is not yet a connection to Ethereum."
       );
     }
-    if (getTokenSaleData().rwnAddress === address && this.web3.utils.isHex(data)) {
+    if (getTokenSaleData().rwnAddress === address) {
       return Balance.create(18, data).toExact();
     }
   }
