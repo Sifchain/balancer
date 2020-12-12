@@ -13,6 +13,7 @@ export type IWalletService = {
     allowance: number;
   };
   isConnected(): boolean;
+  getTransactionAmount(address: string, data: string): string | undefined;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string>;
