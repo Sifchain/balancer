@@ -64,7 +64,7 @@ contract('Our use case', (accounts) => {
   let whitelist;
 
   before(async () => {
-    rowan = await MockRowanToken.new('eRowan', 'RWN', 18);
+    rowan = await MockRowanToken.new('erowan', 'erowan', 18);
     usdt = await MockRowanToken.new('USDT Stablecoin', 'USDT', 6);
     pool = await BPool.deployed();
     whitelist = await OwnableWhitelist.deployed();
