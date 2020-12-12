@@ -21,6 +21,8 @@ export type PurchaseStore = {
   txHash: string;
   txAmount?: string;
   approving: boolean;
+  showMinReceivedTooltip: boolean;
+  showSlippageToleranceTooltip: boolean;
 };
 
 export const purchase = reactive({
@@ -34,5 +36,7 @@ export const purchase = reactive({
   error: undefined,
   txHash: "",
   txAmount: undefined,
-  approving: false
+  approving: false,
+  showMinReceivedTooltip: false,
+  showSlippageToleranceTooltip: false
 }) as PurchaseStore;
