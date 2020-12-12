@@ -37,9 +37,11 @@ ganache-cli -d
 11. `yarn pool:whitelist --network <network name>`
 12. `yarn build:ui` - Build UI (core & app)
 13. `yarn serve:ui` - Start the app at http://localhost:8080/
-14. set PRIVATE_KEY in .env to CONTROLLER
-15. create slack app with Webhook support and set SLACK_KEY in .env to the web hook key removing the first "https://hooks.slack.com/services/" from it
-16. `yarn pool:service <network name>` - to run service which will provide liquidity each hour
+14. By now deployment is done. Once KYC is done and we are ready to start sales:
+15. set PRIVATE_KEY in .env to CONTROLLER
+16. `yarn pool:startSales --network <network name>`
+17. create slack app with Webhook support and set SLACK_KEY in .env to the web hook key removing the first "https://hooks.slack.com/services/" from it
+18. `yarn pool:service <network name>` - to run service which will provide liquidity each hour
 ```
 
 ## Migrate to mainnet
@@ -58,9 +60,11 @@ ganache-cli -d
 11. `yarn pool:whitelist --network mainnet` - Whitelist accounts from whitelist.json
 12. `yarn build:ui` - Build UI (core & app)
 13. `yarn serve:ui` - Start the app at http://localhost:8080/
-14. set PRIVATE_KEY in .env to CONTROLLER
-15. create slack app with Webhook support and set SLACK_KEY in .env to the web hook key removing the first "https://hooks.slack.com/services/" from it
-16. `yarn pool:service mainnet` - to run service which will provide liquidity each hour
+14. By now deployment is done. Once KYC is done and we are ready to start sales
+15. set PRIVATE_KEY in .env to CONTROLLER
+16. `yarn pool:startSales --network mainnet`
+17. create slack app with Webhook support and set SLACK_KEY in .env to the web hook key removing the first "https://hooks.slack.com/services/" from it
+18. `yarn pool:service mainnet` - to run service which will provide liquidity each hour
 ```
 
 ## Slack hook for daemon
