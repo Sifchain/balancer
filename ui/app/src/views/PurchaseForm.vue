@@ -31,12 +31,12 @@
         try {
           const numericSlippage = parseFloat(store.purchase.slippagePercent);
           if (isNaN(numericSlippage)) {
-            store.purchase.slippagePercent = "1.0";
+            store.purchase.slippagePercent = "";
           } else if (numericSlippage < 0 && store.purchase.slippagePercent.length > 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
           }
         } catch (e) {
-          store.purchase.slippagePercent = "1.0";
+          store.purchase.slippagePercent = "";
         }
       }
 
@@ -87,7 +87,11 @@
       }
 
       function inSlippageCoefficient() {
-        return 1 - parseFloat(store.purchase.slippagePercent) / 100;
+        let numericSlippage = parseFloat(store.purchase.slippagePercent);
+        if (isNaN(numericSlippage)) {
+          numericSlippage = 0;
+        }
+        return 1 - numericSlippage / 100;
       }
 
       function tryAgain() {
@@ -249,7 +253,7 @@
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center">
                   <img src="../assets/rwn-symbol.svg" class="ml-8 mr-8" height="18" width="18">
-                  <p class="text--medium text--bold color-text">RWN</p>
+                  <p class="text--medium text--bold color-text">erowan</p>
                 </div>
               </div>
             </div>
@@ -272,7 +276,7 @@
               </p>
               <div class="d-flex fd-row j-center align-center">
                 <p class="text--small text--italic text--bold">
-                  {{ getRwnPrice() }} USDT per RWN
+                  {{ getRwnPrice() }} USDT per erowan
                 </p>
                 <img src="../assets/arrows-grey.svg" class="ml-8" height="9" width="10">
               </div>
@@ -355,7 +359,7 @@
             <p>Waiting For Confirmation</p>
           </div>
           <div class="purchase-form__transaction__text mb-8">
-            <p>Swapping <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
+            <p>Swapping <span class="purchase-form__transaction__span">{{ store.purchase.rwnAmount }} erowan</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Confirm transaction in your wallet</p>
@@ -406,7 +410,7 @@
             <p>Transaction submitted</p>
           </div>
           <div class="purchase-form__transaction__text mb-8">
-            <p>Purchased <span class="purchase-form__transaction__span">{{ store.purchase.txAmount }} RWN</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
+            <p>Purchased <span class="purchase-form__transaction__span">{{ store.purchase.txAmount }} erowan</span> for <span class="purchase-form__transaction__span">{{ store.purchase.usdtAmount }} USDT</span></p>
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Thank You for participating in our Token Sale.</p>
