@@ -20,6 +20,8 @@
       }
 
       async function handleConnectClicked() {
+        store.purchase.showMinReceivedTooltip = false;
+        store.purchase.showSlippageToleranceTooltip = false;
         store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
       }
 
@@ -52,6 +54,8 @@
       }
 
       async function getEstimate() {
+        store.purchase.showMinReceivedTooltip = false;
+        store.purchase.showSlippageToleranceTooltip = false;
         if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
           store.purchase.state = PurchaseState.Disabled;
@@ -101,6 +105,8 @@
       }
 
       async function swapExactAmountIn() {
+        store.purchase.showMinReceivedTooltip = false;
+        store.purchase.showSlippageToleranceTooltip = false;
         if (store.purchase.validKey && store.wallet.validNetwork) {
           const timer = window.setInterval(() => {
             if (store.purchase.state === PurchaseState.Pending) {
@@ -138,6 +144,8 @@
       }
 
       async function approveToken() {
+        store.purchase.showMinReceivedTooltip = false;
+        store.purchase.showSlippageToleranceTooltip = false;
         try {
           store.purchase.approving = true;
           await actions.approveToken();
@@ -146,6 +154,16 @@
           store.purchase.approving = false;
         }
         await api.EthereumService.handleStateChange();
+      }
+
+      function toggleMinReceivedTooltip() {
+        store.purchase.showSlippageToleranceTooltip = false;
+        store.purchase.showMinReceivedTooltip = !store.purchase.showMinReceivedTooltip;
+      }
+
+      function toggleSlippageToleranceTooltip() {
+        store.purchase.showMinReceivedTooltip = false;
+        store.purchase.showSlippageToleranceTooltip = !store.purchase.showSlippageToleranceTooltip;
       }
 
       return {
@@ -160,6 +178,8 @@
         tryAgain,
         setSlippageAndEstimate,
         validateKey,
+        toggleMinReceivedTooltip,
+        toggleSlippageToleranceTooltip
       };
     },
     components: {}
@@ -234,9 +254,20 @@
             <div v-if="store.wallet.connected" class="token-form text--small">
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
-                  <label class="text--normal text--italic">
-                    Minimum Received
-                  </label>
+                  <div class="dropdown__wrapper">
+                    <div class="d-flex fd-row">
+                      <p class="text--normal text--italic">
+                        Minimum Received
+                      </p>
+                      <img src="../assets/info-grey.svg" class="mr-4 ml-4 mb-2" @click="toggleMinReceivedTooltip">
+                    </div>
+                    <div class="dropdown dropdown_left" v-show="store.purchase.showMinReceivedTooltip">
+                      <div class="dropdown__inner">
+                        <p>
+                          Minimum amount of eRowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
+                      </div>
+                    </div>
+                  </div>
                   <input
                           class="sif-input"
                           type="number"
@@ -283,9 +314,21 @@
             </div>
           </div>
           <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.wallet.whitelisted)" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.connected }">
-            <p v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="text--small text--italic text--normal" align="left">
-              Slippage tolerance
-            </p>
+            <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row">
+              <p class="text--small text--italic text--normal" align="left">
+                Slippage tolerance
+              </p>
+              <div class="dropdown__wrapper">
+                <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2" @click="toggleSlippageToleranceTooltip">
+                <div class="dropdown" v-show="store.purchase.showSlippageToleranceTooltip">
+                  <div class="dropdown__inner">
+                    <p>
+                      Affects the minimum amount of eRowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much eRowan as a lower tolerance. If your transaction fails, try setting a higher tolerance.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-start">
               <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }" @click="setSlippageAndEstimate('0.5')">
                 <p class="text--standard text--normal text--regular">
@@ -767,5 +810,36 @@
     margin: 5px;
     color: $c_red;
     font-size: $fs_sm;
+  }
+  .test {
+    display: flex;
+    flex-direction: row;
+  }
+  .dropdown {
+    &__wrapper {
+      display: inline-block;
+      position: relative;
+    }
+
+    position: absolute;
+    font-size: 11px;
+    min-width: 220px;
+    bottom: 18px;
+    left: 24px;
+    padding: 1px;
+    background: white;
+    border-radius: $br_md;
+    border-bottom-left-radius: 0;
+    box-shadow: $bs_dropdown;
+
+    &__inner {
+      border-radius: $br_md;
+      border-bottom-left-radius: 0;
+      border: $divider;
+      padding: 1rem;
+    }
+  }
+  .dropdown_left {
+    left: 118px;
   }
 </style>
