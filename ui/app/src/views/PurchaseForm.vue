@@ -70,7 +70,7 @@
               if (balances.length === 2) {
                 const rwnBalance = balances[1];
                 const maxRwn = parseInt(rwnBalance.toExact()) / 10;
-                store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
+                store.purchase.error = `Maximum contribution amount is ${maxRwn} erowan`;
               }
             }
             store.purchase.state = PurchaseState.Disabled;
