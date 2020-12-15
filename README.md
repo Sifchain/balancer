@@ -82,4 +82,7 @@ Then add the slack failure channel hook key in and start the daemon.
 1. To transfer pool ownership set PRIVATE_KEY in .env to CONTROLLER.
 2. Set NEW_CONTROLLER to new controller address.
 3. `yarn ownership:pool --network <network name>`
+4. To transfer rowan ownership set PRIVATE_KEY in .env to rowan owner.
+5. Set NEW_OWNER_EROWAN to the new rowan owner address.
+6. `yarn ownership:rowan --network <network name>`
 ```

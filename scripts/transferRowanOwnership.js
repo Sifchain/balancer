@@ -10,17 +10,18 @@ async function transferRowanOwnership(cb) {
     const newErowanOwner = process.env.NEW_OWNER_EROWAN;
     console.log("Rowan address: " + rowanContract.address);
 
-    const res = await rowanContract.addMinter(newErowanOwner);
+    let res = await rowanContract.addMinter(newErowanOwner);
     console.log('tx new minter added: ' + JSON.stringify(res));
-    const added = await bpool.isMinter(newErowanOwner);
+    const added = await rowanContract.isMinter(newErowanOwner);
     if(!added) {
       console.log("ERROR:: Rowan owner has not been changed!");
       cb();
+      return;
     }
 
-    const res = await rowanContract.renounceMinter();
-    console.log('tx old minter removed: ' + JSON.stringify(res));
-    console.log('New rowan owner address is: ' + newErowanOwner);
+    res = await rowanContract.renounceMinter();
+    console.log('\n\n\n\n\n\n\ntx old minter removed: ' + JSON.stringify(res));
+    console.log('New rowan owner address has been set to: ' + newErowanOwner);
 
   } catch (error) {
       console.log("ERROR:: ", error);
