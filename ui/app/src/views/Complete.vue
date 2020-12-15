@@ -2,7 +2,7 @@
   <div class="container">
     <div>
       <p class="title">The Sifchain Token Sale is now complete.</p>
-      <p class="text"><a href=" https://sifchain.finance/" target="_blank" style="color: #272727">Return to Sifchain.Finance</a></p>
+      <p class="text"><a href=" https://sifchain.finance/" target="_blank" style="color: #272727">Return to Home</a></p>
     </div>
   </div>
 </template>
