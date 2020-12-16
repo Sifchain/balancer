@@ -33,7 +33,7 @@
     },
     methods: {
       updateTimer() {
-        const tokenSaleStartDate = Date.UTC(2020, 0, 15, 0, 0, 0, 0); // Dec 10, 2020
+        const tokenSaleStartDate = Date.UTC(2021, 0, 15, 0, 0, 0, 0); // Jan 15, 2021
         const timeDifference = tokenSaleStartDate - Date.now();
         this.days = timeDifference > 0 ? Math.floor(timeDifference / 86400000) : 0;
         this.hours = timeDifference > 0 ? Math.floor((timeDifference % 86400000) / 3600000) : 0;
