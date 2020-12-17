@@ -6,6 +6,12 @@
     name: "PurchaseForm",
     created() {
       this.initState();
+      gtag('event', 'page_view', {
+        page_title: 'Purchase Form',
+        page_location: 'https://purchase.sifchain.finance',
+        page_path: '/',
+        send_to: 'G-FJ83DRKTY3'
+      })
     },
     methods: {
       async initState() {
@@ -23,10 +29,18 @@
         store.purchase.showMinReceivedTooltip = false;
         store.purchase.showSlippageToleranceTooltip = false;
         store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
+        gtag('event', 'click_connect_wallet', {
+          'event_label': 'Click Connect Wallet'
+        });
       }
 
       async function validateKey() {
         store.purchase.validKey = await actions.validateKey(store.purchase.unhashedKey);
+        if (store.purchase.validKey) {
+          gtag('event', 'enter_valid_code', {
+            'event_label': 'Enter Valid Code'
+          });
+        }
       }
 
       function validateSlippage() {
@@ -102,9 +116,15 @@
         store.purchase.state = PurchaseState.Disabled;
         store.purchase.usdtAmount = "0";
         store.purchase.rwnAmount = "0";
+        gtag('event', 'click_try_again', {
+          'event_label': 'Click Try Again'
+        });
       }
 
       async function swapExactAmountIn() {
+        gtag('event', 'click_purchase', {
+          'event_label': 'Click Purchase'
+        });
         store.purchase.showMinReceivedTooltip = false;
         store.purchase.showSlippageToleranceTooltip = false;
         if (store.purchase.validKey && store.wallet.validNetwork) {
@@ -132,11 +152,20 @@
             store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
+            gtag('event', 'purchase_successful', {
+              'event_label': 'Purchase Successful'
+            });
           } catch (e) {
             if (e.toString().includes("Transaction has been reverted by the EVM")) {
               store.purchase.state = PurchaseState.Reverted;
+              gtag('event', 'purchase_failed', {
+                'event_label': 'Purchase Failed'
+              });
             } else {
               store.purchase.state = PurchaseState.Failed;
+              gtag('event', 'purchase_canceled', {
+                'event_label': 'Purchase Canceled'
+              });
             }
           }
           window.clearInterval(timer);
@@ -144,14 +173,23 @@
       }
 
       async function approveToken() {
+        gtag('event', 'click_approve', {
+          'event_label': 'Click Approve'
+        });
         store.purchase.showMinReceivedTooltip = false;
         store.purchase.showSlippageToleranceTooltip = false;
         try {
           store.purchase.approving = true;
           await actions.approveToken();
           store.purchase.approving = false;
+          gtag('event', 'approve_successful', {
+            'event_label': 'Approve Successful'
+          });
         } catch (e) {
           store.purchase.approving = false;
+          gtag('event', 'approve_failed', {
+            'event_label': 'Approve Failed'
+          });
         }
         await api.EthereumService.handleStateChange();
       }
