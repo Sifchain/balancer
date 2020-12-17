@@ -13,6 +13,8 @@
     "mint:usdt": "truffle exec scripts/mintUSDT.js",
     "mint:rowan": "truffle exec scripts/mintRowan.js",
     "burn:rowan": "truffle exec scripts/burnRowan.js",
+    "ownership:pool": "truffle exec scripts/transferPoolOwnership.js",
+    "ownership:rowan": "truffle exec scripts/transferRowanOwnership.js",
     "compile": "truffle compile",
     "ganache": "yarn ganache-cli -d",
     "build:chain": "yarn install --frozen-lockfile --silent && truffle build",

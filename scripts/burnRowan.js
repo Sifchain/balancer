@@ -1,5 +1,5 @@
 const mockToken = artifacts.require("MockRowanToken.sol");
-const { toWei } = web3.utils;
+const { fromWei } = web3.utils;
 
 module.exports = function(cb) {
   burnRowan(cb);
