@@ -70,7 +70,7 @@
               if (balances.length === 2) {
                 const rwnBalance = balances[1];
                 const maxRwn = parseInt(rwnBalance.toExact()) / 10;
-                store.purchase.error = `Maximum contribution amount is ${maxRwn} RWN`;
+                store.purchase.error = `Maximum contribution amount is ${maxRwn} erowan`;
               }
             }
             store.purchase.state = PurchaseState.Disabled;
@@ -237,8 +237,8 @@
                 </div>
               </div>
               <div class="token-form__balance">
-                <div class="d-flex fd-row j-center align-center">
-                  <img src="../assets/usdt-symbol.png" class="mr-8 ml-8" height="18" width="18">
+                <div class="d-flex fd-row j-center align-center mw-82">
+                  <img src="../assets/usdt-symbol.png" class="mr-4" height="18" width="18">
                   <p class="text--medium text--bold color-text">USDT</p>
                 </div>
               </div>
@@ -282,8 +282,8 @@
                 </div>
               </div>
               <div class="token-form__balance">
-                <div class="d-flex fd-row j-center align-center">
-                  <img src="../assets/rwn-symbol.svg" class="ml-8 mr-8" height="18" width="18">
+                <div class="d-flex fd-row j-center align-center mw-82">
+                  <img src="../assets/rwn-symbol.svg" class="ml-4 mr-4" height="18" width="18">
                   <p class="text--medium text--bold color-text">erowan</p>
                 </div>
               </div>
