@@ -3,10 +3,8 @@ const MockUSDTToken = artifacts.require("MockRowanToken");
 const { toWei } = web3.utils;
 
 module.exports = async function (deployer) {
-  await deployer.deploy(MockUSDTToken, "USDT Stablecoin", "USDT", 6);
+  await deployer.deploy(MockUSDTToken, "Test USDT", "USDT", 6);
   const usdtContract = await MockUSDTToken.deployed();
   const controller = process.env.CONTROLLER;
-  const user = process.env.USER_ACCOUNT;
   await usdtContract.mint(controller, toWei("26250", "mwei"));
-  await usdtContract.mint(user, toWei("50000000", "mwei"));
 };
