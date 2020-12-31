@@ -8,12 +8,12 @@ module.exports = function(cb) {
 
 async function mintRowan(cb) {
   try {
-    const rowanContract = await mockToken.at(process.env.EROWAN);
-    console.log("Rowan address: " + rowanContract.address);
-    const res = await rowanContract.mint(controller, toWei("70000000"));
-    console.log('tx mint: ' + JSON.stringify(res));
+    const erowanContract = await mockToken.at(process.env.EROWAN);
+    console.log("erowan address:", erowanContract.address);
+    const mintTx = await erowanContract.mint(controller, toWei("70000000"));
+    console.log('mint tx:', JSON.stringify(mintTx));
   } catch (error) {
-      console.log("ERROR:: ", error)
+    console.log("ERROR:", error)
   }
   cb();
 }
