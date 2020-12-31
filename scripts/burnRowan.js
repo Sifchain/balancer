@@ -7,14 +7,16 @@ module.exports = function(cb) {
 
 async function burnRowan(cb) {
   try {
-    const rowanContract = await mockToken.at(process.env.EROWAN);
-    console.log("Rowan address: " + rowanContract.address);
-    const rowanBalance = await rowanContract.balanceOf(process.env.CONTROLLER);
-    console.log('eRowan balance in controller account: ' + fromWei(rowanBalance));
-    const res = await rowanContract.transfer('0x0000000000000000000000000000000000000001', rowanBalance);
-    console.log('tx transfer: ' + JSON.stringify(res));
+    const erowanContract = await mockToken.at(process.env.EROWAN);
+    console.log("erowan address:", erowanContract.address);
+    const erowanBalance = await erowanContract.balanceOf(process.env.CONTROLLER);
+    console.log('erowan balance in controller account before burn:', fromWei(erowanBalance));
+    const transferTx = await erowanContract.transfer('0x0000000000000000000000000000000000000001', erowanBalance);
+    console.log('transfer tx:', JSON.stringify(transferTx));
+    const erowanBalanceAfterBurn = await erowanContract.balanceOf(process.env.CONTROLLER);
+    console.log('erowan balance in controller account after burn:', fromWei(erowanBalanceAfterBurn));
   } catch (error) {
-      console.log("ERROR:: ", error)
+    console.log("ERROR:", error)
   }
   cb();
 }
