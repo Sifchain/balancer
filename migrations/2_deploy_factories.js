@@ -25,7 +25,10 @@ module.exports = async function (deployer, networkName) {
     };
     let whitelistData = JSON.stringify(whitelistObj);
     fs.writeFileSync(`WhitelistABI.${networkName}.json`, whitelistData);
+    console.log("Deployed successfully!");
+    console.log("Pool address:", poolContract.address);
+    console.log("Whitelist address:", whiteListContract.address);
   } catch (error) {
-    console.log("Error deploying:::: ", error);
+    console.log("Error deploying:", error);
   }
 };

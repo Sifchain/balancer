@@ -14,15 +14,15 @@ async function cashOut(cb) {
     const usdtContract = await iToken.at(process.env.USDT);
     const bpool = await BPool.at(poolAddress);
     let exitPoolTx = await bpool.exitPool([0, 0], { from: controller });
-    console.log('exit pool tx:', JSON.stringify(exitPoolTx));
+    console.log("exit pool tx:", JSON.stringify(exitPoolTx));
     const poolRowanBalance = await eRowanContract.balanceOf(poolAddress);
     const poolUsdtBalance = await usdtContract.balanceOf(poolAddress);
-    console.log('erowan balance in the pool:', fromWei(poolRowanBalance));
-    console.log('USDT balance in the pool:', fromWei(poolUsdtBalance, 'mwei'));
+    console.log("\nerowan balance in the pool:", fromWei(poolRowanBalance));
+    console.log("USDT balance in the pool:", fromWei(poolUsdtBalance, "mwei"));
     const rowanBalance = await eRowanContract.balanceOf(controller);
     const usdtBalance = await usdtContract.balanceOf(controller);
-    console.log('erowan balance in controller account:', fromWei(rowanBalance));
-    console.log('USDT balance in controller account:', fromWei(usdtBalance, 'mwei'));
+    console.log("erowan balance in controller account:", fromWei(rowanBalance));
+    console.log("USDT balance in controller account:", fromWei(usdtBalance, "mwei"));
   } catch (error) {
     console.log("ERROR:", error);
   }

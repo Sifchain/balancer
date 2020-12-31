@@ -25,17 +25,17 @@ async function addLiquidity(cb) {
     console.log("USDT address:", usdtContract.address);
     // approve total erowan amount (70,000,000) to avoid approving at each liquidity iteration
     const approveErowanTx = await eRowanContract.approve(poolAddress, toWei(totalErowanAmount.toString()), { from: controller });
-    console.log('approve erowan tx:', JSON.stringify(approveErowanTx));
+    console.log("approve erowan tx:", JSON.stringify(approveErowanTx));
     const approveUsdtTx = await usdtContract.approve(poolAddress, toWei(totalUSDTAmount.toString(), "mwei"), { from: controller });
-    console.log('\n\n\n\n\n\n\napprove USDT tx:', JSON.stringify(approveUsdtTx));
+    console.log("\n\n\n\n\napprove USDT tx:", JSON.stringify(approveUsdtTx));
     // bind erowan and USDT to the contract
     const bindErowanTx = await bpool.bind(eRowanContract.address, toWei(initialErowanAmount.toString()), toWei(weightRowan.toString()), { from: controller });
-    console.log('\n\n\n\n\n\n\nbind erowan tx:', JSON.stringify(bindErowanTx));
+    console.log("\n\n\n\n\nbind erowan tx:", JSON.stringify(bindErowanTx));
     const bindUsdtTx = await bpool.bind(usdtContract.address, toWei(totalUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
-    console.log('\n\n\n\n\n\n\nbind USDT tx:', JSON.stringify(bindUsdtTx));
+    console.log("\n\n\n\n\nbind USDT tx:", JSON.stringify(bindUsdtTx));
     // set erowan and USDT as in/out tokens
     const setTokenInOutTx = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
-    console.log('\n\n\n\n\n\n\nsetTokenInOut tx:', JSON.stringify(setTokenInOutTx));
+    console.log("\n\n\n\n\nsetTokenInOut tx:", JSON.stringify(setTokenInOutTx));
   } catch (error) {
     console.log("ERROR:", error)
   }

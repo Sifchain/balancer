@@ -11,7 +11,7 @@ async function mintRowan(cb) {
     const erowanContract = await mockToken.at(process.env.EROWAN);
     console.log("erowan address:", erowanContract.address);
     const mintTx = await erowanContract.mint(controller, toWei("70000000"));
-    console.log('mint tx:', JSON.stringify(mintTx));
+    console.log("mint erowan tx:", JSON.stringify(mintTx));
   } catch (error) {
     console.log("ERROR:", error)
   }

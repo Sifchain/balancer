@@ -1,7 +1,7 @@
 require('dotenv').config();
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { DEFAULT_GAS_PRICE, INFURA_KEY, PRIVATE_KEY, NETWORK } = process.env;
-const gasPrice = DEFAULT_GAS_PRICE ? parseInt(DEFAULT_GAS_PRICE) : 200000000000;
+const gasPrice = DEFAULT_GAS_PRICE ? parseInt(DEFAULT_GAS_PRICE) : 250000000000;
 
 console.log("PRIVATE_KEY: ", [PRIVATE_KEY]);
 console.log("NETWORK: ", [NETWORK]);
@@ -22,7 +22,7 @@ module.exports = {
         kovan: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://kovan.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: 4700000,           // Max gas to send per transaction
+            gas: 3900000,           // Max gas to send per transaction
             gasPrice: gasPrice,     // 100 gwei (default: 20 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
@@ -31,7 +31,7 @@ module.exports = {
         ropsten: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://ropsten.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: 4700000,           // Max gas to send per transaction
+            gas: 3900000,           // Max gas to send per transaction
             gasPrice: gasPrice,     // 100 gwei (default: 20 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
@@ -40,7 +40,7 @@ module.exports = {
         mainnet: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://mainnet.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: 4700000,           // Max gas to send per transaction
+            gas: 3900000,           // Max gas to send per transaction
             gasPrice: gasPrice,     // 100 gwei (default: 20 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)

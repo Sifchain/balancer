@@ -8,23 +8,20 @@ async function transferRowanOwnership(cb) {
   try {
     const rowanContract = await mockToken.at(process.env.EROWAN);
     const newErowanOwner = process.env.NEW_OWNER_EROWAN;
-    console.log("Rowan address: " + rowanContract.address);
-
+    console.log("erowan address:", rowanContract.address);
     let res = await rowanContract.addMinter(newErowanOwner);
-    console.log('tx new minter added: ' + JSON.stringify(res));
+    console.log("\nadd minter tx:", JSON.stringify(res));
     const added = await rowanContract.isMinter(newErowanOwner);
     if(!added) {
-      console.log("ERROR:: Rowan owner has not been changed!");
+      console.log("ERROR: Rowan owner has not been changed!");
       cb();
       return;
     }
-
     res = await rowanContract.renounceMinter();
-    console.log('\n\n\n\n\n\n\ntx old minter removed: ' + JSON.stringify(res));
-    console.log('New rowan owner address has been set to: ' + newErowanOwner);
-
+    console.log("\nrenounce minter tx:", JSON.stringify(res));
+    console.log("New rowan owner address has been set to:", newErowanOwner);
   } catch (error) {
-      console.log("ERROR:: ", error);
+    console.log("ERROR:", error);
   }
   cb();
 }

@@ -14,11 +14,11 @@ async function mintUSDT(cb) {
   }
   try {
     const usdtContract = await mockToken.at(process.env.USDT);
-    console.log("USDT address: " + usdtContract.address);
-    const res = await usdtContract.mint(user, toWei("99000000", "mwei"));
-    console.log('tx mint: ' + JSON.stringify(res));
+    console.log("USDT address:", usdtContract.address);
+    const mintUsdtTx = await usdtContract.mint(user, toWei("33000000", "mwei"));
+    console.log("mint USDT tx:", JSON.stringify(mintUsdtTx));
   } catch (error) {
-    console.log("ERROR:: ", error)
+    console.log("ERROR:", error)
   }
   cb();
 }
