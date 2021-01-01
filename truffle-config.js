@@ -3,7 +3,6 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { DEFAULT_GAS_PRICE, INFURA_KEY, PRIVATE_KEY, NETWORK } = process.env;
 const gasPrice = DEFAULT_GAS_PRICE ? parseInt(DEFAULT_GAS_PRICE) : 250000000000;
 
-console.log("PRIVATE_KEY: ", [PRIVATE_KEY]);
 console.log("NETWORK: ", [NETWORK]);
 
 module.exports = {
