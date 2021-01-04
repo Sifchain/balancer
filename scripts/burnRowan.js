@@ -11,8 +11,8 @@ async function burnRowan(cb) {
     console.log("erowan address:", erowanContract.address);
     const erowanBalance = await erowanContract.balanceOf(process.env.CONTROLLER);
     console.log("erowan balance in controller account before burn:", fromWei(erowanBalance));
-    const transferTx = await erowanContract.transfer("0x0000000000000000000000000000000000000001", erowanBalance);
-    console.log("\ntransfer tx:", JSON.stringify(transferTx));
+    const transferTx = await erowanContract.burn(erowanBalance);
+    console.log("\nburn erowan tx:", JSON.stringify(transferTx));
     const erowanBalanceAfterBurn = await erowanContract.balanceOf(process.env.CONTROLLER);
     console.log("\nerowan balance in controller account after burn:", fromWei(erowanBalanceAfterBurn));
   } catch (error) {
