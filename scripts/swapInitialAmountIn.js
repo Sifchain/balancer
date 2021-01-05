@@ -1,11 +1,12 @@
 const iToken = artifacts.require("IERC20");
 const BPool = artifacts.require("BPool");
-const pool_address = BPool.address;
+const poolAddress = BPool.address;
 const { toWei } = web3.utils;
 
 // parameters
-const tokenRowanAmount = 8750000;
-const tokenUSDTAmount = 26250;
+const totalErowanAmount = 70000000;
+const initialErowanAmount = 8750000;
+const totalUSDTAmount = 26250;
 const weightRowan = 10;
 const weightUsdt = 1;
 
@@ -18,28 +19,25 @@ async function addLiquidity(cb) {
     const controller = process.env.CONTROLLER;
     const eRowanContract = await iToken.at(process.env.EROWAN);
     const usdtContract = await iToken.at(process.env.USDT);
-    const bpool = await BPool.at(pool_address);
-    console.log("Pool address: " + pool_address);
-    console.log("eRowan address: " + eRowanContract.address);
-    console.log("USDT address: " + usdtContract.address);
-
-    // first approve and let the bpool have access to 8,750,000 eRowan tokens
-    let res = await eRowanContract.approve(pool_address, toWei(tokenRowanAmount.toString()), { from: controller });
-    console.log('tx Rowan approved: ' + JSON.stringify(res));
-
-    res = await usdtContract.approve(pool_address, toWei(tokenUSDTAmount.toString(), "mwei"), { from: controller });
-    console.log('\n\n\n\n\n\n\ntx USDT approved: ' + JSON.stringify(res));
-
-    // then bind eRowan and USDT to the contract
-    res = await bpool.bind(eRowanContract.address, toWei(tokenRowanAmount.toString()), toWei(weightRowan.toString()), { from: controller });
-    console.log('\n\n\n\n\n\n\ntx Rowan bound: ' + JSON.stringify(res));
-    res = await bpool.bind(usdtContract.address, toWei(tokenUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
-    console.log('\n\n\n\n\n\n\ntx USDT bound: ' + JSON.stringify(res));
-
-    res = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
-    console.log('\n\n\n\n\n\n\ntx setTokenInOut: ' + JSON.stringify(res));
+    const bpool = await BPool.at(poolAddress);
+    console.log("Pool address:", poolAddress);
+    console.log("erowan address:", eRowanContract.address);
+    console.log("USDT address:", usdtContract.address);
+    // approve total erowan amount (70,000,000) to avoid approving at each liquidity iteration
+    const approveErowanTx = await eRowanContract.approve(poolAddress, toWei(totalErowanAmount.toString()), { from: controller });
+    console.log("approve erowan tx:", JSON.stringify(approveErowanTx));
+    const approveUsdtTx = await usdtContract.approve(poolAddress, toWei(totalUSDTAmount.toString(), "mwei"), { from: controller });
+    console.log("\n\n\n\n\napprove USDT tx:", JSON.stringify(approveUsdtTx));
+    // bind erowan and USDT to the contract
+    const bindErowanTx = await bpool.bind(eRowanContract.address, toWei(initialErowanAmount.toString()), toWei(weightRowan.toString()), { from: controller });
+    console.log("\n\n\n\n\nbind erowan tx:", JSON.stringify(bindErowanTx));
+    const bindUsdtTx = await bpool.bind(usdtContract.address, toWei(totalUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
+    console.log("\n\n\n\n\nbind USDT tx:", JSON.stringify(bindUsdtTx));
+    // set erowan and USDT as in/out tokens
+    const setTokenInOutTx = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
+    console.log("\n\n\n\n\nsetTokenInOut tx:", JSON.stringify(setTokenInOutTx));
   } catch (error) {
-      console.log("ERROR:: ", error)
+    console.log("ERROR:", error)
   }
   cb();
 }
