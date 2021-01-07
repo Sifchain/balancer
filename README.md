@@ -75,7 +75,6 @@ Then add the slack failure channel hook key in and start the daemon.
 ```
 0. set PRIVATE_KEY in .env to CONTROLLER
 1. `yarn pool:exit --network <network name>`
-2. `yarn burn:rowan --network <network name>`
 
 ## Transfer ownership
 ```
