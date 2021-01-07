@@ -1,34 +1,3 @@
 [
-    {
-        "address": "0x1576e55A29ed4fe331FEBc476d66159D237E38Da",
-        "key": "Ivan"
-    },
-    {
-        "address": "0x2ed841862A25d854E66dCF8ac25C056a7eCE8a03",
-        "key": "Ivan"
-    },
-    {
-        "address": "0xfD38C26Dff3dBA699e26aFA0065F0e5292059423",
-        "key": "Jordan"
-    },
-    {
-        "address": "0x2A74768843c06737ffD6c8F26456d51254802ac9",
-        "key": "Kevin"
-    },
-    {
-        "address": "0x05882564Ea1597cbf5C33e1f7457aE75AcdA53B9",
-        "key": "Kevin"
-    },
-    {
-        "address": "0x8d0748AFbb4af2bAb40b57F7DEbb5b05d8B3Dd0d",
-        "key": "Edward"
-    },
-    {
-        "address": "0x41d1712b09Fd9129144e14C9D7Fed4a096E8F68b",
-        "key": "Edward"
-    },
-    {
-        "address": "0x92d927A1D49feC4a97a2e15823eAB720A8ffc11e",
-        "key": "Steve"
-    }
+
 ]
