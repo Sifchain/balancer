@@ -316,7 +316,7 @@ contract BPool is BMath {
 
         for (uint i = 0; i < _tokens.length; i++) {
             address t = _tokens[i];
-            uint tokenAmountOut = _records[t].balance;
+            uint tokenAmountOut = IERC20(t).balanceOf(address(this));
             require(tokenAmountOut != 0, "ERR_MATH_APPROX");
             require(tokenAmountOut >= minAmountsOut[i], "ERR_LIMIT_OUT");
             _records[t].balance = bsub(_records[t].balance, tokenAmountOut);

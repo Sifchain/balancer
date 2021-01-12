@@ -1,6 +1,9 @@
 const BPool = artifacts.require("BPool");
 const MockRowanToken = artifacts.require("MockRowanToken");
 const OwnableWhitelist = artifacts.require("OwnableWhitelist");
+const {
+  expectRevert, // Assertions for transactions that should fail
+} = require("@openzeppelin/test-helpers");
 
 const truffleAssert = require("truffle-assertions");
 const { toWei, fromWei } = web3.utils;
@@ -182,6 +185,29 @@ contract("Our use case", (accounts) => {
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, unhashedKey, { from: user }),
         'ERR_MIN_SWAP_AMOUNT',
+      );
+    });
+
+    it("Fails withdraw liquidity if the user is not the controller", async () => {
+      await expectRevert(
+        pool.withdrawAllLiquidity(USDT, { from: user }),
+        "ERR_NOT_CONTROLLER"
+      );
+    });
+
+    it("Should be able to withdraw liquidity if the user is the controller", async () => {
+      const startingPoolBalance = await usdt.balanceOf(pool.address);
+
+      await pool.withdrawAllLiquidity(USDT, { from: controller });
+
+      const endingBalance = await usdt.balanceOf(controller);
+
+      console.log("startingPoolBalance: ", startingPoolBalance);
+      console.log("endingBalance: ", endingBalance);
+
+      assert.equal(
+        Number(fromWei(startingPoolBalance)),
+        Number(fromWei(endingBalance)),
       );
     });
 
