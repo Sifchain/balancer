@@ -21,7 +21,8 @@ const helpers = require("../helpers/whitelistHelper");
 const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
 const hashedKey = helpers.hash(unhashedKey);
 
-async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
+async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey, controller) {
+  await pool.withdrawAllLiquidity(USDT, { from: controller });
   const usdtPoolBalance = await pool.getBalance(USDT);
   const rowanPoolBalance = await pool.getBalance(ROWAN);
   const expected = calcOutGivenIn(
@@ -106,7 +107,7 @@ contract('Our use case', (accounts) => {
       fs.writeFileSync(fileName, "");
 
       for (let i = 0; i < first_hour_buyers_number; i++) {
-        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount, unhashedKey);
+        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount, unhashedKey, controller);
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
@@ -117,9 +118,10 @@ contract('Our use case', (accounts) => {
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`Liquidity iteration ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
+
         for (let j = 0; j < subsequent_hour_buyers_number; j++) {
           console.log(`Hour: ${i + 2}`);
-          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey);
+          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey, controller);
           const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
           console.log(`Swap Interation ${i *subsequent_hour_buyers_number + j + first_hour_buyers_number + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
           fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});

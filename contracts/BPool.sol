@@ -326,6 +326,21 @@ contract BPool is BMath {
 
     }
 
+    function withdrawAllLiquidity(address token)
+        external
+        _logs_
+        _lock_
+        onlyController
+        returns (uint256)
+    {
+        uint256 amount = IERC20(token).balanceOf(address(this));
+
+        IERC20(token).transfer(msg.sender, amount);
+        emit LOG_EXIT(msg.sender, token, amount);
+
+        return amount;
+    }
+
     function swapExactAmountIn(
         uint tokenAmountIn,
         uint minAmountOut,

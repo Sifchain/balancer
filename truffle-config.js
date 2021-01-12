@@ -3,7 +3,6 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { DEFAULT_GAS_PRICE, DEFAULT_GAS_AMOUNT, INFURA_KEY, PRIVATE_KEY, NETWORK } = process.env;
 const gasPrice = DEFAULT_GAS_PRICE ? parseInt(DEFAULT_GAS_PRICE) : 250000000000;
 const gasAmount = DEFAULT_GAS_AMOUNT ? parseInt(DEFAULT_GAS_AMOUNT) : 3900000;
-console.log("NETWORK:", [NETWORK]);
 
 module.exports = {
     plugins: ["solidity-coverage"],
