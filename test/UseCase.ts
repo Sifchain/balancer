@@ -202,9 +202,6 @@ contract("Our use case", (accounts) => {
 
       const endingBalance = await usdt.balanceOf(controller);
 
-      console.log("startingPoolBalance: ", startingPoolBalance);
-      console.log("endingBalance: ", endingBalance);
-
       assert.equal(
         Number(fromWei(startingPoolBalance)),
         Number(fromWei(endingBalance)),
