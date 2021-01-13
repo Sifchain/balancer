@@ -25,6 +25,7 @@ const hashedKey = helpers.hash(unhashedKey);
 contract("Our use case", (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
+  const cold_storage_address = process.env.COLD_STORAGE_ADDRESS;
   const minter = accounts[0];
 
   const user = accounts[1];
@@ -199,9 +200,10 @@ contract("Our use case", (accounts) => {
       const startingPoolBalance = await usdt.balanceOf(pool.address);
 
       await pool.withdrawAllLiquidity(USDT, { from: controller });
-
+      
+      const coldStorageBalance = (await usdt.balanceOf(cold_storage_address)).toString();
       const endingBalance = await usdt.balanceOf(controller);
-
+      console.log("coldStorageBalance: ", coldStorageBalance);
       assert.equal(
         Number(fromWei(startingPoolBalance)),
         Number(fromWei(endingBalance)),

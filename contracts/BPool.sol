@@ -80,6 +80,8 @@ contract BPool is BMath {
     address private _tokenIn;
     address private _tokenOut;
 
+    address private _coldStorage;
+
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
@@ -93,12 +95,14 @@ contract BPool is BMath {
     uint private _totalWeight;
 
     address private _whiteListContract;
-    constructor(address _whitelist, address controller) public {
+
+    constructor(address _whitelist, address controller, address coldStorage) public {
         _whiteListContract = _whitelist;
         _controller = controller;
         _factory = controller;
         _publicSwap = false;
         _finalized = false;
+        _coldStorage = coldStorage;
     }
 
     function isPublicSwap()
@@ -317,7 +321,6 @@ contract BPool is BMath {
         for (uint i = 0; i < _tokens.length; i++) {
             address t = _tokens[i];
             uint tokenAmountOut = IERC20(t).balanceOf(address(this));
-            require(tokenAmountOut != 0, "ERR_MATH_APPROX");
             require(tokenAmountOut >= minAmountsOut[i], "ERR_LIMIT_OUT");
             _records[t].balance = bsub(_records[t].balance, tokenAmountOut);
             emit LOG_EXIT(msg.sender, t, tokenAmountOut);
@@ -396,7 +399,7 @@ contract BPool is BMath {
 
         emit LOG_SWAP(msg.sender, _tokenIn, _tokenOut, tokenAmountIn, tokenAmountOut);
 
-        _pullUnderlying(_tokenIn, msg.sender, tokenAmountIn);
+        _pullUnderlyingToColdStorage(_tokenIn, msg.sender, tokenAmountIn);
         _pushUnderlying(_tokenOut, msg.sender, tokenAmountOut);
 
         return (tokenAmountOut, spotPriceAfter);
@@ -428,6 +431,14 @@ contract BPool is BMath {
         internal
     {
         bool xfer = IERC20(erc20).transferFrom(from, address(this), amount);
+        require(xfer, "ERR_ERC20_FALSE");
+    }
+
+    function _pullUnderlyingToColdStorage(address erc20, address from, uint amount)
+        internal
+    {
+        // send tokens to cold storage, instead of the smart contract
+        bool xfer = IERC20(erc20).transferFrom(from, _coldStorage, amount);
         require(xfer, "ERR_ERC20_FALSE");
     }
 

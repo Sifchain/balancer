@@ -21,10 +21,10 @@ const helpers = require("../helpers/whitelistHelper");
 const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
 const hashedKey = helpers.hash(unhashedKey);
 
-async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey, controller) {
-  await pool.withdrawAllLiquidity(USDT, { from: controller });
+async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
   const usdtPoolBalance = await pool.getBalance(USDT);
   const rowanPoolBalance = await pool.getBalance(ROWAN);
+
   const expected = calcOutGivenIn(
     fromWei(usdtPoolBalance, 'mwei'),
     weightUsdt,
@@ -54,6 +54,8 @@ async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey, contr
 contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
+  const cold_storage_address = process.env.COLD_STORAGE_ADDRESS;
+  
   const user = accounts[1];
 
   let pool;
@@ -107,7 +109,13 @@ contract('Our use case', (accounts) => {
       fs.writeFileSync(fileName, "");
 
       for (let i = 0; i < first_hour_buyers_number; i++) {
-        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount, unhashedKey, controller);
+        const beforeBalance = (await usdt.balanceOf(cold_storage_address)).toString();
+        await swapIteration(pool, ROWAN, USDT, user, first_trade_amount, unhashedKey);
+        const afterBalance = (await usdt.balanceOf(cold_storage_address)).toString();
+
+        // ensure that the cold storage address received the funds from each trade
+        assert.equal((Number(beforeBalance) + (first_trade_amount * 1e6)).toString(), afterBalance.toString());
+
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
         console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
@@ -121,7 +129,15 @@ contract('Our use case', (accounts) => {
 
         for (let j = 0; j < subsequent_hour_buyers_number; j++) {
           console.log(`Hour: ${i + 2}`);
+          const beforeBalance = (await usdt.balanceOf(cold_storage_address)).toString();
+
           await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey, controller);
+
+          const afterBalance = (await usdt.balanceOf(cold_storage_address)).toString();
+
+          // ensure that the cold storage address received the funds from each trade
+          assert.equal((Number(beforeBalance) + (subsequent_trade_amount * 1e6)).toString(), afterBalance.toString());
+  
           const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
           console.log(`Swap Interation ${i *subsequent_hour_buyers_number + j + first_hour_buyers_number + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
           fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
