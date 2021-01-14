@@ -1,0 +1,31 @@
+const OwnableWhitelist = artifacts.require("OwnableWhitelist");
+
+// grab the address of the smart contract account that we are going to whitelist
+const whitelist_address = OwnableWhitelist.address;
+
+// set the array of addresses that you would like to whitelist here
+const usersToWhitelist = require("./whitelist.json");
+
+// helper to hash
+const helpers = require("../helpers/whitelistHelper");
+
+module.exports = function (cb) {
+  async function bulkwhitelistUsers() {
+    try {
+      const whitelistAddresses = usersToWhitelist.map(e => { return e.address });
+      const whitelistHashedKeys = usersToWhitelist.map(e => { return helpers.hash(e.key) });
+      let whitelist = await OwnableWhitelist.at(whitelist_address);
+      console.log("whitelistAddresses:", whitelistAddresses);
+      console.log("whitelistHashedKeys:", whitelistHashedKeys);
+      let bulkWhitelistTx = await whitelist.bulkWhitelistUsers(
+        whitelistAddresses, whitelistHashedKeys, {
+        from: process.env.WHITE_LIST_MANAGER,
+      });
+      console.log("bulk whitelist tx:" + JSON.stringify(bulkWhitelistTx));
+    } catch (error) {
+      console.log("ERROR:", error);
+    }
+    cb();
+  }
+  bulkwhitelistUsers();
+};

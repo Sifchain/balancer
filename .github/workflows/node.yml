@@ -1,0 +1,35 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [develop, master]
+    paths: ['**.js', '**.ts', '**.sol']
+  pull_request:
+    branches: [develop, master]
+    paths: ['**.js', '**.ts', '**.sol']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: '14.x'
+      - run: yarn
+      - run: yarn add global truffle
+      - run: yarn add global ganache-cli
+      - run: cat env.example >> .env
+      - run: yarn ganache &
+      - run: yarn compile
+      - run: yarn test
+      - run: yarn coverage
+        env:
+          CI: true
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: .

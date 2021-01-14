@@ -1,21 +1,34 @@
-const BPool = artifacts.require('BPool');
-const OwnableWhitelist = artifacts.require('OwnableWhitelist');
-const fs = require('fs');
-const controller = JSON.parse(fs.readFileSync('../Accounts',"utf8"))['account'];
+const BPool = artifacts.require("BPool");
+const OwnableWhitelist = artifacts.require("OwnableWhitelist");
+const fs = require("fs");
 
-module.exports = async function (deployer) {
-    try {
-        await deployer.deploy(OwnableWhitelist);
-        await OwnableWhitelist.deployed();
-        await deployer.deploy(BPool, OwnableWhitelist.address, controller);
-        await BPool.deployed();
-        let obj = {
-            "abi": BPool.abi,
-            "address": BPool.address,
-        }
-        let data = JSON.stringify(obj);
-        fs.writeFileSync('BalancerABI.json', data);
-    } catch (error) {
-        console.log("Error deploying:::: ", error)   
-    }
+module.exports = async function (deployer, networkName) {
+  try {
+    await deployer.deploy(OwnableWhitelist);
+    const whiteListContract = await OwnableWhitelist.deployed();
+    await whiteListContract.transferOwnership(process.env.WHITE_LIST_MANAGER);
+    await deployer.deploy(
+      BPool,
+      whiteListContract.address,
+      process.env.CONTROLLER
+    );
+    const poolContract = await BPool.deployed();
+    let obj = {
+      abi: poolContract.abi,
+      address: poolContract.address,
+    };
+    let data = JSON.stringify(obj);
+    fs.writeFileSync(`BalancerABI.${networkName}.json`, data);
+    let whitelistObj = {
+      abi: whiteListContract.abi,
+      address: whiteListContract.address,
+    };
+    let whitelistData = JSON.stringify(whitelistObj);
+    fs.writeFileSync(`WhitelistABI.${networkName}.json`, whitelistData);
+    console.log("Deployed successfully!");
+    console.log("Pool address:", poolContract.address);
+    console.log("Whitelist address:", whiteListContract.address);
+  } catch (error) {
+    console.log("Error deploying:", error);
+  }
 };

@@ -1,161 +1,255 @@
-const BPool = artifacts.require('BPool');
-const RowanToken = artifacts.require('RowanToken');
-const fs = require('fs');
-const OwnableWhitelist = artifacts.require('OwnableWhitelist');
+const BPool = artifacts.require("BPool");
+const MockRowanToken = artifacts.require("MockRowanToken");
+const OwnableWhitelist = artifacts.require("OwnableWhitelist");
 
-const truffleAssert = require('truffle-assertions');
+const truffleAssert = require("truffle-assertions");
 const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const { calcOutGivenIn, calcInGivenOut, calcRelativeDiff } = require('./../calc_comparisons.ts');
+const {
+  calcOutGivenIn,
+  calcRelativeDiff,
+  logState,
+} = require("./../utils.ts");
 const errorDelta = 10 ** -8;
 const weightUsdt = 1;
 const weightRowan = 10;
-const swap_fee = 0.0;
 const verbose = true;
 
-contract('Our use case', (accounts) => {
-    const user = accounts[1];
-    const controller = JSON.parse(fs.readFileSync('Accounts',"utf8"))['account'];
+const helpers = require("../helpers/whitelistHelper");
+const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
+const hashedKey = helpers.hash(unhashedKey);
 
-    let pool;
-    let ROWAN;
-    let USDT;
-    let rowan;
-    let usdt;
-    let whitelist;
+contract("Our use case", (accounts) => {
+  const controller = process.env.CONTROLLER;
+  const white_list_manager = process.env.WHITE_LIST_MANAGER;
+  const minter = accounts[0];
 
-    async function logState(){
-        const RowanBalance = await pool.getBalance(ROWAN);
-        console.log(`Rowan amount in pool : ${fromWei(RowanBalance)}`);
+  const user = accounts[1];
+  const user2 = accounts[2];
 
-        if(parseInt(fromWei(RowanBalance))) {
-            const RowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-            console.log(`Rowan price: ${fromWei(RowanPrice)}`);
-        }
+  let pool;
+  let POOL;
+  let ROWAN;
+  let USDT;
+  let rowan;
+  let usdt;
+  let whitelist;
 
-        const userRowanBalance = await rowan.balanceOf(user);
-        console.log(`Rowan User Balance: ${fromWei(userRowanBalance)}`);
-        const adminRowanBalance = await rowan.balanceOf(controller);
-        console.log(`Rowan Admin Balance: ${fromWei(adminRowanBalance)}`);
-        const userUsdtBalance = await usdt.balanceOf(user);
-        console.log(`USDT User Balance: ${fromWei(userUsdtBalance)}`);
-        const adminUsdtBalance = await usdt.balanceOf(controller);
-        console.log(`USDT Admin Balance: ${fromWei(adminUsdtBalance)}`);
-        const UsdtBalance = await pool.getBalance(USDT);
-        console.log(`USDT amount in pool : ${fromWei(UsdtBalance)}`);
-        console.log('');
-    }
+  before(async () => {
+    rowan = await MockRowanToken.new("erowan", "erowan", 18);
+    usdt = await MockRowanToken.new("USDT Stablecoin", "USDT", 6);
+    pool = await BPool.deployed();
+    whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
 
-    it('pool init', async () => {
-        rowan = await RowanToken.new('Rowan.eth', 'ROWAN', 18);
-        usdt = await RowanToken.new('USDT Stablecoin', 'USDT', 18);
+    ROWAN = rowan.address;
+    USDT = usdt.address;
+    POOL = pool.address;
 
-        pool = await BPool.deployed();
+    // admin balances
+    await rowan.mint(controller, toWei("70000000"));
+    await usdt.mint(controller, toWei("26250", "mwei"));
 
-        whitelist = await OwnableWhitelist.deployed(); // grab the existing whitelist
+    // user balances
+    await usdt.mint(user, toWei("500", "mwei"));
 
-        ROWAN = rowan.address;
-        USDT = usdt.address;
+    await rowan.approve(POOL, MAX, { from: user });
+    await usdt.approve(POOL, MAX, { from: user });
 
-        // admin balances
-        await rowan.mint(controller, toWei('120000000'));
-        await usdt.mint(controller, toWei('45000'));
+    await rowan.approve(POOL, MAX, { from: controller });
+    await usdt.approve(POOL, MAX, { from: controller });
 
-        // user balances
-        await usdt.mint(user, toWei('100'));
+    await pool.bind(ROWAN, toWei("8750000"), toWei(weightRowan.toString()), {
+      from: controller,
+    });
+    await pool.bind(
+      USDT,
+      toWei("26250", "mwei"),
+      toWei(weightUsdt.toString()),
+      { from: controller }
+    );
 
-        await rowan.approve(pool.address, MAX, { from: user });
-        await usdt.approve(pool.address, MAX, { from: user });
+    await pool.finalize({ from: controller });
+  });
 
-        await rowan.approve(pool.address, MAX, { from: controller });
-        await usdt.approve(pool.address, MAX, { from: controller });
-
-        await pool.bind(ROWAN, toWei('15000000'), toWei(weightRowan.toString()), { from: controller });
-        await pool.bind(USDT, toWei('45000'), toWei(weightUsdt.toString()), { from: controller });
-
-        await pool.setSwapFee(swap_fee, { from: controller });
-
-        await pool.finalize({ from: controller });
+  describe("Minting Tokens", () => {
+    it("Should not be able to mint if the minter does not have the Minter role", async () => {
+      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
+      await truffleAssert.reverts(
+        usdt.mint(user, toWei("1500", "mwei"), { from: user }),
+        "MinterRole: caller does not have the Minter role"
+      );
+      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
     });
 
-    it('Should not be able to mint if the minter is not admin', async () => {
-        await truffleAssert.reverts(
-            usdt.mint(user, toWei('100'), { from: user }),
-            "Ownable: caller is not the owner"
-        );
-    })
+    it("Should be able to mint if the minter has the Minter role", async () => {
+      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
+      await usdt.mint(user, toWei("500", "mwei"), { from: minter });
+      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
+    });
+  });
 
-    it('Should not be able to burn if the burner is not admin', async () => {
-        await truffleAssert.reverts(
-            usdt.burn(user, toWei('100'), { from: user }),
-            "Ownable: caller is not the owner"
-        );
-    })
-
-    it('Swap iteration', async () => {
-        const UsdtPoolBalance = await pool.getBalance(USDT);
-        const RowanPoolBalance = await pool.getBalance(ROWAN);
-        const expected = calcOutGivenIn(fromWei(UsdtPoolBalance), weightUsdt, fromWei(RowanPoolBalance), weightRowan, 1, swap_fee);
-
-        if(verbose) {
-            console.log('Before swap:');
-            await logState();
-        }
-
-        await truffleAssert.reverts(
-            pool.swapExactAmountIn(USDT, toWei('1'), ROWAN, 0, MAX, { from: user }),
-            '!whitelisted',
-        );
-
-        assert.equal(
-            await whitelist.isWhitelisted(user, { from: accounts[0] }),
-            false
-        );
-        await whitelist.whitelistUser(user, { from: accounts[0] })
-        assert.equal(
-            await whitelist.isWhitelisted(user, { from: accounts[0] }),
-            true
-        );
-
-        const txr = await pool.swapExactAmountIn(
-            USDT,
-            toWei('1'),
-            ROWAN,
-            0,
-            MAX,
-            { from: user },
-        );
-
-        if(verbose) {
-            console.log('After swap:');
-            await logState();
-        }
-
-        const log = txr.logs[0];
-        assert.equal(log.event, 'LOG_SWAP');
-
-        const actual = fromWei(log.args.tokenAmountOut);
-        const relDif = calcRelativeDiff(expected, actual);
-
-        const userRowanBalance = await rowan.balanceOf(user);
-        assert.equal(fromWei(userRowanBalance), Number(fromWei(log.args.tokenAmountOut)));
-
-        assert.isAtMost(relDif.toNumber(), errorDelta);
+  describe("Burning Tokens", () => {
+    it("Should not be able to burn if account balance is insufficient", async () => {
+      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
+      await truffleAssert.reverts(
+        usdt.burn(toWei("1001", "mwei"), { from: user }),
+        "SafeMath: subtraction overflow"
+      );
+      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
     });
 
-    it('Liquidity iteration', async () => {
-        await pool.joinswapExternAmountIn(ROWAN, toWei('625000'), { from: controller });
-        if(verbose) {
-            console.log('After adding liquidity:');
-            await logState();
-        }
+    it("Should be able to burn own tokens", async () => {
+      assert.equal(toWei("1000", "mwei"), await usdt.balanceOf(user));
+      await usdt.burn(toWei("500", "mwei"), { from: user });
+      assert.equal(toWei("500", "mwei"), await usdt.balanceOf(user));
+    });
+  });
+
+  describe("Whitelisting", () => {
+    it("Should not be possible to whitelist a user if not admin", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
+      await truffleAssert.reverts(
+        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
+        "Ownable: caller is not the owner"
+      );
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
     });
 
-    it('Exit pool', async () => {
-        await pool.exitPool([0, 0], { from: controller });
-        if(verbose) {
-            console.log('After exiting pool:');
-            await logState();
-        }
+    it("Admin should be able to whitelist a user", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
+      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
     });
+
+    it("Admin should be able to check if any user is in whitelist", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true)
+
+      assert.equal(
+        await whitelist.isWhitelisted(user2, { from: white_list_manager }),
+        false
+      );
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey), false)
+    });
+
+    it("Whitelisted user should be able to check if s/he is in the whitelist", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: user }), true);
+    });
+
+    it("Should not be possible to remove whitelisted user if not admin", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      await truffleAssert.reverts(
+        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
+        "Ownable: caller is not the owner"
+      );
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+    });
+
+    it("Admin should be able to remove whitelisted user", async () => {
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      await whitelist.removeWhitelistedUser(user, hashedKey, { from: white_list_manager });
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
+    });
+  });
+
+  describe("Pool Operations", () => {
+    it("Fails to swap if user is not in the whitelist", async () => {
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, { from: user }),
+        "ERR_NOT_WHITELISTED"
+      );
+    });
+
+    it("Fails to swap when in/out tokens have not set", async () => {
+      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, { from: user }),
+        "ERR_NOT_BOUND"
+      );
+    });
+
+    it("Fails to provide liquidity when in/out tokens have not set", async () => {
+      await truffleAssert.reverts(
+        pool.joinswapExternAmountIn(toWei("625000"), { from: controller }),
+        "ERR_NOT_BOUND"
+      );
+    });
+
+    it('Fails to swapExactAmountIn with less than min swap amount', async () => {
+      await pool.setTokenInOut(USDT, ROWAN, {from: controller});
+      // Attempt to spend 0 USDT should fail, because user has to invest at least 1 USDT.
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei('0', 'mwei'), 0, MAX, unhashedKey, { from: user }),
+        'ERR_MIN_SWAP_AMOUNT',
+      );
+    });
+
+    it("Swap iteration using swapExactAmountIn", async () => {
+      // Attempt to spend 500 USDT should succeed.
+      const usdtPoolBalance = await pool.getBalance(USDT);
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      const expected = calcOutGivenIn(
+        fromWei(usdtPoolBalance, "mwei"),
+        weightUsdt,
+        fromWei(rowanPoolBalance),
+        weightRowan,
+        500,
+        0.0
+      );
+
+      if(verbose) {
+        console.log('Before swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+      }
+
+      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+
+      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+        from: user,
+      });
+
+      if(verbose) {
+        console.log('After swap:');
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+      }
+
+      const log = txr.logs[0];
+      assert.equal(log.event, "LOG_SWAP");
+
+      const actual = fromWei(log.args.tokenAmountOut);
+      const relDif = calcRelativeDiff(expected, actual);
+
+      const userRowanBalance = await rowan.balanceOf(user);
+      assert.equal(
+        Number(fromWei(userRowanBalance)),
+        Number(fromWei(log.args.tokenAmountOut))
+      );
+
+      assert.isAtMost(relDif.toNumber(), errorDelta);
+    });
+
+    it("Fails to provide liquidity if it is not controller", async () => {
+      await truffleAssert.reverts(
+        pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: user }),
+        "ERR_NOT_CONTROLLER"
+      );
+    });
+
+    it("Liquidity iteration", async () => {
+      await pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: controller });
+      if (verbose) {
+        console.log("After adding liquidity:");
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+      }
+    });
+
+    it("Exit pool", async () => {
+      await pool.exitPool([0, 0], { from: controller });
+      if (verbose) {
+        console.log("After exiting pool:");
+        await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
+      }
+    });
+  });
 });

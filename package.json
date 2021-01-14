@@ -4,7 +4,29 @@
   "description": "",
   "main": "truffle-config.js",
   "scripts": {
-    "test": "truffle test"
+    "tokendata": "truffle exec scripts/getTokenData.js",
+    "pool:service": "node scripts/cron.js",
+    "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
+    "pool:startSales": "truffle exec scripts/startSales.js",
+    "pool:whitelist": "truffle exec scripts/whitelistUsers.js",
+    "pool:exit": "truffle exec scripts/cashOut.js",
+    "mint:usdt": "truffle exec scripts/mintUSDT.js",
+    "mint:rowan": "truffle exec scripts/mintRowan.js",
+    "ownership:pool": "truffle exec scripts/transferPoolOwnership.js",
+    "ownership:rowan": "truffle exec scripts/transferRowanOwnership.js",
+    "compile": "truffle compile",
+    "ganache": "yarn ganache-cli -d",
+    "build:chain": "yarn install --frozen-lockfile --silent && truffle build",
+    "build:ui": "cd ./ui && yarn build",
+    "build": "yarn build:chain && yarn build:ui",
+    "migrate:local": "truffle migrate --reset",
+    "migrate:testnet": "truffle migrate --reset --to 3",
+    "migrate:mainnet": "truffle migrate --reset --to 2 --network mainnet",
+    "serve:ui": "cd ./ui && yarn app:serve",
+    "start": "yarn migrate:chain && yarn serve:ui",
+    "test": "truffle test",
+    "coverage": "truffle run coverage",
+    "test:ui": "cd ./ui && yarn test"
   },
   "repository": {
     "type": "git",
@@ -17,9 +39,17 @@
   },
   "homepage": "https://github.com/Sifchain/balancer#readme",
   "dependencies": {
-    "@openzeppelin/contracts": "^2.3.0",
+    "@openzeppelin/contracts": "2.3.0",
+    "@truffle/hdwallet-provider": "1.1.1",
+    "cron": "^1.8.2",
     "decimal.js": "^10.2.1",
-    "ganache-cli": "^6.11.0",
+    "dotenv": "^8.2.0",
+    "ganache-cli": "6.12.0",
+    "shelljs": "^0.8.4",
+    "solidity-coverage": "^0.7.11",
     "truffle-assertions": "^0.9.2"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.7"
   }
 }
