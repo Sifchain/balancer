@@ -89,7 +89,7 @@ contract("Full pool test", (accounts) => {
     it("Fails binding tokens that are not approved", async () => {
       await truffleAssert.reverts(
         pool.bind(MKR, toWei("1"), toWei("2.5"), { from: controller }),
-        "SafeMath: subtraction overflow"
+        "SafeERC20: low-level call failed"
       );
     });
 
@@ -103,7 +103,7 @@ contract("Full pool test", (accounts) => {
     it("Fails binding weights and balances outside MIX MAX", async () => {
       await truffleAssert.reverts(
         pool.bind(WETH, toWei("51"), toWei("1"), { from: controller }),
-        "SafeMath: subtraction overflow"
+        "SafeERC20: low-level call failed"
       );
       await truffleAssert.reverts(
         pool.bind(MKR, toWei("0.0000000000001"), toWei("1"), { from: controller }),

@@ -201,9 +201,8 @@ contract("Our use case", (accounts) => {
 
       await pool.withdrawAllLiquidity(USDT, { from: controller });
       
-      const coldStorageBalance = (await usdt.balanceOf(cold_storage_address)).toString();
-      const endingBalance = await usdt.balanceOf(controller);
-      console.log("coldStorageBalance: ", coldStorageBalance);
+      const endingBalance = await usdt.balanceOf(cold_storage_address);
+
       assert.equal(
         Number(fromWei(startingPoolBalance)),
         Number(fromWei(endingBalance)),
