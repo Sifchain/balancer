@@ -450,5 +450,4 @@ contract BPool is BMath {
     {
         IERC20(erc20).safeTransfer(to, amount);
     }
-
 }
