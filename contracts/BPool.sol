@@ -80,7 +80,6 @@ contract BPool is BMath {
     address private _tokenIn;
     address private _tokenOut;
 
-    address private _coldStorage;
 
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
@@ -96,13 +95,16 @@ contract BPool is BMath {
 
     address private _whiteListContract;
 
-    constructor(address _whitelist, address controller, address coldStorage) public {
+    // address where all funds from tokensale will go
+    address public coldStorage;
+
+    constructor(address _whitelist, address controller, address _coldStorage) public {
         _whiteListContract = _whitelist;
         _controller = controller;
         _factory = controller;
         _publicSwap = false;
         _finalized = false;
-        _coldStorage = coldStorage;
+         coldStorage = _coldStorage;
     }
 
     function isPublicSwap()
@@ -438,7 +440,7 @@ contract BPool is BMath {
         internal
     {
         // send tokens to cold storage, instead of the smart contract
-        bool xfer = IERC20(erc20).transferFrom(from, _coldStorage, amount);
+        bool xfer = IERC20(erc20).transferFrom(from, coldStorage, amount);
         require(xfer, "ERR_ERC20_FALSE");
     }
 

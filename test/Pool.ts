@@ -265,6 +265,12 @@ contract("Full pool test", (accounts) => {
     });
   });
 
+  describe("Cold Storage", () => {
+    it("Cold storage should be the correct address", async () => {
+      assert.equal(process.env.COLD_STORAGE_ADDRESS, await pool.coldStorage());
+    });
+  });
+
   describe("User interactions", () => {
     it("Other users approve tokens", async () => {
       await weth.approve(POOL, MAX, { from: user1 });
