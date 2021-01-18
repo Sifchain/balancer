@@ -10,7 +10,8 @@ module.exports = async function (deployer, networkName) {
     await deployer.deploy(
       BPool,
       whiteListContract.address,
-      process.env.CONTROLLER
+      process.env.CONTROLLER,
+      process.env.COLD_STORAGE_ADDRESS
     );
     const poolContract = await BPool.deployed();
     let obj = {

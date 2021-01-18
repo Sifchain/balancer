@@ -1,6 +1,6 @@
 # How to deploy
 
-First check the example in env.example, copy that example into .env and then change the values to the network you want to use, your private keys, your address and your infura key. Then run the following command to deploy all the contracts
+First check the example in env.example, copy that example into .env and then change the values to the network you want to use, your private keys, your address, your cold storage address, and your infura key. Then run the following command to deploy all the contracts
 
 mainnet:
 
