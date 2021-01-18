@@ -497,8 +497,7 @@
             <p>Thank You for participating in our Token Sale.</p>
           </div>
           <div class="purchase-form__transaction__check">
-<!--            TODO: change to https://etherscan.io/tx/ before mainnet -->
-            <p>Check transaction on <a v-bind:href="'https://ropsten.etherscan.io/tx/' + store.purchase.txHash" target="_blank" style="color: #000000">Blockexplorer</a></p>
+            <p>Check transaction on <a v-bind:href="'https://etherscan.io/tx/' + store.purchase.txHash" target="_blank" style="color: #000000">Blockexplorer</a></p>
           </div>
         </div>
       </div>
