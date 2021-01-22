@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Wrapper from "@/views/Wrapper.vue";
-import TestTimer from "@/views/TestTimer.vue";
-import TestComplete from "@/views/TestComplete.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,15 +8,9 @@ const routes: Array<RouteRecordRaw> = [
     component: Wrapper,
   },
   {
-    path: "/timer",
-    name: "TestWrapper",
-    component: TestTimer,
-  },
-  {
-    path: "/complete",
-    name: "TestComplete",
-    component: TestComplete,
-  },
+    path: "/:pathMatch(.*)*",
+    redirect: "/",
+  }
 ];
 
 const router = createRouter({
