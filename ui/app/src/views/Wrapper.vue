@@ -15,9 +15,8 @@
   export default defineComponent({
     name: "Wrapper",
     setup() {
-      // TODO: change to Jan 15 2021 before going to mainnet
-      const tokenSaleStartDate = Date.UTC(2020, 10, 15, 0, 0, 0, 0); // Nov 15, 2020 to show purchase form while testing
-      const tokenSaleEndDate = Date.UTC(2021, 1, 23, 0, 0, 0, 0); // Jan 23, 2021 to show purchase form while testing
+      const tokenSaleStartDate = Date.UTC(2021, 1, 3, 0, 0, 0, 0); // Feb 3, 2021
+      const tokenSaleEndDate = Date.UTC(2021, 1, 10, 0, 0, 0, 0); // Feb 10, 2021
       const showTimer = tokenSaleStartDate > Date.now();
       const showComplete = tokenSaleEndDate < Date.now();
 

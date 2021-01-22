@@ -16,8 +16,11 @@ pragma solidity 0.5.12;
 import "./BMath.sol";
 import "./OwnableWhitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 contract BPool is BMath {
+
+    using SafeERC20 for IERC20;
 
     event LOG_SWAP(
         address indexed caller,
@@ -80,6 +83,7 @@ contract BPool is BMath {
     address private _tokenIn;
     address private _tokenOut;
 
+
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
@@ -93,12 +97,17 @@ contract BPool is BMath {
     uint private _totalWeight;
 
     address private _whiteListContract;
-    constructor(address _whitelist, address controller) public {
+
+    // address where all funds from tokensale will go
+    address public coldStorage;
+
+    constructor(address _whitelist, address controller, address _coldStorage) public {
         _whiteListContract = _whitelist;
         _controller = controller;
         _factory = controller;
         _publicSwap = false;
         _finalized = false;
+         coldStorage = _coldStorage;
     }
 
     function isPublicSwap()
@@ -316,14 +325,28 @@ contract BPool is BMath {
 
         for (uint i = 0; i < _tokens.length; i++) {
             address t = _tokens[i];
-            uint tokenAmountOut = _records[t].balance;
-            require(tokenAmountOut != 0, "ERR_MATH_APPROX");
+            uint tokenAmountOut = IERC20(t).balanceOf(address(this));
             require(tokenAmountOut >= minAmountsOut[i], "ERR_LIMIT_OUT");
             _records[t].balance = bsub(_records[t].balance, tokenAmountOut);
             emit LOG_EXIT(msg.sender, t, tokenAmountOut);
-            _pushUnderlying(t, msg.sender, tokenAmountOut);
+            _pushUnderlying(t, coldStorage, tokenAmountOut);
         }
 
+    }
+
+    function withdrawAllLiquidity(address token)
+        external
+        _logs_
+        _lock_
+        onlyController
+        returns (uint256)
+    {
+        uint256 amount = IERC20(token).balanceOf(address(this));
+
+        IERC20(token).safeTransfer(coldStorage, amount);
+        emit LOG_EXIT(msg.sender, token, amount);
+
+        return amount;
     }
 
     function swapExactAmountIn(
@@ -381,7 +404,7 @@ contract BPool is BMath {
 
         emit LOG_SWAP(msg.sender, _tokenIn, _tokenOut, tokenAmountIn, tokenAmountOut);
 
-        _pullUnderlying(_tokenIn, msg.sender, tokenAmountIn);
+        _pullUnderlyingToColdStorage(_tokenIn, msg.sender, tokenAmountIn);
         _pushUnderlying(_tokenOut, msg.sender, tokenAmountOut);
 
         return (tokenAmountOut, spotPriceAfter);
@@ -412,15 +435,19 @@ contract BPool is BMath {
     function _pullUnderlying(address erc20, address from, uint amount)
         internal
     {
-        bool xfer = IERC20(erc20).transferFrom(from, address(this), amount);
-        require(xfer, "ERR_ERC20_FALSE");
+        IERC20(erc20).safeTransferFrom(from, address(this), amount);
+    }
+
+    function _pullUnderlyingToColdStorage(address erc20, address from, uint amount)
+        internal
+    {
+        // send tokens to cold storage, instead of the smart contract
+        IERC20(erc20).safeTransferFrom(from, coldStorage, amount);
     }
 
     function _pushUnderlying(address erc20, address to, uint amount)
         internal
     {
-        bool xfer = IERC20(erc20).transfer(to, amount);
-        require(xfer, "ERR_ERC20_FALSE");
+        IERC20(erc20).safeTransfer(to, amount);
     }
-
 }
