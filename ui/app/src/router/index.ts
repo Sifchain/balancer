@@ -6,6 +6,10 @@ const routes: Array<RouteRecordRaw> = [
     path: "/",
     name: "Wrapper",
     component: Wrapper,
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/",
   }
 ];
 
