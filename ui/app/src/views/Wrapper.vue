@@ -15,8 +15,8 @@
   export default defineComponent({
     name: "Wrapper",
     setup() {
-      const tokenSaleStartDate = Date.UTC(2021, 0, 25, 0, 0, 0, 0); // Jan 25, 2021
-      const tokenSaleEndDate = Date.UTC(2021, 1, 1, 0, 0, 0, 0); // Feb 1, 2021
+      const tokenSaleStartDate = Date.UTC(2021, 1, 3, 0, 0, 0, 0); // Feb 3, 2021
+      const tokenSaleEndDate = Date.UTC(2021, 1, 10, 0, 0, 0, 0); // Feb 10, 2021
       const showTimer = tokenSaleStartDate > Date.now();
       const showComplete = tokenSaleEndDate < Date.now();
 
