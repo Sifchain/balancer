@@ -14,8 +14,6 @@ const {
   logState,
 } = require("./../utils.ts");
 const errorDelta = 10 ** -8;
-const weightUsdt = 1;
-const weightRowan = 10;
 const verbose = true;
 
 const helpers = require("../helpers/whitelistHelper");
@@ -62,13 +60,12 @@ contract("Our use case", (accounts) => {
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei("8750000"), toWei(weightRowan.toString()), {
+    await pool.bind(ROWAN, toWei("8750000"), {
       from: controller,
     });
     await pool.bind(
       USDT,
       toWei("26250", "mwei"),
-      toWei(weightUsdt.toString()),
       { from: controller }
     );
 
@@ -198,9 +195,7 @@ contract("Our use case", (accounts) => {
 
     it("Should be able to withdraw liquidity if the user is the controller", async () => {
       const startingPoolBalance = await usdt.balanceOf(pool.address);
-
       await pool.withdrawAllLiquidity(USDT, { from: controller });
-      
       const endingBalance = await usdt.balanceOf(cold_storage_address);
 
       assert.equal(
@@ -211,15 +206,11 @@ contract("Our use case", (accounts) => {
 
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
-      const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        fromWei(usdtPoolBalance, "mwei"),
-        weightUsdt,
+        2650000,
         fromWei(rowanPoolBalance),
-        weightRowan,
-        500,
-        0.0
+        500
       );
 
       if(verbose) {
@@ -242,6 +233,7 @@ contract("Our use case", (accounts) => {
       assert.equal(log.event, "LOG_SWAP");
 
       const actual = fromWei(log.args.tokenAmountOut);
+      console.log('VVVVV', expected, actual);
       const relDif = calcRelativeDiff(expected, actual);
 
       const userRowanBalance = await rowan.balanceOf(user);
