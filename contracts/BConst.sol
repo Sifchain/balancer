@@ -15,18 +15,16 @@ pragma solidity 0.5.12;
 
 contract BConst {
     uint public constant BONE              = 10**18;
+    uint public constant BONE_DIFF         = 10**12;
     uint public constant USDT_BONE         = 10**6;
 
     uint public constant MIN_BOUND_TOKENS  = 2;
-    uint public constant MAX_BOUND_TOKENS  = 8;
+    uint public constant MAX_BOUND_TOKENS  = 3;
 
     // Min investment amount is 1 USDT
     uint public constant MIN_SWAP_AMOUNT   = USDT_BONE;
-
-    uint public constant MIN_WEIGHT        = BONE;
-    uint public constant MAX_WEIGHT        = BONE * 50;
-    uint public constant MAX_TOTAL_WEIGHT  = BONE * 50;
-    uint public constant MIN_BALANCE       = BONE / 10**12;
+    uint public constant MIN_BALANCE       = BONE / BONE_DIFF;
+    uint public constant IN_BALANCE        = 265 * 10**22;
 
     uint public constant INIT_POOL_SUPPLY  = BONE * 100;
 
@@ -34,6 +32,6 @@ contract BConst {
     uint public constant MAX_BPOW_BASE     = (2 * BONE) - 1 wei;
     uint public constant BPOW_PRECISION    = BONE / 10**10;
 
-    // Max out ratio should be 10% of the pool
-    uint public constant MAX_OUT_RATIO     = BONE / 10;
+    // Max out ratio should be 2% of the pool
+    uint public constant MAX_OUT_RATIO     = BONE / 50;
 }
