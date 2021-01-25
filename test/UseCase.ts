@@ -233,7 +233,6 @@ contract("Our use case", (accounts) => {
       assert.equal(log.event, "LOG_SWAP");
 
       const actual = fromWei(log.args.tokenAmountOut);
-      console.log('VVVVV', expected, actual);
       const relDif = calcRelativeDiff(expected, actual);
 
       const userRowanBalance = await rowan.balanceOf(user);
