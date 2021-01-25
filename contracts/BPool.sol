@@ -83,7 +83,6 @@ contract BPool is BMath {
     address private _tokenIn;
     address private _tokenOut;
 
-
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
@@ -94,7 +93,6 @@ contract BPool is BMath {
 
     address[] private _tokens;
     mapping(address=>Record) private  _records;
-    uint private _totalWeight;
 
     address private _whiteListContract;
 
@@ -154,35 +152,6 @@ contract BPool is BMath {
         return _tokens;
     }
 
-    function getDenormalizedWeight(address token)
-        external view
-        _viewlock_
-        returns (uint)
-    {
-
-        require(_records[token].bound, "ERR_NOT_BOUND");
-        return _records[token].denorm;
-    }
-
-    function getTotalDenormalizedWeight()
-        external view
-        _viewlock_
-        returns (uint)
-    {
-        return _totalWeight;
-    }
-
-    function getNormalizedWeight(address token)
-        external view
-        _viewlock_
-        returns (uint)
-    {
-
-        require(_records[token].bound, "ERR_NOT_BOUND");
-        uint denorm = _records[token].denorm;
-        return bdiv(denorm, _totalWeight);
-    }
-
     function getBalance(address token)
         external view
         _viewlock_
@@ -235,7 +204,7 @@ contract BPool is BMath {
     }
 
 
-    function bind(address token, uint balance, uint denorm)
+    function bind(address token, uint balance)
         external
         _logs_
         onlyController
@@ -244,41 +213,26 @@ contract BPool is BMath {
         require(!_records[token].bound, "ERR_IS_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
 
-        require(_tokens.length < MAX_BOUND_TOKENS, "ERR_MAX_TOKENS");
+        require(_tokens.length <= MAX_BOUND_TOKENS, "ERR_MAX_TOKENS");
 
         _records[token] = Record({
             bound: true,
             index: _tokens.length,
-            denorm: 0,    // balance and denorm will be validated
             balance: 0   // and set by `rebind`
         });
         _tokens.push(token);
-        rebind(token, balance, denorm);
+        rebind(token, balance);
     }
 
-    function rebind(address token, uint balance, uint denorm)
+    function rebind(address token, uint balance)
         public
         _logs_
         _lock_
         onlyController
     {
-
         require(_records[token].bound, "ERR_NOT_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
-
-        require(denorm >= MIN_WEIGHT, "ERR_MIN_WEIGHT");
-        require(denorm <= MAX_WEIGHT, "ERR_MAX_WEIGHT");
         require(balance >= MIN_BALANCE, "ERR_MIN_BALANCE");
-
-        // Adjust the denorm and totalWeight
-        uint oldWeight = _records[token].denorm;
-        if (denorm > oldWeight) {
-            _totalWeight = badd(_totalWeight, bsub(denorm, oldWeight));
-            require(_totalWeight <= MAX_TOTAL_WEIGHT, "ERR_MAX_TOTAL_WEIGHT");
-        } else if (denorm < oldWeight) {
-            _totalWeight = bsub(_totalWeight, bsub(oldWeight, denorm));
-        }
-        _records[token].denorm = denorm;
 
         // Adjust the balance record and actual token balance
         uint oldBalance = _records[token].balance;
@@ -310,9 +264,8 @@ contract BPool is BMath {
     {
         require(_records[tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[tokenOut].bound, "ERR_NOT_BOUND");
-        Record storage inRecord = _records[tokenIn];
         Record storage outRecord = _records[tokenOut];
-        return calcSpotPrice(inRecord.balance, inRecord.denorm, outRecord.balance, outRecord.denorm);
+        return calcSpotPrice(IN_BALANCE, outRecord.balance);
     }
 
     function exitPool(uint[] calldata minAmountsOut)
@@ -361,7 +314,6 @@ contract BPool is BMath {
         onlyWhitelisted(msg.sender, _key)
         returns (uint tokenAmountOut, uint spotPriceAfter)
     {
-
         require(_records[_tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
         require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
@@ -371,36 +323,20 @@ contract BPool is BMath {
 
         require(tokenAmountIn >= MIN_SWAP_AMOUNT, "ERR_MIN_SWAP_AMOUNT");
 
-        uint spotPriceBefore = calcSpotPrice(
-                                    inRecord.balance,
-                                    inRecord.denorm,
-                                    outRecord.balance,
-                                    outRecord.denorm
-                                );
+        uint spotPriceBefore = calcSpotPrice(IN_BALANCE, outRecord.balance);
         require(spotPriceBefore <= maxPrice, "ERR_BAD_LIMIT_PRICE");
 
-        tokenAmountOut = calcOutGivenIn(
-                            inRecord,
-                            // inRecord.denorm,
-                            outRecord,
-                            // outRecord.denorm,
-                            tokenAmountIn
-                        );
+        tokenAmountOut = calcOutGivenIn(IN_BALANCE, outRecord.balance, tokenAmountIn);
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
         require(tokenAmountOut <= bmul(outRecord.balance, MAX_OUT_RATIO), "ERR_MAX_OUT_RATIO");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
 
-        spotPriceAfter = calcSpotPrice(
-                                inRecord.balance,
-                                inRecord.denorm,
-                                outRecord.balance,
-                                outRecord.denorm
-                            );
+        spotPriceAfter = calcSpotPrice(IN_BALANCE, outRecord.balance);
         require(spotPriceAfter >= spotPriceBefore, "ERR_MATH_APPROX");
         require(spotPriceAfter <= maxPrice, "ERR_LIMIT_PRICE");
-        require(spotPriceBefore <= bdiv(tokenAmountIn, tokenAmountOut), "ERR_MATH_APPROX");
+        require(spotPriceBefore <= bdiv(tokenAmountIn * BONE_DIFF, tokenAmountOut), "ERR_MATH_APPROX");
 
         emit LOG_SWAP(msg.sender, _tokenIn, _tokenOut, tokenAmountIn, tokenAmountOut);
 
