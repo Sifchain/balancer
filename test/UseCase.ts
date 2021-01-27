@@ -53,12 +53,16 @@ contract("Our use case", (accounts) => {
 
     // user balances
     await usdt.mint(user, toWei("500", "mwei"));
+    await usdt.mint(user2, toWei("1000000", "mwei"));
+
+    await rowan.approve(POOL, MAX, { from: controller });
+    await usdt.approve(POOL, MAX, { from: controller });
 
     await rowan.approve(POOL, MAX, { from: user });
     await usdt.approve(POOL, MAX, { from: user });
 
-    await rowan.approve(POOL, MAX, { from: controller });
-    await usdt.approve(POOL, MAX, { from: controller });
+    await rowan.approve(POOL, MAX, { from: user2 });
+    await usdt.approve(POOL, MAX, { from: user2 });
 
     await pool.bind(ROWAN, toWei("8750000"), {
       from: controller,
@@ -124,8 +128,7 @@ contract("Our use case", (accounts) => {
 
     it("Admin should be able to check if any user is in whitelist", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true)
-
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true);
       assert.equal(
         await whitelist.isWhitelisted(user2, { from: white_list_manager }),
         false
@@ -202,6 +205,28 @@ contract("Our use case", (accounts) => {
         Number(fromWei(startingPoolBalance)),
         Number(fromWei(endingBalance)),
       );
+    });
+
+    it("Fail swapExactAmountIn over max swap ratio", async () => {
+      await whitelist.whitelistUser(user2, hashedKey, { from: white_list_manager });
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      assert.equal(rowanPoolBalance, toWei("8750000"));
+      const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
+      const expectedSwapAmount = calcOutGivenIn(
+        2650000,
+        fromWei(rowanPoolBalance),
+        54081.7
+      );
+      assert.equal(maxSwapAmount, 175000);
+      assert.equal(expectedSwapAmount, 175000.21356603241689);
+      assert.equal(expectedSwapAmount > maxSwapAmount, true);
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("54081.7", "mwei"), 0, MAX, unhashedKey, {
+          from: user2,
+        }),
+        "ERR_MAX_OUT_RATIO"
+      );
+      assert.equal(await pool.getBalance(ROWAN), toWei("8750000"));
     });
 
     it("Swap iteration using swapExactAmountIn", async () => {
