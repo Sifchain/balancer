@@ -1,8 +1,6 @@
 <template>
   <div class="content">
-    <Timer v-if="showTimer" />
-    <PurchaseForm v-if="!showTimer && !showComplete" />
-    <Complete v-if="showComplete" />
+    <Timer />
   </div>
 </template>
 

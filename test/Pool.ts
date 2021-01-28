@@ -311,7 +311,7 @@ contract("Full pool test", (accounts) => {
     });
 
     /*
-      Current DAI in pool is 10,500, hence the max swap amount should be 1,050 DAI (10%).
+      Current DAI in pool is 10,500, hence the max swap amount should be 210 DAI (2%).
       Attempt to swap 6 WETH for DAI priced at $200 should fail.
     */
     it("Fail swapExactAmountIn over max swap ratio", async () => {

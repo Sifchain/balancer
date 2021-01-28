@@ -45,7 +45,6 @@ contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
   const cold_storage_address = process.env.COLD_STORAGE_ADDRESS;
-
   const user = accounts[1];
 
   let pool;

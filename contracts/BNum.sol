@@ -16,7 +16,6 @@ pragma solidity 0.5.12;
 import "./BConst.sol";
 
 contract BNum is BConst {
-
     function badd(uint a, uint b)
         internal pure
         returns (uint)

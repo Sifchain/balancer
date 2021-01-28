@@ -79,10 +79,8 @@ contract BPool is BMath {
     }
 
     bool private _mutex;
-
     address private _tokenIn;
     address private _tokenOut;
-
     address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
     bool private _publicSwap; // true if PUBLIC can call SWAP functions
