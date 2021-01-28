@@ -5,7 +5,7 @@ async function logState(pool, rowan, usdt, ROWAN, USDT, user, controller) {
     const rowanBalance = await pool.getBalance(ROWAN);
     console.log(`Rowan amount in pool : ${fromWei(rowanBalance)}`);
 
-    if(parseInt(fromWei(rowanBalance))) {
+    if (parseInt(fromWei(rowanBalance))) {
       const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
       console.log(`Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
     }
