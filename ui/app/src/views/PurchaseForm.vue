@@ -361,7 +361,7 @@
                 <div class="dropdown" v-show="store.purchase.showSlippageToleranceTooltip">
                   <div class="dropdown__inner">
                     <p>
-                      Affects the minimum amount of eRowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much eRowan as a lower tolerance. If your transaction fails, try setting a higher tolerance.
+                      Affects the minimum amount of erowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much erowan as a lower tolerance. If your transaction fails, try setting a higher tolerance.
                     </p>
                   </div>
                 </div>
@@ -847,10 +847,6 @@
     margin: 5px;
     color: $c_red;
     font-size: $fs_sm;
-  }
-  .test {
-    display: flex;
-    flex-direction: row;
   }
   .dropdown {
     &__wrapper {

@@ -4,7 +4,7 @@ const Web3 = require("web3");
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { toWei, isHex, hexToNumberString} = web3.utils;
 const { CONTROLLER, DEFAULT_GAS_PRICE, DEFAULT_GAS_AMOUNT, INFURA_KEY, NETWORK, PRIVATE_KEY, SLACK_KEY } = process.env;
-const erowanAmount = 364583.333333;
+const erowanAmount = 364000;
 let gasMultiplier = 2;
 
 module.exports = function(cb) {

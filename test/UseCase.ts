@@ -14,8 +14,6 @@ const {
   logState,
 } = require("./../utils.ts");
 const errorDelta = 10 ** -8;
-const weightUsdt = 1;
-const weightRowan = 10;
 const verbose = true;
 
 const helpers = require("../helpers/whitelistHelper");
@@ -55,20 +53,23 @@ contract("Our use case", (accounts) => {
 
     // user balances
     await usdt.mint(user, toWei("500", "mwei"));
-
-    await rowan.approve(POOL, MAX, { from: user });
-    await usdt.approve(POOL, MAX, { from: user });
+    await usdt.mint(user2, toWei("1000000", "mwei"));
 
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei("8750000"), toWei(weightRowan.toString()), {
+    await rowan.approve(POOL, MAX, { from: user });
+    await usdt.approve(POOL, MAX, { from: user });
+
+    await rowan.approve(POOL, MAX, { from: user2 });
+    await usdt.approve(POOL, MAX, { from: user2 });
+
+    await pool.bind(ROWAN, toWei("8750000"), {
       from: controller,
     });
     await pool.bind(
       USDT,
       toWei("26250", "mwei"),
-      toWei(weightUsdt.toString()),
       { from: controller }
     );
 
@@ -127,8 +128,7 @@ contract("Our use case", (accounts) => {
 
     it("Admin should be able to check if any user is in whitelist", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true)
-
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true);
       assert.equal(
         await whitelist.isWhitelisted(user2, { from: white_list_manager }),
         false
@@ -198,9 +198,7 @@ contract("Our use case", (accounts) => {
 
     it("Should be able to withdraw liquidity if the user is the controller", async () => {
       const startingPoolBalance = await usdt.balanceOf(pool.address);
-
       await pool.withdrawAllLiquidity(USDT, { from: controller });
-      
       const endingBalance = await usdt.balanceOf(cold_storage_address);
 
       assert.equal(
@@ -209,17 +207,35 @@ contract("Our use case", (accounts) => {
       );
     });
 
+    it("Fail swapExactAmountIn over max swap ratio", async () => {
+      await whitelist.whitelistUser(user2, hashedKey, { from: white_list_manager });
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      assert.equal(rowanPoolBalance, toWei("8750000"));
+      const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
+      const expectedSwapAmount = calcOutGivenIn(
+        2650000,
+        fromWei(rowanPoolBalance),
+        54081.7
+      );
+      assert.equal(maxSwapAmount, 175000);
+      assert.equal(expectedSwapAmount, 175000.21356603241689);
+      assert.equal(expectedSwapAmount > maxSwapAmount, true);
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("54081.7", "mwei"), 0, MAX, unhashedKey, {
+          from: user2,
+        }),
+        "ERR_MAX_OUT_RATIO"
+      );
+      assert.equal(await pool.getBalance(ROWAN), toWei("8750000"));
+    });
+
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
-      const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        fromWei(usdtPoolBalance, "mwei"),
-        weightUsdt,
+        2650000,
         fromWei(rowanPoolBalance),
-        weightRowan,
-        500,
-        0.0
+        500
       );
 
       if(verbose) {

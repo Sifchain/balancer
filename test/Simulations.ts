@@ -7,8 +7,6 @@ const { toWei, fromWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const { calcOutGivenIn, calcRelativeDiff } = require('./../utils.ts');
 const errorDelta = 10 ** -8;
-const weightUsdt = 1;
-const weightRowan = 10;
 const hours_in_week = 7 * 24;
 // parameters
 const first_hour_buyers_number = 100;
@@ -22,17 +20,9 @@ const unhashedKey = `TooFast-Secure-Key--Random34&*(#*$&R#*O(I($`;
 const hashedKey = helpers.hash(unhashedKey);
 
 async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
-  const usdtPoolBalance = await pool.getBalance(USDT);
   const rowanPoolBalance = await pool.getBalance(ROWAN);
 
-  const expected = calcOutGivenIn(
-    fromWei(usdtPoolBalance, 'mwei'),
-    weightUsdt,
-    fromWei(rowanPoolBalance),
-    weightRowan,
-    amount,
-    0.0
-  );
+  const expected = calcOutGivenIn(2650000, fromWei(rowanPoolBalance), amount);
 
   const txr = await pool.swapExactAmountIn(
     toWei(amount.toString(), 'mwei'),
@@ -55,7 +45,7 @@ contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
   const cold_storage_address = process.env.COLD_STORAGE_ADDRESS;
-  
+
   const user = accounts[1];
 
   let pool;
@@ -78,7 +68,7 @@ contract('Our use case', (accounts) => {
 
     // admin balances
     await rowan.mint(controller, toWei('70000000'));
-    await usdt.mint(controller, toWei('26250', 'mwei'));
+    await usdt.mint(controller, toWei('100', 'mwei'));
 
     // user balances
     await usdt.mint(user, toWei('100000000', 'mwei'));
@@ -89,8 +79,8 @@ contract('Our use case', (accounts) => {
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei('8750000'), toWei(weightRowan.toString()), { from: controller });
-    await pool.bind(USDT, toWei('26250', 'mwei'), toWei(weightUsdt.toString()), { from: controller });
+    await pool.bind(ROWAN, toWei('8750000'), { from: controller });
+    await pool.bind(USDT, toWei('100', 'mwei'), { from: controller });
 
     await pool.finalize({ from: controller });
 
@@ -117,27 +107,27 @@ contract('Our use case', (accounts) => {
         assert.equal((Number(beforeBalance) + (first_trade_amount * 1e6)).toString(), afterBalance.toString());
 
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
+        console.log(`First hour swap Interation ${i + 1}: Rowan price: ${fromWei(rowanPrice)}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
       }
 
       for (let i = 0; i < hours_in_week; i++) {
-        await pool.joinswapExternAmountIn(toWei('364583333333', 'micro'), { from: controller });
+        await pool.joinswapExternAmountIn(toWei('364000'), { from: controller });
         const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
-        console.log(`Liquidity iteration ${i + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
+        console.log(`Liquidity iteration ${i + 1}: Rowan price: ${fromWei(rowanPrice)}`);
         fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
 
         for (let j = 0; j < subsequent_hour_buyers_number; j++) {
           console.log(`Hour: ${i + 2}`);
           const beforeBalance = (await usdt.balanceOf(cold_storage_address)).toString();
 
-          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey, controller);
+          await swapIteration(pool, ROWAN, USDT, user, subsequent_trade_amount, unhashedKey);
 
           const afterBalance = (await usdt.balanceOf(cold_storage_address)).toString();
 
           // ensure that the cold storage address received the funds from each trade
           assert.equal((Number(beforeBalance) + (subsequent_trade_amount * 1e6)).toString(), afterBalance.toString());
-  
+
           const rowanPrice = await pool.getSpotPrice(USDT, ROWAN);
           console.log(`Swap Interation ${i *subsequent_hour_buyers_number + j + first_hour_buyers_number + 1}: Rowan price: ${fromWei(rowanPrice, 'mwei')}`);
           fs.writeFileSync(fileName, `${fromWei(rowanPrice, 'mwei')}\n`, {flag:'a'});
