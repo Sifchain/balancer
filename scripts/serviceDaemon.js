@@ -60,7 +60,7 @@ async function addLiquidity(cb) {
     const gasAmount = await getGasAmount(web3, bPool);
     console.log("Gas price:", gasPrice);
     console.log("Gas amount:", gasAmount);
-    const liquidityTx = await bPool.joinswapExternAmountIn(toWei(erowanAmount.toFixed(6)), { from: CONTROLLER, gasPrice: gasPrice, gas: gasAmount });
+    const liquidityTx = await bPool.joinswapExternAmountIn(toWei(erowanAmount), { from: CONTROLLER, gasPrice: gasPrice, gas: gasAmount });
     console.log("\n\n\nLiquidity tx:", JSON.stringify(liquidityTx));
     shell.exec(`curl -X POST -H 'Content-type: application/json' --data '{"text":"Successfully added liquidity to balancer pool!"}' https://hooks.slack.com/services/` + SLACK_KEY)
   } catch (error) {
@@ -76,7 +76,7 @@ async function addLiquidity(cb) {
           console.log("Previous liquidity tx is pending, try to speed it up");
           console.log("New gas price:", gasPrice);
           console.log("New gas amount:", gasAmount);
-          const joinswapTx = await bPool.joinswapExternAmountIn(toWei(erowanAmount.toFixed(6)), { from: CONTROLLER, gasPrice: (gasPrice * gasMultiplier), gas: gasAmount, nonce: previousTxNonce });
+          const joinswapTx = await bPool.joinswapExternAmountIn(toWei(erowanAmount), { from: CONTROLLER, gasPrice: (gasPrice * gasMultiplier), gas: gasAmount, nonce: previousTxNonce });
           console.log("\n\n\nSpeed up liquidity tx:", JSON.stringify(joinswapTx));
           shell.exec(`curl -X POST -H 'Content-type: application/json' --data '{"text":"Successfully added liquidity to balancer pool after speeding it up!"}' https://hooks.slack.com/services/` + SLACK_KEY)
         }

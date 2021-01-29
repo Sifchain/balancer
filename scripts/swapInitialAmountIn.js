@@ -6,9 +6,7 @@ const { toWei } = web3.utils;
 // parameters
 const totalErowanAmount = 70000000;
 const initialErowanAmount = 8750000;
-const totalUSDTAmount = 26250;
-const weightRowan = 10;
-const weightUsdt = 1;
+const totalUSDTAmount = 100;
 
 module.exports = function(cb) {
   addLiquidity(cb);
@@ -29,9 +27,9 @@ async function addLiquidity(cb) {
     const approveUsdtTx = await usdtContract.approve(poolAddress, toWei(totalUSDTAmount.toString(), "mwei"), { from: controller });
     console.log("\n\n\n\n\napprove USDT tx:", JSON.stringify(approveUsdtTx));
     // bind erowan and USDT to the contract
-    const bindErowanTx = await bpool.bind(eRowanContract.address, toWei(initialErowanAmount.toString()), toWei(weightRowan.toString()), { from: controller });
+    const bindErowanTx = await bpool.bind(eRowanContract.address, toWei(initialErowanAmount.toString()), { from: controller });
     console.log("\n\n\n\n\nbind erowan tx:", JSON.stringify(bindErowanTx));
-    const bindUsdtTx = await bpool.bind(usdtContract.address, toWei(totalUSDTAmount.toString(), "mwei"), toWei(weightUsdt.toString()), { from: controller });
+    const bindUsdtTx = await bpool.bind(usdtContract.address, toWei(totalUSDTAmount.toString(), "mwei"), { from: controller });
     console.log("\n\n\n\n\nbind USDT tx:", JSON.stringify(bindUsdtTx));
     // set erowan and USDT as in/out tokens
     const setTokenInOutTx = await bpool.setTokenInOut(process.env.USDT, process.env.EROWAN, { from: controller });
