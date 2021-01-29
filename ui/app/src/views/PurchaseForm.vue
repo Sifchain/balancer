@@ -43,16 +43,35 @@
         }
       }
 
+      function isNumeric(s) {
+        return (s - 0) == s && (''+s).trim().length > 0;
+      }
+
       function validateSlippage() {
         try {
-          const numericSlippage = parseFloat(store.purchase.slippagePercent);
-          if (isNaN(numericSlippage)) {
-            store.purchase.slippagePercent = "";
-          } else if (numericSlippage < 0 && store.purchase.slippagePercent.length > 0) {
+          if (!isNumeric(store.purchase.slippagePercent)) {
+            store.purchase.slippagePercent = "1.0";
+          } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
+          } else if (parseFloat(store.purchase.slippagePercent) >= 99.0) {
+            store.purchase.slippagePercent = "99.0"
+          } else if (!(store.purchase.slippagePercent.startsWith(".") && store.purchase.slippagePercent.length === 2)) {
+            store.purchase.slippagePercent = parseFloat(store.purchase.slippagePercent).toFixed(1);
           }
         } catch (e) {
-          store.purchase.slippagePercent = "";
+          store.purchase.slippagePercent = "1.0";
+        }
+      }
+
+      function validateUsdtAmount() {
+        try {
+          if (!isNumeric(store.purchase.usdtAmount)) {
+            store.purchase.usdtAmount = "0";
+          } else if (parseFloat(store.purchase.usdtAmount) < 0) {
+            store.purchase.usdtAmount = store.purchase.usdtAmount.substring(1);
+          }
+        } catch (e) {
+          store.purchase.slippagePercent = "0";
         }
       }
 
@@ -70,11 +89,13 @@
       async function getEstimate() {
         store.purchase.showMinReceivedTooltip = false;
         store.purchase.showSlippageToleranceTooltip = false;
-        if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
+        if (store.wallet.balances && store.wallet.balances.length > 0
+                && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
           store.purchase.state = PurchaseState.Disabled;
         } else {
           try {
+            validateUsdtAmount();
             validateSlippage();
             await getRowanEstimate();
             store.purchase.error = undefined;
