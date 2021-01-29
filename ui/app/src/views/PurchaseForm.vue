@@ -83,7 +83,7 @@
               const balances = await actions.getPoolBalances();
               if (balances.length === 2) {
                 const rwnBalance = balances[1];
-                const maxRwn = parseInt(rwnBalance.toExact()) / 10;
+                const maxRwn = parseInt(rwnBalance.toExact()) / 50;
                 store.purchase.error = `Maximum contribution amount is ${maxRwn} erowan`;
               }
             }
