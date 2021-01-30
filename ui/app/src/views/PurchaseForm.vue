@@ -247,6 +247,9 @@
 
 <template>
   <div>
+    <p class="kyc-help-text">
+      We are currently only supporting this page on desktop in the Chrome browser.
+    </p>
     <div class="purchase-form">
       <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.connected }">
         <div>
@@ -262,12 +265,12 @@
           <div class="confirmation-code mh-30 mb-20" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected" class="token-form text--small">
               <input
-                      placeholder="contribution code"
-                      :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
-                      v-model="store.purchase.unhashedKey"
-                      class="sif-input text-tiny"
-                      type="text"
-                      @input="validateKey"
+                placeholder="contribution code"
+                :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
+                v-model="store.purchase.unhashedKey"
+                class="sif-input text-tiny"
+                type="text"
+                @input="validateKey"
               >
             </div>
           </div>
@@ -283,15 +286,15 @@
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
                   <input
-                          class="sif-input"
-                          type="number"
-                          step="any"
-                          min="0"
-                          lang="en"
-                          placeholder="0"
-                          :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
-                          v-model="store.purchase.usdtAmount"
-                          @input="getEstimate"
+                    class="sif-input"
+                    type="number"
+                    step="any"
+                    min="0"
+                    lang="en"
+                    placeholder="0"
+                    :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
+                    v-model="store.purchase.usdtAmount"
+                    @input="getEstimate"
                   >
                 </div>
               </div>
@@ -523,7 +526,7 @@
         </div>
       </div>
     </div>
-    <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
+    <p class="kyc-help-text">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale. Please remember to use the wallet address you provided us in your KYC information. Your contribution code was sent to your registered email address.
       For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-step-by-step-tutorial-34ad38946f6c" target="_blank" style="color: #000000">here</a>.
       Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
