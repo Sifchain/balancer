@@ -353,9 +353,9 @@ contract BPool is BMath {
         require(_finalized, "ERR_NOT_FINALIZED");
         require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
 
-        Record storage inRecord = _records[_tokenOut];
+        Record storage outRecord = _records[_tokenOut];
 
-        inRecord.balance = badd(inRecord.balance, tokenAmountIn);
+        outRecord.balance = badd(outRecord.balance, tokenAmountIn);
 
         emit LOG_JOIN(msg.sender, _tokenOut, tokenAmountIn);
 

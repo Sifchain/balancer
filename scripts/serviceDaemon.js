@@ -4,7 +4,7 @@ const Web3 = require("web3");
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const { toWei, isHex, hexToNumberString} = web3.utils;
 const { CONTROLLER, DEFAULT_GAS_PRICE, DEFAULT_GAS_AMOUNT, INFURA_KEY, NETWORK, PRIVATE_KEY, SLACK_KEY } = process.env;
-const erowanAmount = 364000;
+const erowanAmount = "364000";
 let gasMultiplier = 2;
 
 module.exports = function(cb) {
@@ -28,7 +28,7 @@ async function getGasPrice(web3) {
 
 async function getGasAmount(web3, bPool) {
   try {
-    const gasAmount = await bPool.joinswapExternAmountIn.estimateGas(toWei(erowanAmount.toFixed(6)), { from: CONTROLLER });
+    const gasAmount = await bPool.joinswapExternAmountIn.estimateGas(toWei(erowanAmount), { from: CONTROLLER });
     return gasAmount * 2;
   } catch (e) {
     console.log("Failed to estimate gas amount:", e);
@@ -44,7 +44,7 @@ async function getPrevTxNonce(web3) {
   const lastLog = logs[logs.length - 1];
   if (isHex(lastLog.data)) {
     const amount = hexToNumberString(lastLog.data);
-    if (amount === toWei(erowanAmount.toFixed(6))) {
+    if (amount === toWei(erowanAmount)) {
       const tx = await web3?.eth.getTransaction(lastLog.transactionHash);
       return tx.nonce;
     }
