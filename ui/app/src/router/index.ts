@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Wrapper from "@/views/Wrapper.vue";
+import PriceData from "@/views/PriceData.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -10,6 +11,11 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/:pathMatch(.*)*",
     redirect: "/",
+  },
+  {
+    path: "/stats",
+    name: "PriceData",
+    component: PriceData,
   }
 ];
 

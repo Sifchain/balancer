@@ -40,6 +40,9 @@ export default ({
     },
     async getPoolBalances() {
       return await api.EthereumService.getPoolBalances();
+    },
+    async getSpotPrice() {
+      store.purchase.rowanPrice = (await api.EthereumService.getSpotPrice()).toFixed(6);
     }
   };
 

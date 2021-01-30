@@ -24,4 +24,5 @@ export type IWalletService = {
   getPoolBalances(): Promise<Balance[]>;
   isWhitelisted(): Promise<boolean>;
   isValidKey(unhashedKey: string): Promise<boolean>;
+  getSpotPrice(): Promise<Balance>;
 };

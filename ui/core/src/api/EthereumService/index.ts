@@ -216,6 +216,12 @@ export class EthereumService implements IWalletService {
     return res.tokenAmountOut;
   }
 
+  async getSpotPrice(): Promise<Balance> {
+    const accountFrom = await this.getCurrentAccount();
+    const rwnPrice = await this.getBalancerContract().methods.getSpotPrice(getTokenSaleData().usdtAddress, getTokenSaleData().rwnAddress).call({from: accountFrom});
+    return Balance.create(18, rwnPrice)
+  }
+
   async isWhitelisted(): Promise<boolean> {
     const accountFrom = await this.getCurrentAccount();
     return await this.getWhitelistContract().methods.isWhitelisted(accountFrom).call();

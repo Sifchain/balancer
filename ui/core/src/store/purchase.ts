@@ -23,6 +23,7 @@ export type PurchaseStore = {
   approving: boolean;
   showMinReceivedTooltip: boolean;
   showSlippageToleranceTooltip: boolean;
+  rowanPrice: string;
 };
 
 export const purchase = reactive({
@@ -38,5 +39,6 @@ export const purchase = reactive({
   txAmount: undefined,
   approving: false,
   showMinReceivedTooltip: false,
-  showSlippageToleranceTooltip: false
+  showSlippageToleranceTooltip: false,
+  rowanPrice: ""
 }) as PurchaseStore;
