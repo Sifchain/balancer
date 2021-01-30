@@ -323,7 +323,7 @@
                     <div class="dropdown dropdown_left" v-show="store.purchase.showMinReceivedTooltip">
                       <div class="dropdown__inner">
                         <p>
-                          Minimum amount of eRowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
+                          Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
                       </div>
                     </div>
                   </div>
@@ -355,7 +355,7 @@
 
           <div v-if="store.wallet.validNetwork && store.wallet.connected && !store.wallet.whitelisted" class="error-section mh-93 d-flex j-center fd-col">
             <p class="text--small text--italic text--bold color-white">
-              Connected Wallet has not passed KYC/AML process. Please connect a wallet that has passed KYC/AML. To get on the complete the KYC/AML process, please go <a href=" https://sifchain.finance/token-sale-info" target="_blank" style="color: #FFF">here</a>.
+              Connected Wallet has not passed KYC/AML process. Check your inbox (including Spam and Promotions folders) for the registered ETH address. If you are still having issues, please email <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
             </p>
           </div>
 
@@ -524,10 +524,9 @@
       </div>
     </div>
     <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
-      Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
-      If you have not been approved, you may apply <a href="https://tokensale.sifchain.finance" target="_blank" style="color: #000000">here</a>.
-      Please remember to use the wallet address you provided us in your KYC information.
-      Any transactions from unapproved wallet addresses will be rejected.
+      Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale. Please remember to use the wallet address you provided us in your KYC information. Your contribution code was sent to your registered email address.
+      For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-step-by-step-tutorial-34ad38946f6c" target="_blank" style="color: #000000">here</a>.
+      Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
     </p>
   </div>
 </template>
