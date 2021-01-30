@@ -253,7 +253,7 @@
 
           <div class="d-flex fd-row j-center">
             <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
-              Please enter your 64-digit confirmation code
+              Please enter your 64-digit contribution code
             </p>
             <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
             <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
@@ -262,7 +262,7 @@
           <div class="confirmation-code mh-30 mb-20" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected" class="token-form text--small">
               <input
-                      placeholder="confirmation code"
+                      placeholder="contribution code"
                       :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
                       v-model="store.purchase.unhashedKey"
                       class="sif-input text-tiny"
