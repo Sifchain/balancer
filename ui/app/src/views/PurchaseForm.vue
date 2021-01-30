@@ -529,7 +529,7 @@
     <p class="kyc-help-text">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale. Please remember to use the wallet address you provided us in your KYC information. Your contribution code was sent to your registered email address.
       For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-step-by-step-tutorial-34ad38946f6c" target="_blank" style="color: #000000">here</a>.
-      Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
+      Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #000000">token-sale@sifchain.finance</a> from your registered email address.
     </p>
   </div>
 </template>
