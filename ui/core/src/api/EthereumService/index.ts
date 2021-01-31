@@ -14,21 +14,6 @@ import { Balance } from "../../entities/Balance";
 
 const MAX = Web3.utils.toTwosComplement(-1);
 
-export function handleConnectToMetaMaskError(err: any) {
-  const { code, message } = err;
-  if (code) {
-    if (code === -32002) {
-      // Permissions request already pending; please wait.
-      console.log(message);
-    } else if (code === 4001) {
-      // User rejected the request.
-      console.log(message);
-    }
-  } else {
-    console.log(err.toString());
-  }
-}
-
 const initState = {
   whitelisted: true,
   validNetwork: true,
@@ -58,14 +43,13 @@ export class EthereumService implements IWalletService {
   constructor() {
     this.state = reactive({ ...initState });
     this.web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
-
     if (this.web3 && this.web3.givenProvider) {
+      this.handleStateChange();
       this.web3.givenProvider.on('accountsChanged',  () => {
-        this.handleStateChange();
+        window.location.reload();
       });
-
       this.web3.givenProvider.on('chainChanged', () => {
-        this.handleStateChange();
+        window.location.reload();
       });
     }
   }
@@ -127,7 +111,6 @@ export class EthereumService implements IWalletService {
         await this.web3.givenProvider.request({ method: "eth_requestAccounts" });
       }
     } catch (err) {
-      handleConnectToMetaMaskError(err);
       this.state = reactive({ ...initState });
     }
   }
@@ -141,7 +124,6 @@ export class EthereumService implements IWalletService {
         }
       ]
     });
-    this.web3 = null;
     this.state = reactive({ ...initState });
   }
 
@@ -172,7 +154,7 @@ export class EthereumService implements IWalletService {
       );
     }
     const accounts = await this.web3.eth.getAccounts();
-    return accounts[0];
+    return accounts.length > 0 ? accounts[0] : undefined;
   }
 
   getTransactionAmount(address: string, data: string): string | undefined {
