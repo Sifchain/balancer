@@ -307,15 +307,15 @@
                     </div>
                   </div>
                   <input
-                          class="sif-input"
-                          type="number"
-                          step="any"
-                          min="0"
-                          lang="en"
-                          placeholder="0"
-                          :disabled="true"
-                          v-model="store.purchase.rwnAmount"
-                          @input="getEstimate"
+                    class="sif-input"
+                    type="number"
+                    step="any"
+                    min="0"
+                    lang="en"
+                    placeholder="0"
+                    :disabled="true"
+                    v-model="store.purchase.rwnAmount"
+                    @input="getEstimate"
                   >
                 </div>
               </div>
@@ -385,12 +385,12 @@
               </div>
               <div class="sif-input__wrapper custom-slippage-input-container">
                 <input
-                        v-model="store.purchase.slippagePercent"
-                        class="sif-input num_percent"
-                        type="number"
-                        step="any"
-                        min="0"
-                        @input="getEstimate"
+                  v-model="store.purchase.slippagePercent"
+                  class="sif-input num_percent"
+                  type="number"
+                  step="any"
+                  min="0"
+                  @input="getEstimate"
                 >
                 <span>%</span>
               </div>
