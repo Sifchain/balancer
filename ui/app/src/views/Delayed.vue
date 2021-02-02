@@ -2,7 +2,7 @@
   <div class="container">
     <div>
       <p class="title">Our token sale has been delayed.</p>
-      <p class="title">Please check our <a href="https://t.me/sifchain/46814" target="_blank" style="color: #272727">Telegram</a> for the latest updates.</p>
+      <p class="text">Please check our  <a href="https://t.me/sifchain/46814" target="_blank" style="color: #272727">Telegram</a>  for the latest updates.</p>
     </div>
   </div>
 </template>
@@ -30,15 +30,11 @@
     font-size: 18px;
     color: $c_gray_900;
     font-weight: bold;
-    font-style: italic;
-    font-family: serif;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   }
   .text {
       font-size: 16px;
-      color: $c_gray_900;
+      color: $c_gray_800;
       font-weight: normal;
-      font-style: italic;
-      font-family: serif;
   }
 </style>
