@@ -24,7 +24,7 @@ contract BConst {
     // Min investment amount is 1 USDT
     uint public constant MIN_SWAP_AMOUNT   = USDT_BONE;
     uint public constant MIN_BALANCE       = BONE / BONE_DIFF;
-    uint public constant IN_BALANCE        = 265 * 10**22;
+    uint public constant IN_BALANCE        = 2625 * 10**21;
 
     uint public constant INIT_POOL_SUPPLY  = BONE * 100;
 

@@ -213,7 +213,7 @@ contract("Our use case", (accounts) => {
       assert.equal(rowanPoolBalance, toWei("8750000"));
       const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
       const expectedSwapAmount = calcOutGivenIn(
-        2650000,
+        2625000,
         fromWei(rowanPoolBalance),
         54081.7
       );
@@ -233,7 +233,7 @@ contract("Our use case", (accounts) => {
       // Attempt to spend 500 USDT should succeed.
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        2650000,
+        2625000,
         fromWei(rowanPoolBalance),
         500
       );

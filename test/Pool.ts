@@ -287,7 +287,7 @@ contract("Full pool test", (accounts) => {
 
     it("getSpotPrice check", async () => {
       const wethPrice = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceCheck = 2650000 / 52.5;
+      const wethPriceCheck = 2625000 / 52.5;
       assert.equal(fromWei(wethPrice), wethPriceCheck);
     });
 
@@ -330,7 +330,7 @@ contract("Full pool test", (accounts) => {
     it('swapExactAmountIn', async () => {
       // 12000 * 10e-12 WETH -> DAI
       const initialUserDaiBalance = await dai.balanceOf(user2);
-      const expected = calcOutGivenIn(2650000, 10500, 12000);
+      const expected = calcOutGivenIn(2625000, 10500, 12000);
       const txr = await pool.swapExactAmountIn(
         toWei("12000", "mwei"),
         0,
@@ -358,7 +358,7 @@ contract("Full pool test", (accounts) => {
       );
 
       const wethPrice = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceCheck = 2650000 / 52.500000012;
+      const wethPriceCheck = 2625000 / 52.500000012;
 
       assert.approximately(
         Number(fromWei(wethPrice)),
