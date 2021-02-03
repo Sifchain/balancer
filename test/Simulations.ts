@@ -22,7 +22,7 @@ const hashedKey = helpers.hash(unhashedKey);
 async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
   const rowanPoolBalance = await pool.getBalance(ROWAN);
 
-  const expected = calcOutGivenIn(2650000, fromWei(rowanPoolBalance), amount);
+  const expected = calcOutGivenIn(2625000, fromWei(rowanPoolBalance), amount);
 
   const txr = await pool.swapExactAmountIn(
     toWei(amount.toString(), 'mwei'),

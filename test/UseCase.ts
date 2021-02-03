@@ -213,15 +213,15 @@ contract("Our use case", (accounts) => {
       assert.equal(rowanPoolBalance, toWei("8750000"));
       const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
       const expectedSwapAmount = calcOutGivenIn(
-        2650000,
+        "2625000",
         fromWei(rowanPoolBalance),
-        54081.7
+        "53600"
       );
       assert.equal(maxSwapAmount, 175000);
-      assert.equal(expectedSwapAmount, 175000.21356603241689);
-      assert.equal(expectedSwapAmount > maxSwapAmount, true);
+      assert.equal(expectedSwapAmount.toString(), "174771.32723539294383");
+      assert.equal(expectedSwapAmount.greaterThan(maxSwapAmount), true);
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("54081.7", "mwei"), 0, MAX, unhashedKey, {
+        pool.swapExactAmountIn(toWei("53600", "mwei"), 0, MAX, unhashedKey, {
           from: user2,
         }),
         "ERR_MAX_OUT_RATIO"
@@ -233,7 +233,7 @@ contract("Our use case", (accounts) => {
       // Attempt to spend 500 USDT should succeed.
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        2650000,
+        2625000,
         fromWei(rowanPoolBalance),
         500
       );
