@@ -218,7 +218,7 @@ contract("Our use case", (accounts) => {
         "53600"
       );
       assert.equal(maxSwapAmount, 175000);
-      assert.equal(expectedSwapAmount.toString(), "174771.32723539294383");
+      assert.equal(expectedSwapAmount.toString(), "175091.46569103262903");
       assert.equal(expectedSwapAmount.greaterThan(maxSwapAmount), true);
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("53600", "mwei"), 0, MAX, unhashedKey, {
