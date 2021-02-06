@@ -182,17 +182,16 @@ contract("Full pool test", (accounts) => {
 
     it("Fails calling any swap before finalizing", async () => {
       await whitelist.whitelistUser(user2, hashedKey, { from: admin });
-
       const controller = await pool.getController();
       await pool.setTokenInOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
+        "ERR_NOT_FINALIZED"
       );
       await pool.setTokenInOut(DAI, WETH, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
+        "ERR_NOT_FINALIZED"
       );
     });
 

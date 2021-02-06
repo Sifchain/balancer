@@ -81,36 +81,24 @@ contract BPool is BMath {
     bool private _mutex;
     address private _tokenIn;
     address private _tokenOut;
-    address private _factory;    // BFactory address to push token exitFee to
     address private _controller; // has CONTROL role
-    bool private _publicSwap; // true if PUBLIC can call SWAP functions
 
     // `finalize` requires CONTROL
-    // `finalize` sets `PUBLIC can SWAP`, `PUBLIC can JOIN`
     bool private _finalized;
-
     address[] private _tokens;
     mapping(address=>Record) private  _records;
-
     address private _whiteListContract;
 
-    // address where all funds from tokensale will go
+    // address where all funds from token sale will go
     address public coldStorage;
+    uint public gasPriceLimit;
 
     constructor(address _whitelist, address controller, address _coldStorage) public {
         _whiteListContract = _whitelist;
         _controller = controller;
-        _factory = controller;
-        _publicSwap = false;
         _finalized = false;
-         coldStorage = _coldStorage;
-    }
-
-    function isPublicSwap()
-        external view
-        returns (bool)
-    {
-        return _publicSwap;
+        coldStorage = _coldStorage;
+        gasPriceLimit = 400000000;
     }
 
     function isFinalized()
@@ -155,7 +143,6 @@ contract BPool is BMath {
         _viewlock_
         returns (uint)
     {
-
         require(_records[token].bound, "ERR_NOT_BOUND");
         return _records[token].balance;
     }
@@ -175,7 +162,6 @@ contract BPool is BMath {
         onlyController
     {
         _controller = manager;
-        _factory = manager;
     }
 
     function setTokenInOut(address tokenIn, address tokenOut)
@@ -188,6 +174,15 @@ contract BPool is BMath {
         _tokenOut = tokenOut;
     }
 
+    function setGasPriceLimit(uint limit)
+        external
+        _logs_
+        _lock_
+        onlyController
+    {
+        gasPriceLimit = limit;
+    }
+
     function finalize()
         external
         _logs_
@@ -198,25 +193,21 @@ contract BPool is BMath {
         require(_tokens.length >= MIN_BOUND_TOKENS, "ERR_MIN_TOKENS");
 
         _finalized = true;
-        _publicSwap = true;
     }
-
 
     function bind(address token, uint balance)
         external
         _logs_
         onlyController
-        // _lock_  Bind does not lock because it jumps to `rebind`, which does
     {
         require(!_records[token].bound, "ERR_IS_BOUND");
         require(!_finalized, "ERR_IS_FINALIZED");
-
         require(_tokens.length <= MAX_BOUND_TOKENS, "ERR_MAX_TOKENS");
 
         _records[token] = Record({
             bound: true,
             index: _tokens.length,
-            balance: 0   // and set by `rebind`
+            balance: 0
         });
         _tokens.push(token);
         rebind(token, balance);
@@ -293,8 +284,8 @@ contract BPool is BMath {
         returns (uint256)
     {
         uint256 amount = IERC20(token).balanceOf(address(this));
-
         IERC20(token).safeTransfer(coldStorage, amount);
+
         emit LOG_EXIT(msg.sender, token, amount);
 
         return amount;
@@ -314,7 +305,8 @@ contract BPool is BMath {
     {
         require(_records[_tokenIn].bound, "ERR_NOT_BOUND");
         require(_records[_tokenOut].bound, "ERR_NOT_BOUND");
-        require(_publicSwap, "ERR_SWAP_NOT_PUBLIC");
+        require(_finalized, "ERR_NOT_FINALIZED");
+        require(tx.gasprice <= gasPriceLimit, "ERR_GAS_PRICE_LIMIT_EXCEEDED");
 
         Record storage inRecord = _records[address(_tokenIn)];
         Record storage outRecord = _records[address(_tokenOut)];
@@ -362,10 +354,8 @@ contract BPool is BMath {
         _pullUnderlying(_tokenOut, msg.sender, tokenAmountIn);
     }
 
-    // ==
     // 'Underlying' token-manipulation functions make external calls but are NOT locked
     // You must `_lock_` or otherwise ensure reentry-safety
-
     function _pullUnderlying(address erc20, address from, uint amount)
         internal
     {
