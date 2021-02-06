@@ -104,7 +104,10 @@
               const balances = await actions.getPoolBalances();
               if (balances.length === 2) {
                 const rwnBalance = balances[1];
-                const maxRwn = parseInt(rwnBalance.toExact()) / 50;
+                const rwnBalanceNumeric = parseInt(rwnBalance.toExact());
+                const rwnPrice = 2625000 / rwnBalanceNumeric;
+                store.purchase.rwnAmount = store.purchase.usdtAmount / rwnPrice + "";
+                const maxRwn = rwnBalanceNumeric / 50;
                 store.purchase.error = `Maximum received amount is ${maxRwn} erowan`;
               }
             }
@@ -425,7 +428,6 @@
             <p class="text--small">
               No wallet connected
             </p>
-            <img src="../assets/circle-x.svg" class="mr-8 ml-8">
           </div>
 
           <button class="btn" v-if="!store.wallet.connected || !store.wallet.whitelisted" @click="handleConnectClicked">
