@@ -6,6 +6,7 @@
     name: "PurchaseForm",
     created() {
       this.initState();
+      this.getGasPriceLimit();
       gtag('event', 'page_view', {
         page_title: 'Purchase Form',
         page_location: 'https://purchase.sifchain.finance',
@@ -16,6 +17,10 @@
     methods: {
       async initState() {
         await useCore().api.EthereumService.handleStateChange();
+      },
+      async getGasPriceLimit() {
+        const { store, api } = useCore();
+        store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
       }
     },
     setup() {
@@ -185,6 +190,11 @@
               gtag('event', 'purchase_failed', {
                 'event_label': 'Purchase Failed'
               });
+            } else if (e.message && e.message.toString().includes("ERR_GAS_PRICE_LIMIT_EXCEEDED")) {
+              store.purchase.state = PurchaseState.OutOfGas;
+              gtag('event', 'purchase_failed', {
+                'event_label': 'Purchase Failed'
+              });
             } else {
               store.purchase.state = PurchaseState.Failed;
               gtag('event', 'purchase_canceled', {
@@ -334,15 +344,15 @@
                     </div>
                   </div>
                   <input
-                          class="sif-input"
-                          type="number"
-                          step="any"
-                          min="0"
-                          lang="en"
-                          placeholder="0"
-                          :disabled="true"
-                          v-model="store.purchase.rwnAmount"
-                          @input="getEstimate"
+                    class="sif-input"
+                    type="number"
+                    step="any"
+                    min="0"
+                    lang="en"
+                    placeholder="0"
+                    :disabled="true"
+                    v-model="store.purchase.rwnAmount"
+                    @input="getEstimate"
                   >
                 </div>
               </div>
@@ -412,12 +422,12 @@
               </div>
               <div class="sif-input__wrapper custom-slippage-input-container">
                 <input
-                        v-model="store.purchase.slippagePercent"
-                        class="sif-input num_percent"
-                        type="number"
-                        step="any"
-                        min="0"
-                        @input="getEstimate"
+                  v-model="store.purchase.slippagePercent"
+                  class="sif-input num_percent"
+                  type="number"
+                  step="any"
+                  min="0"
+                  @input="getEstimate"
                 >
                 <span>%</span>
               </div>
@@ -501,6 +511,23 @@
           </div>
           <div class="purchase-form__transaction__hint">
             <p>Please try to increase slippage tolerance.</p>
+          </div>
+          <div class="purchase-form__transaction__retry" @click="tryAgain">
+            <p>Try again</p>
+          </div>
+        </div>
+        <div v-if="store.purchase.state === PurchaseState.OutOfGas">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-failed.svg">
+          </div>
+          <div class="purchase-form__transaction__title-failed">
+            <p>Transaction Failed.</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Gas price limit exceeded.</p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Please set the transaction gas price below {{ store.purchase.gasPriceLimit }} gwei.</p>
           </div>
           <div class="purchase-form__transaction__retry" @click="tryAgain">
             <p>Try again</p>

@@ -187,6 +187,11 @@ export class EthereumService implements IWalletService {
     return getTokenContract(this.web3, getTokenSaleData().usdtAddress).methods.approve(getBalancerAbiArray(this.state.networkType).address, MAX).send({from: accountFrom});
   }
 
+  async getGasPriceLimit(): Promise<string> {
+    const accountFrom = await this.getCurrentAccount();
+    return this.getBalancerContract().methods.gasPriceLimit().call({from: accountFrom});
+  }
+
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {
     const accountFrom = await this.getCurrentAccount();
     return this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});

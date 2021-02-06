@@ -27,9 +27,9 @@
   }
   .header {
     width: 100%;
-    height: 130px;
-    margin-top: 64px;
-    margin-bottom: 32px;
+    height: 120px;
+    margin-top: 16px;
+    margin-bottom: 8px;
   }
   .footer {
     width: 100%;
