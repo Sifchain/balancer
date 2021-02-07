@@ -98,7 +98,7 @@ contract BPool is BMath {
         _controller = controller;
         _finalized = false;
         coldStorage = _coldStorage;
-        gasPriceLimit = 400000000;
+        gasPriceLimit = 400000000000;
     }
 
     function isFinalized()

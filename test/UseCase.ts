@@ -229,6 +229,19 @@ contract("Our use case", (accounts) => {
       assert.equal(await pool.getBalance(ROWAN), toWei("8750000"));
     });
 
+    it('Fails to swap if gas price exceeds the limit', async () => {
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+          from: user,
+          gasPrice: "400000000001" // gas price is 1 wei above the limit
+        }),
+        "ERR_GAS_PRICE_LIMIT_EXCEEDED"
+      );
+    });
+
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
       const rowanPoolBalance = await pool.getBalance(ROWAN);
@@ -244,9 +257,12 @@ contract("Our use case", (accounts) => {
       }
 
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
 
-      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+      const tx = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
+        gasPrice: "399999999999"
       });
 
       if(verbose) {
@@ -254,7 +270,7 @@ contract("Our use case", (accounts) => {
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
-      const log = txr.logs[0];
+      const log = tx.logs[0];
       assert.equal(log.event, "LOG_SWAP");
 
       const actual = fromWei(log.args.tokenAmountOut);
@@ -271,13 +287,13 @@ contract("Our use case", (accounts) => {
 
     it("Fails to provide liquidity if it is not controller", async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: user }),
+        pool.joinswapExternAmountIn(toWei("364000"), { from: user }),
         "ERR_NOT_CONTROLLER"
       );
     });
 
     it("Liquidity iteration", async () => {
-      await pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: controller });
+      await pool.joinswapExternAmountIn(toWei("364000"), { from: controller });
       if (verbose) {
         console.log("After adding liquidity:");
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
