@@ -21,7 +21,7 @@
     "build:ui": "cd ./ui && yarn build",
     "build": "yarn build:chain && yarn build:ui",
     "migrate:local": "truffle migrate --reset",
-    "migrate:testnet": "truffle migrate --reset --to 3",
+    "migrate:ropsten": "truffle migrate --reset --to 2 --network ropsten",
     "migrate:mainnet": "truffle migrate --reset --to 2 --network mainnet",
     "serve:ui": "cd ./ui && yarn app:serve",
     "start": "yarn migrate:chain && yarn serve:ui",

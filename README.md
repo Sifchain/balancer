@@ -26,9 +26,9 @@ ganache-cli -d
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
 2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY, COLD_STORAGE_ADDRESS and INFURA_KEY in .env
-3. `yarn migrate:testnet --network <network name>`
+3. `yarn migrate:ropsten`
 4. Copy newly migrated USDT and ROWAN contract addresses into .env
-5. `yarn tokendata --network <network name>` - Copy USDT and ROWAN addresses from env into json that is read from utils
+5. `yarn tokendata` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. set PRIVATE_KEY in .env to rowan owner.
 7. `yarn mint:rowan --network <network name>`
 8. set PRIVATE_KEY in .env to CONTROLLER
