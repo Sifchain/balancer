@@ -239,6 +239,7 @@ contract("Our use case", (accounts) => {
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
           from: user,
+          gas: "1000000",
           gasPrice: "2000000000" // gas price of 2 gwei is above the limit, should fail
         }),
         "ERR_GAS_PRICE_LIMIT_EXCEEDED"
@@ -265,6 +266,7 @@ contract("Our use case", (accounts) => {
 
       const tx = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
+        gas: "1000000",
         gasPrice: "1000000000" // gas price is 1 gwei, should work
       });
 
