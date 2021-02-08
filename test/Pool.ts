@@ -158,23 +158,23 @@ contract("Full pool test", (accounts) => {
 
     it('Get current gas price limit', async () => {
       const gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), 400000000000); // initial gas price limit is 400 gwei
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
     });
 
     it('Fails to set gas price limit if not controller', async () => {
       let gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), 400000000000); // initial gas price limit is 400 gwei
-      await truffleAssert.reverts(pool.setGasPriceLimit(500000000000, { from: user1 }), "ERR_NOT_CONTROLLER");
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await truffleAssert.reverts(pool.setGasPriceLimit("500000000000", { from: user1 }), "ERR_NOT_CONTROLLER");
       gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), 400000000000); // gas price limit is 400 gwei
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // gas price limit remains 400 gwei
     });
 
     it('Controller can set gas price limit', async () => {
       let gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), 400000000000); // initial gas price limit is 400 gwei
-      await pool.setGasPriceLimit(500000000000, { from: controller });
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await pool.setGasPriceLimit("500000000000", { from: controller });
       gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), 500000000000); // gas price limit is 500 gwei after change
+      assert.equal(gasPriceLimit.toString(), "500000000000"); // gas price limit is 500 gwei after change
     });
 
     it("Fails getting final tokens before finalized", async () => {
