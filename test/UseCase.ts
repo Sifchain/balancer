@@ -232,11 +232,14 @@ contract("Our use case", (accounts) => {
     it('Fails to swap if gas price exceeds the limit', async () => {
       let gasPriceLimit = await pool.gasPriceLimit();
       assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await pool.setGasPriceLimit("1000000000", { from: controller }); // set gas price limit to 1 gwei
+      gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "1000000000"); // current gas price limit is 1 gwei
 
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
           from: user,
-          gasPrice: "400000000001" // gas price is 1 wei above the limit
+          gasPrice: "1000000001" // gas price is 1 wei above the limit, should fail
         }),
         "ERR_GAS_PRICE_LIMIT_EXCEEDED"
       );
@@ -258,11 +261,11 @@ contract("Our use case", (accounts) => {
 
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
       let gasPriceLimit = await pool.gasPriceLimit();
-      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      assert.equal(gasPriceLimit.toString(), "1000000000"); // gas price limit is 1 gwei (set in previous test)
 
       const tx = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
-        gasPrice: "399999999999"
+        gasPrice: "1000000000" // gas price is 1 gwei, should work
       });
 
       if(verbose) {
