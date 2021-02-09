@@ -41,5 +41,5 @@ export const purchase = reactive({
   approving: false,
   showMinReceivedTooltip: false,
   showSlippageToleranceTooltip: false,
-  gasPriceLimit: "400000000"
+  gasPriceLimit: "400"
 }) as PurchaseStore;

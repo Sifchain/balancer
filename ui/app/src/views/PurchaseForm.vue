@@ -6,7 +6,6 @@
     name: "PurchaseForm",
     created() {
       this.initState();
-      this.getGasPriceLimit();
       gtag('event', 'page_view', {
         page_title: 'Purchase Form',
         page_location: 'https://purchase.sifchain.finance',
@@ -16,12 +15,9 @@
     },
     methods: {
       async initState() {
-        await useCore().api.EthereumService.handleStateChange();
+        const { api } = useCore();
+        await api.EthereumService.handleStateChange();
       },
-      async getGasPriceLimit() {
-        const { store, api } = useCore();
-        store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
-      }
     },
     setup() {
       const { actions, api, store } = useCore();
@@ -167,6 +163,7 @@
             }
           }, 50);
           try {
+            store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
             store.purchase.state = PurchaseState.Pending;
             const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             const { transactionHash, events } = tx;
@@ -185,6 +182,7 @@
               'event_label': 'Purchase Successful'
             });
           } catch (e) {
+            console.log("ERROR: ", e);
             if (e.toString().includes("Transaction has been reverted by the EVM")) {
               store.purchase.state = PurchaseState.Reverted;
               gtag('event', 'purchase_failed', {
@@ -510,7 +508,7 @@
             <p>Transaction has been reverted.</p>
           </div>
           <div class="purchase-form__transaction__hint">
-            <p>Please try to increase slippage tolerance.</p>
+            <p>Please try to increase slippage tolerance and set the gas price below {{ store.purchase.gasPriceLimit }} gwei.</p>
           </div>
           <div class="purchase-form__transaction__retry" @click="tryAgain">
             <p>Try again</p>

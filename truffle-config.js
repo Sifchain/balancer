@@ -8,20 +8,20 @@ module.exports = {
     plugins: ["solidity-coverage"],
     networks: {
         local: {
-            host: 'localhost', // Localhost (default: none)
-            port: 8545, // Standard Ethereum port (default: none)
-            network_id: '*', // Any network (default: none)
+            host: 'localhost',      // Localhost (default: none)
+            port: 8545,             // Standard Ethereum port (default: none)
+            network_id: '*',        // Any network (default: none)
         },
         development: {
-            host: 'localhost', // Localhost (default: none)
-            port: 8545, // Standard Ethereum port (default: none)
-            network_id: '*', // Any network (default: none)
+            host: 'localhost',      // Localhost (default: none)
+            port: 8545,             // Standard Ethereum port (default: none)
+            network_id: '*',        // Any network (default: none)
         },
         kovan: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://kovan.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: gasAmount,         // Max gas to send per transaction
-            gasPrice: gasPrice,     // 250 gwei (default: 20 gwei)
+            gas: gasAmount,         // Dynamic (default: 3.9m)
+            gasPrice: gasPrice,     // Dynamic (default: 250 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
             skipDryRun: false       // Skip dry run before migrations? (default: false for public nets )
@@ -29,8 +29,8 @@ module.exports = {
         ropsten: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://ropsten.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: gasAmount,         // Max gas to send per transaction
-            gasPrice: gasPrice,     // 250 gwei (default: 20 gwei)
+            gas: gasAmount,         // Dynamic (default: 3.9m)
+            gasPrice: gasPrice,     // Dynamic (default: 250 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
             skipDryRun: false       // Skip dry run before migrations? (default: false for public nets )
@@ -38,8 +38,8 @@ module.exports = {
         mainnet: {
             provider: () => new HDWalletProvider(PRIVATE_KEY, `https://mainnet.infura.io/v3/${INFURA_KEY}`, 0, 1),
             network_id: '*',
-            gas: gasAmount,         // Max gas to send per transaction
-            gasPrice: gasPrice,     // 250 gwei (default: 20 gwei)
+            gas: gasAmount,         // Dynamic (default: 3.9m)
+            gasPrice: gasPrice,     // Dynamic (default: 250 gwei)
             confirmations: 0,       // # of confs to wait between deployments. (default: 0)
             timeoutBlocks: 200,     // # of blocks before a deployment times out  (minimum/default: 50)
             skipDryRun: false       // Skip dry run before migrations? (default: false for public nets )
