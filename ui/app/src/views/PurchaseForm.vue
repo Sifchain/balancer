@@ -15,8 +15,9 @@
     },
     methods: {
       async initState() {
-        await useCore().api.EthereumService.handleStateChange();
-      }
+        const { api } = useCore();
+        await api.EthereumService.handleStateChange();
+      },
     },
     setup() {
       const { actions, api, store } = useCore();
@@ -43,16 +44,35 @@
         }
       }
 
+      function isNumeric(s) {
+        return (s - 0) == s && (''+s).trim().length > 0;
+      }
+
       function validateSlippage() {
         try {
-          const numericSlippage = parseFloat(store.purchase.slippagePercent);
-          if (isNaN(numericSlippage)) {
-            store.purchase.slippagePercent = "";
-          } else if (numericSlippage < 0 && store.purchase.slippagePercent.length > 0) {
+          if (!isNumeric(store.purchase.slippagePercent)) {
+            store.purchase.slippagePercent = "1.0";
+          } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
+          } else if (parseFloat(store.purchase.slippagePercent) >= 99.0) {
+            store.purchase.slippagePercent = "99.0"
+          } else if (!(store.purchase.slippagePercent.startsWith(".") && store.purchase.slippagePercent.length === 2)) {
+            store.purchase.slippagePercent = parseFloat(store.purchase.slippagePercent).toFixed(1);
           }
         } catch (e) {
-          store.purchase.slippagePercent = "";
+          store.purchase.slippagePercent = "1.0";
+        }
+      }
+
+      function validateUsdtAmount() {
+        try {
+          if (!isNumeric(store.purchase.usdtAmount)) {
+            store.purchase.usdtAmount = "0";
+          } else if (parseFloat(store.purchase.usdtAmount) < 0) {
+            store.purchase.usdtAmount = store.purchase.usdtAmount.substring(1);
+          }
+        } catch (e) {
+          store.purchase.slippagePercent = "0";
         }
       }
 
@@ -70,11 +90,13 @@
       async function getEstimate() {
         store.purchase.showMinReceivedTooltip = false;
         store.purchase.showSlippageToleranceTooltip = false;
-        if (store.wallet.balances && store.wallet.balances.length > 0 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
+        if (store.wallet.balances && store.wallet.balances.length > 0
+                && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
           store.purchase.state = PurchaseState.Disabled;
         } else {
           try {
+            validateUsdtAmount();
             validateSlippage();
             await getRowanEstimate();
             store.purchase.error = undefined;
@@ -83,8 +105,11 @@
               const balances = await actions.getPoolBalances();
               if (balances.length === 2) {
                 const rwnBalance = balances[1];
-                const maxRwn = parseInt(rwnBalance.toExact()) / 10;
-                store.purchase.error = `Maximum contribution amount is ${maxRwn} erowan`;
+                const rwnBalanceNumeric = parseInt(rwnBalance.toExact());
+                const rwnPrice = 2625000 / rwnBalanceNumeric;
+                store.purchase.rwnAmount = store.purchase.usdtAmount / rwnPrice + "";
+                const maxRwn = rwnBalanceNumeric / 50;
+                store.purchase.error = `Maximum received amount is ${maxRwn} erowan`;
               }
             }
             store.purchase.state = PurchaseState.Disabled;
@@ -138,6 +163,7 @@
             }
           }, 50);
           try {
+            store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
             store.purchase.state = PurchaseState.Pending;
             const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
             const { transactionHash, events } = tx;
@@ -156,8 +182,14 @@
               'event_label': 'Purchase Successful'
             });
           } catch (e) {
+            console.log("ERROR: ", e);
             if (e.toString().includes("Transaction has been reverted by the EVM")) {
               store.purchase.state = PurchaseState.Reverted;
+              gtag('event', 'purchase_failed', {
+                'event_label': 'Purchase Failed'
+              });
+            } else if (e.message && e.message.toString().includes("ERR_GAS_PRICE_LIMIT_EXCEEDED")) {
+              store.purchase.state = PurchaseState.OutOfGas;
               gtag('event', 'purchase_failed', {
                 'event_label': 'Purchase Failed'
               });
@@ -226,13 +258,16 @@
 
 <template>
   <div>
+    <p class="kyc-help-text">
+      We are currently only supporting this page on desktop in the Chrome browser.
+    </p>
     <div class="purchase-form">
       <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.connected }">
         <div>
 
           <div class="d-flex fd-row j-center">
             <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
-              Please enter your 64-digit confirmation code
+              Please enter your 64-digit contribution code
             </p>
             <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
             <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
@@ -241,12 +276,12 @@
           <div class="confirmation-code mh-30 mb-20" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected" class="token-form text--small">
               <input
-                      placeholder="confirmation code"
-                      :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
-                      v-model="store.purchase.unhashedKey"
-                      class="sif-input text-tiny"
-                      type="text"
-                      @input="validateKey"
+                placeholder="contribution code"
+                :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
+                v-model="store.purchase.unhashedKey"
+                class="sif-input text-tiny"
+                type="text"
+                @input="validateKey"
               >
             </div>
           </div>
@@ -262,15 +297,15 @@
               <div class="token-form__input">
                 <div class="sif-input__wrapper">
                   <input
-                          class="sif-input"
-                          type="number"
-                          step="any"
-                          min="0"
-                          lang="en"
-                          placeholder="0"
-                          :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
-                          v-model="store.purchase.usdtAmount"
-                          @input="getEstimate"
+                    class="sif-input"
+                    type="number"
+                    step="any"
+                    min="0"
+                    lang="en"
+                    placeholder="0"
+                    :disabled="store.wallet.allowance <= 0 || !store.purchase.validKey"
+                    v-model="store.purchase.usdtAmount"
+                    @input="getEstimate"
                   >
                 </div>
               </div>
@@ -302,20 +337,20 @@
                     <div class="dropdown dropdown_left" v-show="store.purchase.showMinReceivedTooltip">
                       <div class="dropdown__inner">
                         <p>
-                          Minimum amount of eRowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
+                          Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
                       </div>
                     </div>
                   </div>
                   <input
-                          class="sif-input"
-                          type="number"
-                          step="any"
-                          min="0"
-                          lang="en"
-                          placeholder="0"
-                          :disabled="true"
-                          v-model="store.purchase.rwnAmount"
-                          @input="getEstimate"
+                    class="sif-input"
+                    type="number"
+                    step="any"
+                    min="0"
+                    lang="en"
+                    placeholder="0"
+                    :disabled="true"
+                    v-model="store.purchase.rwnAmount"
+                    @input="getEstimate"
                   >
                 </div>
               </div>
@@ -334,7 +369,7 @@
 
           <div v-if="store.wallet.validNetwork && store.wallet.connected && !store.wallet.whitelisted" class="error-section mh-93 d-flex j-center fd-col">
             <p class="text--small text--italic text--bold color-white">
-              Connected Wallet has not passed KYC/AML process. Please connect a wallet that has passed KYC/AML. To get on the complete the KYC/AML process, please go <a href=" https://sifchain.finance/token-sale-info" target="_blank" style="color: #FFF">here</a>.
+              Connected Wallet has not passed KYC/AML process. Check your inbox (including Spam and Promotions folders) for the registered ETH address. If you are still having issues, please email <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
             </p>
           </div>
 
@@ -385,12 +420,12 @@
               </div>
               <div class="sif-input__wrapper custom-slippage-input-container">
                 <input
-                        v-model="store.purchase.slippagePercent"
-                        class="sif-input num_percent"
-                        type="number"
-                        step="any"
-                        min="0"
-                        @input="getEstimate"
+                  v-model="store.purchase.slippagePercent"
+                  class="sif-input num_percent"
+                  type="number"
+                  step="any"
+                  min="0"
+                  @input="getEstimate"
                 >
                 <span>%</span>
               </div>
@@ -401,7 +436,6 @@
             <p class="text--small">
               No wallet connected
             </p>
-            <img src="../assets/circle-x.svg" class="mr-8 ml-8">
           </div>
 
           <button class="btn" v-if="!store.wallet.connected || !store.wallet.whitelisted" @click="handleConnectClicked">
@@ -474,7 +508,24 @@
             <p>Transaction has been reverted.</p>
           </div>
           <div class="purchase-form__transaction__hint">
-            <p>Please try to increase slippage tolerance.</p>
+            <p>Please try to increase slippage tolerance and set the gas price below {{ store.purchase.gasPriceLimit }} gwei.</p>
+          </div>
+          <div class="purchase-form__transaction__retry" @click="tryAgain">
+            <p>Try again</p>
+          </div>
+        </div>
+        <div v-if="store.purchase.state === PurchaseState.OutOfGas">
+          <div class="purchase-form__transaction__loading">
+            <img src="../assets/transaction-failed.svg">
+          </div>
+          <div class="purchase-form__transaction__title-failed">
+            <p>Transaction Failed.</p>
+          </div>
+          <div class="purchase-form__transaction__text mb-8">
+            <p>Gas price limit exceeded.</p>
+          </div>
+          <div class="purchase-form__transaction__hint">
+            <p>Please set the transaction gas price below {{ store.purchase.gasPriceLimit }} gwei.</p>
           </div>
           <div class="purchase-form__transaction__retry" @click="tryAgain">
             <p>Try again</p>
@@ -502,11 +553,10 @@
         </div>
       </div>
     </div>
-    <p class="kyc-help-text" v-if="!store.wallet.connected || !store.wallet.whitelisted">
-      Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale.
-      If you have not been approved, you may apply <a href="https://tokensale.sifchain.finance" target="_blank" style="color: #000000">here</a>.
-      Please remember to use the wallet address you provided us in your KYC information.
-      Any transactions from unapproved wallet addresses will be rejected.
+    <p class="kyc-help-text">
+      Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale. Please remember to use the wallet address you provided us in your KYC information. Your contribution code was sent to your registered email address.
+      For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-step-by-step-tutorial-34ad38946f6c" target="_blank" style="color: #000000">here</a>.
+      Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #000000">token-sale@sifchain.finance</a> from your registered email address.
     </p>
   </div>
 </template>

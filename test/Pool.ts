@@ -156,6 +156,27 @@ contract("Full pool test", (accounts) => {
       assert.sameMembers(currentTokens, [WETH, MKR, DAI]);
     });
 
+    it('Get current gas price limit', async () => {
+      const gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+    });
+
+    it('Fails to set gas price limit if not controller', async () => {
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await truffleAssert.reverts(pool.setGasPriceLimit("500000000000", { from: user1 }), "ERR_NOT_CONTROLLER");
+      gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // gas price limit remains 400 gwei
+    });
+
+    it('Controller can set gas price limit', async () => {
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await pool.setGasPriceLimit("500000000000", { from: controller });
+      gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "500000000000"); // gas price limit is 500 gwei after change
+    });
+
     it("Fails getting final tokens before finalized", async () => {
       await truffleAssert.reverts(pool.getFinalTokens(), "ERR_NOT_FINALIZED");
     });
@@ -182,17 +203,16 @@ contract("Full pool test", (accounts) => {
 
     it("Fails calling any swap before finalizing", async () => {
       await whitelist.whitelistUser(user2, hashedKey, { from: admin });
-
       const controller = await pool.getController();
       await pool.setTokenInOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
+        "ERR_NOT_FINALIZED"
       );
       await pool.setTokenInOut(DAI, WETH, { from: controller });
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("2.5"), toWei("475"), toWei("200"), unhashedKey, {from: user2}),
-        "ERR_SWAP_NOT_PUBLIC"
+        "ERR_NOT_FINALIZED"
       );
     });
 
@@ -287,7 +307,7 @@ contract("Full pool test", (accounts) => {
 
     it("getSpotPrice check", async () => {
       const wethPrice = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceCheck = 2650000 / 52.5;
+      const wethPriceCheck = 2625000 / 52.5;
       assert.equal(fromWei(wethPrice), wethPriceCheck);
     });
 
@@ -311,7 +331,7 @@ contract("Full pool test", (accounts) => {
     });
 
     /*
-      Current DAI in pool is 10,500, hence the max swap amount should be 1,050 DAI (10%).
+      Current DAI in pool is 10,500, hence the max swap amount should be 210 DAI (2%).
       Attempt to swap 6 WETH for DAI priced at $200 should fail.
     */
     it("Fail swapExactAmountIn over max swap ratio", async () => {
@@ -330,7 +350,7 @@ contract("Full pool test", (accounts) => {
     it('swapExactAmountIn', async () => {
       // 12000 * 10e-12 WETH -> DAI
       const initialUserDaiBalance = await dai.balanceOf(user2);
-      const expected = calcOutGivenIn(2650000, 10500, 12000);
+      const expected = calcOutGivenIn(2625000, 10500, 12000);
       const txr = await pool.swapExactAmountIn(
         toWei("12000", "mwei"),
         0,
@@ -358,7 +378,7 @@ contract("Full pool test", (accounts) => {
       );
 
       const wethPrice = await pool.getSpotPrice(DAI, WETH);
-      const wethPriceCheck = 2650000 / 52.500000012;
+      const wethPriceCheck = 2625000 / 52.500000012;
 
       assert.approximately(
         Number(fromWei(wethPrice)),

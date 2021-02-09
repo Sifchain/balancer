@@ -22,7 +22,7 @@ const hashedKey = helpers.hash(unhashedKey);
 async function swapIteration(pool, ROWAN, USDT, user, amount, unhashedkey) {
   const rowanPoolBalance = await pool.getBalance(ROWAN);
 
-  const expected = calcOutGivenIn(2650000, fromWei(rowanPoolBalance), amount);
+  const expected = calcOutGivenIn(2625000, fromWei(rowanPoolBalance), amount);
 
   const txr = await pool.swapExactAmountIn(
     toWei(amount.toString(), 'mwei'),
@@ -45,7 +45,6 @@ contract('Our use case', (accounts) => {
   const controller = process.env.CONTROLLER;
   const white_list_manager = process.env.WHITE_LIST_MANAGER;
   const cold_storage_address = process.env.COLD_STORAGE_ADDRESS;
-
   const user = accounts[1];
 
   let pool;

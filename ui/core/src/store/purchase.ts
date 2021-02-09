@@ -7,6 +7,7 @@ export enum PurchaseState {
   Failed = 3,
   Reverted = 4,
   Completed = 5,
+  OutOfGas = 6,
 }
 
 export type PurchaseStore = {
@@ -23,6 +24,7 @@ export type PurchaseStore = {
   approving: boolean;
   showMinReceivedTooltip: boolean;
   showSlippageToleranceTooltip: boolean;
+  gasPriceLimit: string;
 };
 
 export const purchase = reactive({
@@ -38,5 +40,6 @@ export const purchase = reactive({
   txAmount: undefined,
   approving: false,
   showMinReceivedTooltip: false,
-  showSlippageToleranceTooltip: false
+  showSlippageToleranceTooltip: false,
+  gasPriceLimit: "400"
 }) as PurchaseStore;

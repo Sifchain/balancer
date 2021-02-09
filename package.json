@@ -5,6 +5,7 @@
   "main": "truffle-config.js",
   "scripts": {
     "tokendata": "truffle exec scripts/getTokenData.js",
+    "pool:setGasPrice": "truffle exec scripts/setGasPriceLimit.js",
     "pool:service": "node scripts/cron.js",
     "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
     "pool:startSales": "truffle exec scripts/startSales.js",
@@ -20,7 +21,7 @@
     "build:ui": "cd ./ui && yarn build",
     "build": "yarn build:chain && yarn build:ui",
     "migrate:local": "truffle migrate --reset",
-    "migrate:testnet": "truffle migrate --reset --to 3",
+    "migrate:ropsten": "truffle migrate --reset --to 2 --network ropsten",
     "migrate:mainnet": "truffle migrate --reset --to 2 --network mainnet",
     "serve:ui": "cd ./ui && yarn app:serve",
     "start": "yarn migrate:chain && yarn serve:ui",

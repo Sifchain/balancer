@@ -213,15 +213,15 @@ contract("Our use case", (accounts) => {
       assert.equal(rowanPoolBalance, toWei("8750000"));
       const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
       const expectedSwapAmount = calcOutGivenIn(
-        2650000,
+        "2625000",
         fromWei(rowanPoolBalance),
-        54081.7
+        "53600"
       );
       assert.equal(maxSwapAmount, 175000);
-      assert.equal(expectedSwapAmount, 175000.21356603241689);
-      assert.equal(expectedSwapAmount > maxSwapAmount, true);
+      assert.equal(expectedSwapAmount.toString(), "175091.46569103262903");
+      assert.equal(expectedSwapAmount.greaterThan(maxSwapAmount), true);
       await truffleAssert.reverts(
-        pool.swapExactAmountIn(toWei("54081.7", "mwei"), 0, MAX, unhashedKey, {
+        pool.swapExactAmountIn(toWei("53600", "mwei"), 0, MAX, unhashedKey, {
           from: user2,
         }),
         "ERR_MAX_OUT_RATIO"
@@ -229,11 +229,28 @@ contract("Our use case", (accounts) => {
       assert.equal(await pool.getBalance(ROWAN), toWei("8750000"));
     });
 
+    it('Fails to swap if gas price exceeds the limit', async () => {
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await pool.setGasPriceLimit("1000000000", { from: controller }); // set gas price limit to 1 gwei
+      gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "1000000000"); // current gas price limit is 1 gwei
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+          from: user,
+          gas: "1000000",
+          gasPrice: "2000000000" // gas price of 2 gwei is above the limit, should fail
+        }),
+        "ERR_GAS_PRICE_LIMIT_EXCEEDED"
+      );
+    });
+
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        2650000,
+        2625000,
         fromWei(rowanPoolBalance),
         500
       );
@@ -244,9 +261,13 @@ contract("Our use case", (accounts) => {
       }
 
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "1000000000"); // gas price limit is 1 gwei (set in previous test)
 
-      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+      const tx = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
+        gas: "1000000",
+        gasPrice: "1000000000" // gas price is 1 gwei, should work
       });
 
       if(verbose) {
@@ -254,7 +275,7 @@ contract("Our use case", (accounts) => {
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
-      const log = txr.logs[0];
+      const log = tx.logs[0];
       assert.equal(log.event, "LOG_SWAP");
 
       const actual = fromWei(log.args.tokenAmountOut);
@@ -271,13 +292,13 @@ contract("Our use case", (accounts) => {
 
     it("Fails to provide liquidity if it is not controller", async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: user }),
+        pool.joinswapExternAmountIn(toWei("364000"), { from: user }),
         "ERR_NOT_CONTROLLER"
       );
     });
 
     it("Liquidity iteration", async () => {
-      await pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: controller });
+      await pool.joinswapExternAmountIn(toWei("364000"), { from: controller });
       if (verbose) {
         console.log("After adding liquidity:");
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);

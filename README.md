@@ -26,9 +26,9 @@ ganache-cli -d
 0. `cat env.example >> .env`
 1. `yarn` - Install dependencies
 2. set WHITE_LIST_MANAGER, CONTROLLER, PRIVATE_KEY, COLD_STORAGE_ADDRESS and INFURA_KEY in .env
-3. `yarn migrate:testnet --network <network name>`
+3. `yarn migrate:ropsten`
 4. Copy newly migrated USDT and ROWAN contract addresses into .env
-5. `yarn tokendata --network <network name>` - Copy USDT and ROWAN addresses from env into json that is read from utils
+5. `yarn tokendata --network ropsten` - Copy USDT and ROWAN addresses from env into json that is read from utils
 6. set PRIVATE_KEY in .env to rowan owner.
 7. `yarn mint:rowan --network <network name>`
 8. set PRIVATE_KEY in .env to CONTROLLER
@@ -77,6 +77,7 @@ Then add the slack failure channel hook key in and start the daemon.
 1. set COLD_STORAGE_ADDRESS in .env the cold storage address
 2. `yarn pool:exit --network <network name>`
 3. `yarn burn:rowan --network <network name>`
+```
 
 ## Transfer ownership
 ```
@@ -87,4 +88,11 @@ Then add the slack failure channel hook key in and start the daemon.
 5. Set NEW_OWNER_EROWAN to the new rowan owner address.
 6. `yarn ownership:rowan --network <network name>`
 7. No need to transfer ownership of cold storage address as that is set up during construction. Call the coldStorage function on the contract to get the cold storage address and confirm that it is correct.
+```
+
+## Change gas price limit
+The limit should be set in wei, so 500 gwei is `500*10e9`, or `500000000000`
+```
+1. Set PRIVATE_KEY to balancer pool CONTROLLER
+2. Run `yarn pool:setGasPrice 500000000000 --network <network name>`
 ```
