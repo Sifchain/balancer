@@ -44,7 +44,6 @@ export class EthereumService implements IWalletService {
     this.state = reactive({ ...initState });
     this.web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
     if (this.web3 && this.web3.givenProvider) {
-      this.handleStateChange();
       this.web3.givenProvider.on('accountsChanged',  () => {
         window.location.reload();
       });
@@ -188,8 +187,7 @@ export class EthereumService implements IWalletService {
   }
 
   async getGasPriceLimit(): Promise<string> {
-    const accountFrom = await this.getCurrentAccount();
-    return this.getBalancerContract().methods.gasPriceLimit().call({from: accountFrom});
+    return await this.getBalancerContract().methods.gasPriceLimit().call();
   }
 
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {
