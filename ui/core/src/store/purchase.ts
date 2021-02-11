@@ -25,6 +25,8 @@ export type PurchaseStore = {
   showMinReceivedTooltip: boolean;
   showSlippageToleranceTooltip: boolean;
   gasPriceLimit: string;
+  rowanPoolBalance: string;
+  rowanPrice: number;
 };
 
 export const purchase = reactive({
@@ -41,5 +43,7 @@ export const purchase = reactive({
   approving: false,
   showMinReceivedTooltip: false,
   showSlippageToleranceTooltip: false,
-  gasPriceLimit: "400"
+  gasPriceLimit: "400",
+  rowanPoolBalance: "",
+  rowanPrice: 1
 }) as PurchaseStore;
