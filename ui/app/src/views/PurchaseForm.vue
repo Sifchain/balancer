@@ -542,7 +542,7 @@
       </div>
     </div>
 
-    <div v-if="store.wallet.connected && store.wallet.allowance > 0" class="details">
+    <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="details">
       <div class="details-row">
        <span>
          Gas Price Limit
