@@ -156,6 +156,14 @@
         });
       }
 
+      async function getRwnPoolBalance() {
+        const balances = await api.EthereumService.getPoolBalances();
+        if (balances.length === 2) {
+          const rwnBalance = balances[1];
+          store.purchase.rowanPoolBalance = rwnBalance.toFixed(0);
+        }
+      }
+
       async function swapExactAmountIn() {
         gtag('event', 'click_purchase', {
           'event_label': 'Click Purchase'
@@ -187,7 +195,7 @@
             store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
-            await this.getRowanPoolBalance(api, store);
+            await getRwnPoolBalance();
             gtag('event', 'purchase_successful', {
               'event_label': 'Purchase Successful'
             });
