@@ -73,7 +73,7 @@
           } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
           } else if (store.purchase.slippagePercent.length > 4) {
-            store.purchase.slippagePercent = store.purchase.slippagePercent.substring(store.purchase.slippagePercent.length - 1);
+            store.purchase.slippagePercent = store.purchase.slippagePercent.substring(0, store.purchase.slippagePercent.length - 2);
           } else {
             store.purchase.state = PurchaseState.Enabled;
           }
