@@ -43,8 +43,6 @@
       }
 
       async function handleConnectClicked() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
         gtag('event', 'click_connect_wallet', {
           'event_label': 'Click Connect Wallet'
@@ -74,6 +72,8 @@
             store.purchase.state = PurchaseState.Disabled;
           } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
+          } else if (store.purchase.slippagePercent.length > 4) {
+            store.purchase.slippagePercent = store.purchase.slippagePercent.substring(store.purchase.slippagePercent.length - 1);
           } else {
             store.purchase.state = PurchaseState.Enabled;
           }
@@ -106,8 +106,6 @@
       }
 
       async function getEstimate() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         if (store.wallet.balances && store.wallet.balances.length > 0
                 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
@@ -168,8 +166,6 @@
         gtag('event', 'click_purchase', {
           'event_label': 'Click Purchase'
         });
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         if (store.purchase.validKey && store.wallet.validNetwork) {
           const timer = window.setInterval(() => {
             if (store.purchase.state === PurchaseState.Pending) {
@@ -226,8 +222,6 @@
         gtag('event', 'click_approve', {
           'event_label': 'Click Approve'
         });
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         try {
           store.purchase.approving = true;
           await actions.approveToken();
@@ -244,16 +238,6 @@
         await api.EthereumService.handleStateChange();
       }
 
-      function toggleMinReceivedTooltip() {
-        store.purchase.showSlippageToleranceTooltip = false;
-        store.purchase.showMinReceivedTooltip = !store.purchase.showMinReceivedTooltip;
-      }
-
-      function toggleSlippageToleranceTooltip() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = !store.purchase.showSlippageToleranceTooltip;
-      }
-
       return {
         store,
         PurchaseState,
@@ -265,8 +249,6 @@
         tryAgain,
         setSlippageAndEstimate,
         validateKey,
-        toggleMinReceivedTooltip,
-        toggleSlippageToleranceTooltip,
         getLimit,
         formatNumberString
       };
@@ -410,17 +392,17 @@
               </Tooltip>
             </div>
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-start">
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }" @click="setSlippageAndEstimate('0.5')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' || store.purchase.slippagePercent === '.5' }" @click="setSlippageAndEstimate('0.5')">
                 <p class="text--standard text--normal text--regular">
                   0.5%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' }"  @click="setSlippageAndEstimate('1.0')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' || store.purchase.slippagePercent === '1' }"  @click="setSlippageAndEstimate('1.0')">
                 <p class="text--standard text--normal text--regular">
                   1.0%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '2.0' }" @click="setSlippageAndEstimate('2.0')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '2.0' || store.purchase.slippagePercent === '2' }" @click="setSlippageAndEstimate('2.0')">
                 <p class="text--standard text--normal text--regular">
                   2.0%
                 </p>

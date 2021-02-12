@@ -22,8 +22,6 @@ export type PurchaseStore = {
   txHash: string;
   txAmount?: string;
   approving: boolean;
-  showMinReceivedTooltip: boolean;
-  showSlippageToleranceTooltip: boolean;
   gasPriceLimit: string;
   rowanPoolBalance: string;
   rowanPrice: number;
@@ -41,8 +39,6 @@ export const purchase = reactive({
   txHash: "",
   txAmount: undefined,
   approving: false,
-  showMinReceivedTooltip: false,
-  showSlippageToleranceTooltip: false,
   gasPriceLimit: "400",
   rowanPoolBalance: "",
   rowanPrice: 1
