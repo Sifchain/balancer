@@ -70,17 +70,15 @@
 
       function validateSlippage() {
         try {
-          if (!isNumeric(store.purchase.slippagePercent)) {
-            store.purchase.slippagePercent = "1.0";
+          if (!isNumeric(store.purchase.slippagePercent) || parseFloat(store.purchase.slippagePercent) > 99.0) {
+            store.purchase.state = PurchaseState.Disabled;
           } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
-          } else if (parseFloat(store.purchase.slippagePercent) >= 99.0) {
-            store.purchase.slippagePercent = "99.0"
-          } else if (!(store.purchase.slippagePercent.startsWith(".") && store.purchase.slippagePercent.length === 2)) {
-            store.purchase.slippagePercent = parseFloat(store.purchase.slippagePercent).toFixed(1);
+          } else {
+            store.purchase.state = PurchaseState.Enabled;
           }
         } catch (e) {
-          store.purchase.slippagePercent = "1.0";
+          store.purchase.state = PurchaseState.Disabled;
         }
       }
 
@@ -102,7 +100,6 @@
           const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount), 0, store.purchase.unhashedKey) / (10 ** 18);
           store.purchase.rowanPrice = store.purchase.usdtAmount / estimate;
           store.purchase.rwnAmount = (inSlippageCoefficient() * estimate).toString();
-          store.purchase.state = PurchaseState.Enabled;
         } else {
           store.purchase.state = PurchaseState.Disabled;
         }
