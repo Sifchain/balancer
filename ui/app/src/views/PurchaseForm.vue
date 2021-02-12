@@ -134,7 +134,7 @@
       }
 
       function getLimit(denum) {
-        return 2625000 * (1 / denum) / (1 - (1 / denum));
+        return (2625000 * (1 / denum) / (1 - (1 / denum))).toFixed(0);
       }
 
       function setSlippageAndEstimate(slippage) {
