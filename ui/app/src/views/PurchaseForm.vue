@@ -134,7 +134,7 @@
       }
 
       function getLimit(denum) {
-        return ((store.purchase.rowanPoolBalance / denum * store.purchase.rowanPrice)).toFixed(0);
+        return 2625000 * (1 / denum) / (1 - (1 / denum));
       }
 
       function setSlippageAndEstimate(slippage) {
@@ -177,7 +177,7 @@
           }, 50);
           try {
             store.purchase.state = PurchaseState.Pending;
-            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), (parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient()) - 0.000000000001, store.purchase.unhashedKey);
             const { transactionHash, events } = tx;
             const tokenOut = events["LOG_SWAP"]["returnValues"]["tokenOut"];
             const tokenAmountOut = events["LOG_SWAP"]["returnValues"]["tokenAmountOut"];
@@ -580,8 +580,8 @@
       <div class="details-row">
         <span>
             Max Possible (2% of the pool)
-          <Tooltip message="This is the most USDT we recommend spending in a single transaction due to high slippage.">
-          <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+          <Tooltip message="This is the max USDT you can spend in a single transaction. You may make multiple transactions exceeding this amount. Tokens currently available">
+            <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
           </Tooltip>
         </span>
 
@@ -592,6 +592,9 @@
         <div>
           <span>
             Tokens currently available
+            <Tooltip message="364,000 tokens are added to the pool every hour (network conditions permitting) until an hour before the end.">
+              <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+            </Tooltip>
           </span>
         </div>
 
