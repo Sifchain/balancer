@@ -190,6 +190,7 @@
             store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
+            await this.getRowanPoolBalance(api, store);
             gtag('event', 'purchase_successful', {
               'event_label': 'Purchase Successful'
             });
