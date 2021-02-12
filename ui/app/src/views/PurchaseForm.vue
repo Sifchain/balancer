@@ -420,7 +420,7 @@
                   2.0%
                 </p>
               </div>
-              <div class="sif-input__wrapper custom-slippage-input-container">
+              <div class="sif-input__wrapper custom-slippage-input-container" @click="$event.target.select()">
                 <input
                   v-model="store.purchase.slippagePercent"
                   class="sif-input num_percent"
@@ -581,7 +581,7 @@
       <div class="details-row">
         <span>
             Max Possible (2% of the pool)
-          <Tooltip message="This is the max USDT you can spend in a single transaction. You may make multiple transactions exceeding this amount. Tokens currently available">
+          <Tooltip message="This is the max USDT you can spend in a single transaction. You may make multiple transactions exceeding this amount.">
             <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
           </Tooltip>
         </span>
@@ -593,7 +593,7 @@
         <div>
           <span>
             Tokens currently available
-            <Tooltip message="364,000 tokens are added to the pool every hour (network conditions permitting) until an hour before the end.">
+            <Tooltip message="364,000 tokens are added to the pool every hour (network conditions permitting) until an hour before the end of the sale.">
               <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
             </Tooltip>
           </span>
