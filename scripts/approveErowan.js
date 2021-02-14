@@ -3,7 +3,7 @@ const BPool = artifacts.require("BPool");
 const poolAddress = BPool.address;
 const { toWei } = web3.utils;
 
-const totalErowanAmount = 70000000;
+const totalErowanAmount = 61250000;
 
 module.exports = function(cb) {
   approveErowan(cb);
