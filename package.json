@@ -5,6 +5,7 @@
   "main": "truffle-config.js",
   "scripts": {
     "tokendata": "truffle exec scripts/getTokenData.js",
+    "pool:approveErowan": "truffle exec scripts/approveErowan.js",
     "pool:setGasPrice": "truffle exec scripts/setGasPriceLimit.js",
     "pool:service": "node scripts/cron.js",
     "pool:init": "truffle exec scripts/swapInitialAmountIn.js",
