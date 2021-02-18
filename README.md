@@ -96,3 +96,10 @@ The limit should be set in wei, so 500 gwei is `500*10e9`, or `500000000000`
 1. Set PRIVATE_KEY to balancer pool CONTROLLER
 2. Run `yarn pool:setGasPrice 500000000000 --network <network name>`
 ```
+
+## Approve erowan
+New controller should approve remaining rowan to be able to add liquidity 
+```
+1. Set PRIVATE_KEY to balancer pool CONTROLLER
+2. Run `yarn pool:approveErowan --network <network name>`
+```
