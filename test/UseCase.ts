@@ -129,11 +129,7 @@ contract("Our use case", (accounts) => {
     it("Admin should be able to check if any user is in whitelist", async () => {
       assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
       assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true);
-      assert.equal(
-        await whitelist.isWhitelisted(user2, { from: white_list_manager }),
-        false
-      );
-      assert.equal(await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey), false)
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey), false);
     });
 
     it("Whitelisted user should be able to check if s/he is in the whitelist", async () => {
