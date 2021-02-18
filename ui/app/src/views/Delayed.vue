@@ -1,7 +1,10 @@
 <template>
   <div class="container">
     <div>
-      <p class="title">Our token sale has been delayed.</p>
+      <p class="title">Token Sale & Betanet Launch:</p>
+      <p class="text">Friday, February 19, 5:00 AM GMT</p>
+      <p class="title">Token Sale End Date:</p>
+      <p class="text">Friday, February 26, 6:00 AM GMT</p>
       <p class="text">Please check our  <a href="https://t.me/sifchain/46814" target="_blank" style="color: #272727">Telegram</a>  for the latest updates.</p>
     </div>
   </div>
@@ -30,11 +33,11 @@
     font-size: 18px;
     color: $c_gray_900;
     font-weight: bold;
-    margin-bottom: 24px;
   }
   .text {
-      font-size: 16px;
-      color: $c_gray_800;
-      font-weight: normal;
+    font-size: 16px;
+    color: $c_gray_800;
+    font-weight: normal;
+    margin-bottom: 24px;
   }
 </style>
