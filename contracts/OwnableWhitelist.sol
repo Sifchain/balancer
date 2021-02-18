@@ -6,7 +6,7 @@ contract OwnableWhitelist is Ownable {
 
     constructor() Ownable() public {}
 
-    mapping (address => bytes32) public _tokenByAddress;
+    mapping (address => bytes32) private _tokenByAddress;
 
     function getToken(address _user) public view returns (bytes32) {
         return _tokenByAddress[_user];
