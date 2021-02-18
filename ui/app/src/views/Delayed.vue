@@ -1,7 +1,8 @@
 <template>
   <div class="container">
     <div>
-      <p class="title">Our token sale has been delayed.</p>
+      <p class="title">Token Sale & Betanet Launch: Friday, February 19, 5:00 AM GMT</p>
+      <p class="title">Token Sale End Date: Friday, February 26, 6:00 AM GMT</p>
       <p class="text">Please check our  <a href="https://t.me/sifchain/46814" target="_blank" style="color: #272727">Telegram</a>  for the latest updates.</p>
     </div>
   </div>
