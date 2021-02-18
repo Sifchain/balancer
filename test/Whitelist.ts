@@ -3,14 +3,13 @@ const {
   expectRevert, // Assertions for transactions that should fail
 } = require("@openzeppelin/test-helpers");
 
-
 const helpers = require("../helpers/whitelistHelper");
 
 const unhashedKeyArray = [
-  "2b969804058e13112265882c78d41bb884e288f602647b057d7c704ecfacdffb",
-  "ed4f7a88d79d637dc4bbdc1a2310e48e35b155fd2b8ad1df7286c9a8f336a8e8",
-  "72e2eb3cba8182599b877f24ee0e86cd87654140c201ad6cb780f15df8ad3317",
-  "bf677e80e5804d95db086a12534f24ecf28fbb6f9800c607c27008bc8daff6f5"
+  "key1",
+  "key2",
+  "key3",
+  "key4"
 ];
 const hashedKeyArray = unhashedKeyArray.map(e => {return helpers.hash(e) });
 
