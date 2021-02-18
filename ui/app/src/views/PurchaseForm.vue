@@ -1,11 +1,18 @@
 <script>
   import { useCore } from "@/hooks/useCore";
   import { PurchaseState } from "ui-core/src/store/purchase";
+  import Tooltip from "@/components/Tooltip.vue";
 
   export default {
     name: "PurchaseForm",
-    created() {
-      this.initState();
+    components: {
+      Tooltip
+    },
+    async created() {
+      const { api, store } = useCore();
+      await this.initState(api);
+      await this.getRowanPoolBalance(api, store);
+      await this.getGasPriceLimit(api, store);
       gtag('event', 'page_view', {
         page_title: 'Purchase Form',
         page_location: 'https://purchase.sifchain.finance',
@@ -14,10 +21,19 @@
       })
     },
     methods: {
-      async initState() {
-        const { api } = useCore();
+      async initState(api) {
         await api.EthereumService.handleStateChange();
       },
+      async getRowanPoolBalance(api, store) {
+        const balances = await api.EthereumService.getPoolBalances();
+        if (balances.length === 2) {
+          const rwnBalance = balances[1];
+          store.purchase.rowanPoolBalance = rwnBalance.toFixed(0);
+        }
+      },
+      async getGasPriceLimit(api, store) {
+        store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
+      }
     },
     setup() {
       const { actions, api, store } = useCore();
@@ -27,8 +43,6 @@
       }
 
       async function handleConnectClicked() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         store.wallet.connected ? await actions.disconnectWallet() : await actions.connectToWallet();
         gtag('event', 'click_connect_wallet', {
           'event_label': 'Click Connect Wallet'
@@ -48,19 +62,23 @@
         return (s - 0) == s && (''+s).trim().length > 0;
       }
 
+      function formatNumberString(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      }
+
       function validateSlippage() {
         try {
-          if (!isNumeric(store.purchase.slippagePercent)) {
-            store.purchase.slippagePercent = "1.0";
+          if (!isNumeric(store.purchase.slippagePercent) || parseFloat(store.purchase.slippagePercent) > 99.0) {
+            store.purchase.state = PurchaseState.Disabled;
           } else if (parseFloat(store.purchase.slippagePercent) < 0) {
             store.purchase.slippagePercent = store.purchase.slippagePercent.substring(1);
-          } else if (parseFloat(store.purchase.slippagePercent) >= 99.0) {
-            store.purchase.slippagePercent = "99.0"
-          } else if (!(store.purchase.slippagePercent.startsWith(".") && store.purchase.slippagePercent.length === 2)) {
-            store.purchase.slippagePercent = parseFloat(store.purchase.slippagePercent).toFixed(1);
+          } else if (store.purchase.slippagePercent.length > 4) {
+            store.purchase.slippagePercent = store.purchase.slippagePercent.substring(0, store.purchase.slippagePercent.length - 2);
+          } else {
+            store.purchase.state = PurchaseState.Enabled;
           }
         } catch (e) {
-          store.purchase.slippagePercent = "1.0";
+          store.purchase.state = PurchaseState.Disabled;
         }
       }
 
@@ -77,19 +95,17 @@
       }
 
       async function getRowanEstimate() {
-        if (store.purchase.usdtAmount.length > 0) {
+        if (parseInt(store.purchase.usdtAmount) > 0) {
           store.purchase.usdtAmount = parseFloat(store.purchase.usdtAmount).toString();
-          const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount) * inSlippageCoefficient(), 0, store.purchase.unhashedKey) / (10 ** 18);
-          store.purchase.rwnAmount = estimate.toString();
-          store.purchase.state = PurchaseState.Enabled;
+          const estimate = await actions.swapExactAmountInCall(parseFloat(store.purchase.usdtAmount), 0, store.purchase.unhashedKey) / (10 ** 18);
+          store.purchase.rowanPrice = store.purchase.usdtAmount / estimate;
+          store.purchase.rwnAmount = (inSlippageCoefficient() * estimate).toString();
         } else {
           store.purchase.state = PurchaseState.Disabled;
         }
       }
 
       async function getEstimate() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         if (store.wallet.balances && store.wallet.balances.length > 0
                 && parseFloat(store.wallet.balances[0].toExact()) < parseFloat(store.purchase.usdtAmount)) {
           store.purchase.error = "Insufficient balance";
@@ -101,27 +117,19 @@
             await getRowanEstimate();
             store.purchase.error = undefined;
           } catch (e) {
-            if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
-              const balances = await actions.getPoolBalances();
-              if (balances.length === 2) {
-                const rwnBalance = balances[1];
-                const rwnBalanceNumeric = parseInt(rwnBalance.toExact());
-                const rwnPrice = 2625000 / rwnBalanceNumeric;
-                store.purchase.rwnAmount = store.purchase.usdtAmount / rwnPrice + "";
-                const maxRwn = rwnBalanceNumeric / 50;
-                store.purchase.error = `Maximum received amount is ${maxRwn} erowan`;
-              }
-            }
             store.purchase.state = PurchaseState.Disabled;
+            store.purchase.rowanPrice = store.purchase.usdtAmount / ((1 - (2625000 / (2625000 + parseInt(store.purchase.usdtAmount)))) * store.purchase.rowanPoolBalance);
+            if (e.toString().includes("ERR_MAX_OUT_RATIO")) {
+              const maxUsdt = getLimit(50);
+              store.purchase.error = `Maximum contribution amount is ${formatNumberString(maxUsdt)} USDT`;
+              store.purchase.rwnAmount = store.purchase.usdtAmount / store.purchase.rowanPrice + "";
+            }
           }
         }
       }
 
-      function getRwnPrice() {
-        if (store.purchase.state === PurchaseState.Disabled) {
-          return "0";
-        }
-        return (store.purchase.usdtAmount / store.purchase.rwnAmount).toFixed(3);
+      function getLimit(denum) {
+        return (2625000 * (1 / denum) / (1 - (1 / denum))).toFixed(0);
       }
 
       function setSlippageAndEstimate(slippage) {
@@ -134,7 +142,7 @@
         if (isNaN(numericSlippage)) {
           numericSlippage = 0;
         }
-        return 1 - numericSlippage / 100;
+        return 1 - (numericSlippage / 100);
       }
 
       function tryAgain() {
@@ -146,12 +154,18 @@
         });
       }
 
+      async function getRwnPoolBalance() {
+        const balances = await api.EthereumService.getPoolBalances();
+        if (balances.length === 2) {
+          const rwnBalance = balances[1];
+          store.purchase.rowanPoolBalance = rwnBalance.toFixed(0);
+        }
+      }
+
       async function swapExactAmountIn() {
         gtag('event', 'click_purchase', {
           'event_label': 'Click Purchase'
         });
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         if (store.purchase.validKey && store.wallet.validNetwork) {
           const timer = window.setInterval(() => {
             if (store.purchase.state === PurchaseState.Pending) {
@@ -163,9 +177,8 @@
             }
           }, 50);
           try {
-            store.purchase.gasPriceLimit = (parseInt(await api.EthereumService.getGasPriceLimit()) / 1000000000).toFixed(0);
             store.purchase.state = PurchaseState.Pending;
-            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient(), store.purchase.unhashedKey);
+            const tx = await actions.swapExactAmountInSend(parseFloat(store.purchase.usdtAmount), (parseFloat(store.purchase.rwnAmount) * inSlippageCoefficient()) - 0.000000000001, store.purchase.unhashedKey);
             const { transactionHash, events } = tx;
             const tokenOut = events["LOG_SWAP"]["returnValues"]["tokenOut"];
             const tokenAmountOut = events["LOG_SWAP"]["returnValues"]["tokenAmountOut"];
@@ -178,6 +191,7 @@
             store.purchase.txHash = transactionHash;
             store.purchase.state = PurchaseState.Completed;
             await api.EthereumService.handleStateChange();
+            await getRwnPoolBalance();
             gtag('event', 'purchase_successful', {
               'event_label': 'Purchase Successful'
             });
@@ -208,8 +222,6 @@
         gtag('event', 'click_approve', {
           'event_label': 'Click Approve'
         });
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = false;
         try {
           store.purchase.approving = true;
           await actions.approveToken();
@@ -226,16 +238,6 @@
         await api.EthereumService.handleStateChange();
       }
 
-      function toggleMinReceivedTooltip() {
-        store.purchase.showSlippageToleranceTooltip = false;
-        store.purchase.showMinReceivedTooltip = !store.purchase.showMinReceivedTooltip;
-      }
-
-      function toggleSlippageToleranceTooltip() {
-        store.purchase.showMinReceivedTooltip = false;
-        store.purchase.showSlippageToleranceTooltip = !store.purchase.showSlippageToleranceTooltip;
-      }
-
       return {
         store,
         PurchaseState,
@@ -244,21 +246,19 @@
         getShortenedAddress,
         getEstimate,
         approveToken,
-        getRwnPrice,
         tryAgain,
         setSlippageAndEstimate,
         validateKey,
-        toggleMinReceivedTooltip,
-        toggleSlippageToleranceTooltip
+        getLimit,
+        formatNumberString
       };
-    },
-    components: {}
+    }
   }
 </script>
 
 <template>
   <div>
-    <p class="kyc-help-text">
+    <p class="browser-notice">
       We are currently only supporting this page on desktop in the Chrome browser.
     </p>
     <div class="purchase-form">
@@ -332,13 +332,9 @@
                       <p class="text--normal text--italic">
                         Minimum Received
                       </p>
-                      <img src="../assets/info-grey.svg" class="mr-4 ml-4 mb-2" @click="toggleMinReceivedTooltip">
-                    </div>
-                    <div class="dropdown dropdown_left" v-show="store.purchase.showMinReceivedTooltip">
-                      <div class="dropdown__inner">
-                        <p>
-                          Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.                         </p>
-                      </div>
+                      <Tooltip message="Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.">
+                        <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+                      </Tooltip>
                     </div>
                   </div>
                   <input
@@ -380,7 +376,7 @@
               </p>
               <div class="d-flex fd-row j-center align-center">
                 <p class="text--small text--italic text--bold">
-                  {{ getRwnPrice() }} USDT per erowan
+                  {{ store.purchase.rowanPrice.toFixed(3) }} USDT per erowan
                 </p>
                 <img src="../assets/arrows-grey.svg" class="ml-8" height="9" width="10">
               </div>
@@ -391,34 +387,27 @@
               <p class="text--small text--italic text--normal" align="left">
                 Slippage tolerance
               </p>
-              <div class="dropdown__wrapper">
-                <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2" @click="toggleSlippageToleranceTooltip">
-                <div class="dropdown" v-show="store.purchase.showSlippageToleranceTooltip">
-                  <div class="dropdown__inner">
-                    <p>
-                      Affects the minimum amount of erowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much erowan as a lower tolerance. If your transaction fails, try setting a higher tolerance.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <Tooltip message="Affects the minimum amount of erowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much erowan as a lower tolerance. If your transaction fails, try setting a higher tolerance.">
+                <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+              </Tooltip>
             </div>
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-start">
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' }" @click="setSlippageAndEstimate('0.5')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '0.5' || store.purchase.slippagePercent === '.5' }" @click="setSlippageAndEstimate('0.5')">
                 <p class="text--standard text--normal text--regular">
                   0.5%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' }"  @click="setSlippageAndEstimate('1.0')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '1.0' || store.purchase.slippagePercent === '1' }"  @click="setSlippageAndEstimate('1.0')">
                 <p class="text--standard text--normal text--regular">
                   1.0%
                 </p>
               </div>
-              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '2.0' }" @click="setSlippageAndEstimate('2.0')">
+              <div class="slippage-item" v-bind:class="{ 'slippage-item__selected': store.purchase.slippagePercent === '2.0' || store.purchase.slippagePercent === '2' }" @click="setSlippageAndEstimate('2.0')">
                 <p class="text--standard text--normal text--regular">
                   2.0%
                 </p>
               </div>
-              <div class="sif-input__wrapper custom-slippage-input-container">
+              <div class="sif-input__wrapper custom-slippage-input-container" @click="$event.target.select()">
                 <input
                   v-model="store.purchase.slippagePercent"
                   class="sif-input num_percent"
@@ -464,7 +453,6 @@
           </div>
         </div>
       </div>
-
       <div v-else class="purchase-form__transaction" v-bind:class="{ 'purchase-form__transaction__failed': store.purchase.state === PurchaseState.Failed || store.purchase.state === PurchaseState.Reverted, 'purchase-form__transaction__completed': store.purchase.state === PurchaseState.Completed }">
         <div v-if="store.purchase.state === PurchaseState.Pending">
           <div class="purchase-form__transaction__loading">
@@ -553,9 +541,58 @@
         </div>
       </div>
     </div>
+
+    <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="details">
+      <div class="details-row">
+       <span>
+         Gas Price Limit
+         <Tooltip message="This is the highest gas price that you will be able to send in your transaction. Please do not exceed this amount.">
+           <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+         </Tooltip>
+       </span>
+
+        <span>{{ store.purchase.gasPriceLimit }} Gwei</span>
+      </div>
+
+      <div class="details-row">
+        <span>
+          Max Recommended (0.5% of the pool)
+          <Tooltip message="This is the most USDT we recommend spending in a single transaction due to high slippage.">
+            <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+          </Tooltip>
+        </span>
+
+        <span>{{ formatNumberString(getLimit(200)) }} USDT</span>
+      </div>
+
+      <div class="details-row">
+        <span>
+            Max Possible (2% of the pool)
+          <Tooltip message="This is the max USDT you can spend in a single transaction. You may make multiple transactions exceeding this amount.">
+            <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+          </Tooltip>
+        </span>
+
+        <span>{{ formatNumberString(getLimit(50)) }} USDT</span>
+      </div>
+
+      <div class="details-row">
+        <div>
+          <span>
+            Tokens currently available
+            <Tooltip message="364,000 tokens are added to the pool every hour (network conditions permitting) until an hour before the end of the sale.">
+              <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+            </Tooltip>
+          </span>
+        </div>
+
+        <span>{{ formatNumberString(store.purchase.rowanPoolBalance) }} eROWAN</span>
+      </div>
+    </div>
+
     <p class="kyc-help-text">
       Please note: This app is only for users that have already been approved to participate in the Sifchain Token Sale. Please remember to use the wallet address you provided us in your KYC information. Your contribution code was sent to your registered email address.
-      For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-step-by-step-tutorial-34ad38946f6c" target="_blank" style="color: #000000">here</a>.
+      For instructions on how to use this page, go <a href="https://medium.com/sifchain-finance/token-sale-purchasing-tutorial-73f9bf0f0796" target="_blank" style="color: #000000">here</a>.
       Still have questions? Contact <a href="mailto: token-sale@sifchain.finance" style="color: #000000">token-sale@sifchain.finance</a> from your registered email address.
     </p>
   </div>
@@ -924,5 +961,48 @@
   }
   .dropdown_left {
     left: 118px;
+  }
+  .browser-notice {
+    margin-top: 10px;
+    padding: 20px 0 5px 0;
+    font-weight: normal;
+    font-size: $fs_tiny;
+    color:$c_text
+  }
+  .details {
+    margin-top: 16px;
+    border: 1.2px solid $c_gold;
+    padding: 16px 24px 16px 24px;
+    border-radius: $br_lg;
+    background: $g_gray_lighter;
+
+    &-row {
+      display: flex;
+      justify-content: space-between;
+      color: $c_gray_700;
+      font-size: 12px;
+      font-style: italic;
+
+      .tooltip {
+        display: inline-block;
+      }
+      span:last-child {
+        text-align: right;
+        color: $c_gray_900;
+        font-weight: 700;
+        font-size: 13px;
+
+        span {
+          color: $c_gray_900;
+          font-weight: 700;
+        }
+      }
+
+      span:first-child {
+        color: $c_gray_700;
+        font-weight: 400;
+        text-align: left;
+      }
+    }
   }
 </style>
