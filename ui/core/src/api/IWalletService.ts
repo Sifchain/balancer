@@ -3,7 +3,6 @@ import { Balance } from "../entities/Balance";
 
 export type IWalletService = {
   getState: () => {
-    whitelisted: boolean;
     validNetwork: boolean;
     connected: boolean;
     networkType: string;
@@ -22,7 +21,6 @@ export type IWalletService = {
   getAllowance(): Promise<number>;
   getBalances(): Promise<Balance[]>;
   getPoolBalances(): Promise<Balance[]>;
-  isWhitelisted(): Promise<boolean>;
   isValidKey(unhashedKey: string): Promise<boolean>;
   getGasPriceLimit(): Promise<string>;
 };

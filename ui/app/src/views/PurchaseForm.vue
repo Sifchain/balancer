@@ -9,7 +9,7 @@
       Tooltip
     },
     async created() {
-      const { api, store } = useCore();
+      const { api, actions, store } = useCore();
       await this.initState(api);
       await this.getRowanPoolBalance(api, store);
       await this.getGasPriceLimit(api, store);

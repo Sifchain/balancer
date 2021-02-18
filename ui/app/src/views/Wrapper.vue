@@ -16,7 +16,6 @@
   </div>
 </template>
 
-
 <style lang="scss" scoped>
   .content {
     width: 96%;
