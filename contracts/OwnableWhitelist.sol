@@ -6,14 +6,14 @@ contract OwnableWhitelist is Ownable {
 
     constructor() Ownable() public {}
 
-    mapping (address => bytes32) private _tokenByAddress;
+    mapping (address => bytes32) public _tokenByAddress;
 
     function getToken(address _user) public view returns (bytes32) {
         return _tokenByAddress[_user];
     }
 
     function validateWhitelistedUserAndKey(address _user, string memory _data) public view returns (bool) {
-        return _tokenByAddress[_user] == keccak256(abi.encode(_data));
+        return _tokenByAddress[_user] == keccak256(abi.encodePacked(_data));
     }
 
     function bulkWhitelistUsers(address[] calldata _users, bytes32[] calldata _hashedKeys) external onlyOwner {
