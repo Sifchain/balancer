@@ -1,7 +1,6 @@
 pragma solidity 0.5.12;
 
 import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "./Hash.sol";
 
 contract OwnableWhitelist is Ownable {
 
