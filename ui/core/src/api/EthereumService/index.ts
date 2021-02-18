@@ -30,7 +30,6 @@ export class EthereumService implements IWalletService {
 
   // This is shared reactive state
   private state: {
-    whitelisted: boolean;
     validNetwork: boolean;
     connected: boolean;
     networkType: string;
@@ -81,11 +80,9 @@ export class EthereumService implements IWalletService {
     if (this.state.account) {
       this.state.balances = await this.getBalances();
       this.state.allowance = await this.getAllowance();
-      this.state.whitelisted = await this.isWhitelisted();
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
-      this.state.whitelisted = true;
     }
   }
 
@@ -201,14 +198,9 @@ export class EthereumService implements IWalletService {
     return res.tokenAmountOut;
   }
 
-  async isWhitelisted(): Promise<boolean> {
-    const accountFrom = await this.getCurrentAccount();
-    return await this.getWhitelistContract().methods.isWhitelisted(accountFrom).call();
-  }
-
   async isValidKey(unhashedKey: string): Promise<boolean> {
     const accountFrom = await this.getCurrentAccount();
-    return await this.getWhitelistContract().methods.presentKey(accountFrom, unhashedKey).call();
+    return await this.getWhitelistContract().methods.validateWhitelistedUserAndKey(accountFrom, unhashedKey).call();
   }
 
   async getPoolBalances(): Promise<Balance[]> {

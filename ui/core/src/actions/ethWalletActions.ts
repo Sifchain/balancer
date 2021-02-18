@@ -36,7 +36,9 @@ export default ({
       return await api.EthereumService.approveToken();
     },
     async validateKey(unhashedKey: string) {
-      return await api.EthereumService.isValidKey(unhashedKey);
+      const v: any = await actions.validateKey(unhashedKey);
+      store.wallet.whitelisted = v;
+      return v;
     },
     async getPoolBalances() {
       return await api.EthereumService.getPoolBalances();
@@ -61,10 +63,6 @@ export default ({
 
   effect(async () => {
     store.wallet.allowance = ethereumState.allowance;
-  });
-
-  effect(async () => {
-    store.wallet.whitelisted = ethereumState.whitelisted;
   });
 
   return actions;
