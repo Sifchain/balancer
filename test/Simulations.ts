@@ -94,7 +94,7 @@ contract('Our use case', (accounts) => {
 
     await pool.finalize({ from: controller });
 
-    await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
+    await whitelist.bulkWhitelistUsers([user], [hashedKey], { from: white_list_manager });
     await pool.setTokenInOut(USDT, ROWAN, {from: controller});
 
   });
@@ -102,7 +102,7 @@ contract('Our use case', (accounts) => {
   describe('Pool Operations', () => {
     it('Iterations cycle', async () => {
       assert.equal(
-        await whitelist.isWhitelisted(user, { from: white_list_manager }),
+        await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }),
         true
       );
 
