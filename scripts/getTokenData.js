@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const { USDT, EROWAN, NETWORK } = process.env;
 const fs = require("fs");
 
