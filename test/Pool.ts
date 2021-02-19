@@ -202,7 +202,7 @@ contract("Full pool test", (accounts) => {
     });
 
     it("Fails calling any swap before finalizing", async () => {
-      await whitelist.whitelistUser(user2, hashedKey, { from: admin });
+      await whitelist.bulkWhitelistUsers([user2], [hashedKey], { from: admin });
       const controller = await pool.getController();
       await pool.setTokenInOut(WETH, DAI, { from: controller });
       await truffleAssert.reverts(
