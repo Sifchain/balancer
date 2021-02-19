@@ -20,62 +20,47 @@ contract BMath is BConst, BNum {
     struct Record {
         bool bound;   // is token bound to pool
         uint index;   // private
-        uint denorm;  // denormalized weight
         uint balance;
     }
 
     /**********************************************************************************************
-    // calcSpotPrice                                                                             //
-    // sP = spotPrice                                                                            //
-    // bI = tokenBalanceIn                ( bI / wI )         1                                  //
-    // bO = tokenBalanceOut         sP =  -----------  *  ----------                             //
-    // wI = tokenWeightIn                 ( bO / wO )     ( 1 - sF )                             //
-    // wO = tokenWeightOut                                                                       //
-    // sF = swapFee                                                                              //
+    //                                                                                           //
+    // sP = spotPrice                       bI                                                   //
+    // bI = tokenBalanceIn          sP =  ------                                                 //
+    // bO = tokenBalanceOut                 bO                                                   //
+    //                                                                                           //
     **********************************************************************************************/
     function calcSpotPrice(
         uint tokenBalanceIn,
-        uint tokenWeightIn,
-        uint tokenBalanceOut,
-        uint tokenWeightOut
+        uint tokenBalanceOut
     )
         public pure
         returns (uint spotPrice)
     {
-        uint numer = bdiv(tokenBalanceIn, tokenWeightIn);
-        uint denom = bdiv(tokenBalanceOut, tokenWeightOut);
-        uint ratio = bdiv(numer, denom);
-        return  (spotPrice = ratio);
+        uint sP = bdiv(tokenBalanceIn, tokenBalanceOut);
+        return (spotPrice = sP);
     }
 
     /**********************************************************************************************
-    // calcOutGivenIn                                                                            //
+    //                                                                                           //
     // aO = tokenAmountOut                                                                       //
-    // bO = tokenBalanceOut                                                                      //
-    // bI = tokenBalanceIn              /      /            bI             \    (wI / wO) \      //
-    // aI = tokenAmountIn    aO = bO * |  1 - | --------------------------  | ^            |     //
-    // wI = tokenWeightIn               \      \ ( bI + ( aI * ( 1 - sF )) /              /      //
-    // wO = tokenWeightOut                                                                       //
-    // sF = swapFee                                                                              //
+    // bO = tokenBalanceOut             /      /            bI             \   \                 //
+    // bI = tokenBalanceIn   aO = bO * |  1 - | --------------------------  |   |                //
+    // aI = tokenAmountIn               \      \          bI + aI          /   /                 //
+    //                                                                                           //
     **********************************************************************************************/
     function calcOutGivenIn(
-        Record memory inRecord,
-        Record memory outRecord,
-        // uint tokenBalanceIn,
-        // uint tokenWeightIn,
-        // uint tokenBalanceOut,
-        // uint tokenWeightOut,
+        uint tokenBalanceIn,
+        uint tokenBalanceOut,
         uint tokenAmountIn
     )
         internal pure
         returns (uint tokenAmountOut)
     {
-        uint weightRatio = bdiv(inRecord.denorm, outRecord.denorm);
-        uint adjustedIn = bmul(tokenAmountIn, BONE);
-        uint y = bdiv(inRecord.balance, badd(inRecord.balance, adjustedIn));
-        uint foo = bpow(y, weightRatio);
-        uint bar = bsub(BONE, foo);
-        tokenAmountOut = bmul(outRecord.balance, bar);
+        uint adjustedIn = tokenAmountIn * BONE_DIFF;
+        uint delta = bdiv(tokenBalanceIn, badd(tokenBalanceIn, adjustedIn));
+        uint coeff = bsub(BONE, delta);
+        tokenAmountOut = bmul(tokenBalanceOut, coeff);
         return tokenAmountOut;
     }
 }

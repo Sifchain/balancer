@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: '14.x'
       - run: yarn
-      - run: yarn add global truffle
-      - run: yarn add global ganache-cli
+      - run: yarn add truffle
+      - run: yarn add ganache-cli
       - run: cat env.example >> .env
       - run: yarn ganache &
       - run: yarn compile

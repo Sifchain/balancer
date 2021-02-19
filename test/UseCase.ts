@@ -55,20 +55,23 @@ contract("Our use case", (accounts) => {
 
     // user balances
     await usdt.mint(user, toWei("500", "mwei"));
-
-    await rowan.approve(POOL, MAX, { from: user });
-    await usdt.approve(POOL, MAX, { from: user });
+    await usdt.mint(user2, toWei("1000000", "mwei"));
 
     await rowan.approve(POOL, MAX, { from: controller });
     await usdt.approve(POOL, MAX, { from: controller });
 
-    await pool.bind(ROWAN, toWei("8750000"), toWei(weightRowan.toString()), {
+    await rowan.approve(POOL, MAX, { from: user });
+    await usdt.approve(POOL, MAX, { from: user });
+
+    await rowan.approve(POOL, MAX, { from: user2 });
+    await usdt.approve(POOL, MAX, { from: user2 });
+
+    await pool.bind(ROWAN, toWei("8750000"), {
       from: controller,
     });
     await pool.bind(
       USDT,
       toWei("26250", "mwei"),
-      toWei(weightUsdt.toString()),
       { from: controller }
     );
 
@@ -111,48 +114,45 @@ contract("Our use case", (accounts) => {
 
   describe("Whitelisting", () => {
     it("Should not be possible to whitelist a user if not admin", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
       await truffleAssert.reverts(
-        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
+        whitelist.bulkWhitelistUsers([user], [hashedKey], { from: user2 }),
         "Ownable: caller is not the owner"
       );
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
     });
 
     it("Admin should be able to whitelist a user", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
-      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), false);
+      await whitelist.bulkWhitelistUsers([user], [hashedKey], { from: white_list_manager });
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), true);
     });
 
     it("Admin should be able to check if any user is in whitelist", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true)
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey), true);
 
       assert.equal(
-        await whitelist.isWhitelisted(user2, { from: white_list_manager }),
+        await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey, { from: white_list_manager }),
         false
       );
       assert.equal(await whitelist.validateWhitelistedUserAndKey(user2, unhashedKey), false)
     });
 
     it("Whitelisted user should be able to check if s/he is in the whitelist", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: user }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: user }), true);
     });
 
     it("Should not be possible to remove whitelisted user if not admin", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), true);
       await truffleAssert.reverts(
-        whitelist.whitelistUser(user, hashedKey, { from: user2 }),
+        whitelist.removeWhitelistedUser(user, { from: user2 }),
         "Ownable: caller is not the owner"
       );
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), true);
     });
 
     it("Admin should be able to remove whitelisted user", async () => {
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
-      await whitelist.removeWhitelistedUser(user, hashedKey, { from: white_list_manager });
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), false);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), true);
+      await whitelist.removeWhitelistedUser(user, { from: white_list_manager });
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), false);
     });
   });
 
@@ -165,7 +165,7 @@ contract("Our use case", (accounts) => {
     });
 
     it("Fails to swap when in/out tokens have not set", async () => {
-      await whitelist.whitelistUser(user, hashedKey, { from: white_list_manager });
+      await whitelist.bulkWhitelistUsers([user], [hashedKey], { from: white_list_manager });
 
       await truffleAssert.reverts(
         pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, { from: user }),
@@ -198,9 +198,7 @@ contract("Our use case", (accounts) => {
 
     it("Should be able to withdraw liquidity if the user is the controller", async () => {
       const startingPoolBalance = await usdt.balanceOf(pool.address);
-
       await pool.withdrawAllLiquidity(USDT, { from: controller });
-      
       const endingBalance = await usdt.balanceOf(cold_storage_address);
 
       assert.equal(
@@ -209,17 +207,52 @@ contract("Our use case", (accounts) => {
       );
     });
 
+    it("Fail swapExactAmountIn over max swap ratio", async () => {
+      await whitelist.bulkWhitelistUsers([user2], [hashedKey], { from: white_list_manager });
+      const rowanPoolBalance = await pool.getBalance(ROWAN);
+      assert.equal(rowanPoolBalance, toWei("8750000"));
+      const maxSwapAmount = fromWei(rowanPoolBalance) * 0.02;
+      const expectedSwapAmount = calcOutGivenIn(
+        "2625000",
+        fromWei(rowanPoolBalance),
+        "53600"
+      );
+      assert.equal(maxSwapAmount, 175000);
+      assert.equal(expectedSwapAmount.toString(), "175091.46569103262903");
+      assert.equal(expectedSwapAmount.greaterThan(maxSwapAmount), true);
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("53600", "mwei"), 0, MAX, unhashedKey, {
+          from: user2,
+        }),
+        "ERR_MAX_OUT_RATIO"
+      );
+      assert.equal(await pool.getBalance(ROWAN), toWei("8750000"));
+    });
+
+    it('Fails to swap if gas price exceeds the limit', async () => {
+      let gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "400000000000"); // initial gas price limit is 400 gwei
+      await pool.setGasPriceLimit("1000000000", { from: controller }); // set gas price limit to 1 gwei
+      gasPriceLimit = await pool.gasPriceLimit();
+      assert.equal(gasPriceLimit.toString(), "1000000000"); // current gas price limit is 1 gwei
+
+      await truffleAssert.reverts(
+        pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+          from: user,
+          gas: "1000000",
+          gasPrice: "2000000000" // gas price of 2 gwei is above the limit, should fail
+        }),
+        "ERR_GAS_PRICE_LIMIT_EXCEEDED"
+      );
+    });
+
     it("Swap iteration using swapExactAmountIn", async () => {
       // Attempt to spend 500 USDT should succeed.
-      const usdtPoolBalance = await pool.getBalance(USDT);
       const rowanPoolBalance = await pool.getBalance(ROWAN);
       const expected = calcOutGivenIn(
-        fromWei(usdtPoolBalance, "mwei"),
-        weightUsdt,
+        2625000,
         fromWei(rowanPoolBalance),
-        weightRowan,
-        500,
-        0.0
+        500
       );
 
       if(verbose) {
@@ -227,10 +260,12 @@ contract("Our use case", (accounts) => {
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
-      assert.equal(await whitelist.isWhitelisted(user, { from: white_list_manager }), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user, unhashedKey, { from: white_list_manager }), true);
 
-      const txr = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
+      const tx = await pool.swapExactAmountIn(toWei("500", "mwei"), 0, MAX, unhashedKey, {
         from: user,
+        gas: "1000000",
+        gasPrice: "1000000000" // gas price is 1 gwei, should work
       });
 
       if(verbose) {
@@ -238,7 +273,7 @@ contract("Our use case", (accounts) => {
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);
       }
 
-      const log = txr.logs[0];
+      const log = tx.logs[0];
       assert.equal(log.event, "LOG_SWAP");
 
       const actual = fromWei(log.args.tokenAmountOut);
@@ -255,13 +290,13 @@ contract("Our use case", (accounts) => {
 
     it("Fails to provide liquidity if it is not controller", async () => {
       await truffleAssert.reverts(
-        pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: user }),
+        pool.joinswapExternAmountIn(toWei("364000"), { from: user }),
         "ERR_NOT_CONTROLLER"
       );
     });
 
     it("Liquidity iteration", async () => {
-      await pool.joinswapExternAmountIn(toWei("364583333333", 'micro'), { from: controller });
+      await pool.joinswapExternAmountIn(toWei("364000"), { from: controller });
       if (verbose) {
         console.log("After adding liquidity:");
         await logState(pool, rowan, usdt, ROWAN, USDT, user, controller);

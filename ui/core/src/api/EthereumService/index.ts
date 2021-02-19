@@ -14,21 +14,6 @@ import { Balance } from "../../entities/Balance";
 
 const MAX = Web3.utils.toTwosComplement(-1);
 
-export function handleConnectToMetaMaskError(err: any) {
-  const { code, message } = err;
-  if (code) {
-    if (code === -32002) {
-      // Permissions request already pending; please wait.
-      console.log(message);
-    } else if (code === 4001) {
-      // User rejected the request.
-      console.log(message);
-    }
-  } else {
-    console.log(err.toString());
-  }
-}
-
 const initState = {
   whitelisted: true,
   validNetwork: true,
@@ -45,7 +30,6 @@ export class EthereumService implements IWalletService {
 
   // This is shared reactive state
   private state: {
-    whitelisted: boolean;
     validNetwork: boolean;
     connected: boolean;
     networkType: string;
@@ -58,14 +42,12 @@ export class EthereumService implements IWalletService {
   constructor() {
     this.state = reactive({ ...initState });
     this.web3 = new Web3(Web3.givenProvider || "ws://localhost:8545");
-
     if (this.web3 && this.web3.givenProvider) {
       this.web3.givenProvider.on('accountsChanged',  () => {
-        this.handleStateChange();
+        window.location.reload();
       });
-
       this.web3.givenProvider.on('chainChanged', () => {
-        this.handleStateChange();
+        window.location.reload();
       });
     }
   }
@@ -98,11 +80,9 @@ export class EthereumService implements IWalletService {
     if (this.state.account) {
       this.state.balances = await this.getBalances();
       this.state.allowance = await this.getAllowance();
-      this.state.whitelisted = await this.isWhitelisted();
     } else {
       this.state.balances = [];
       this.state.allowance = 0;
-      this.state.whitelisted = true;
     }
   }
 
@@ -127,7 +107,6 @@ export class EthereumService implements IWalletService {
         await this.web3.givenProvider.request({ method: "eth_requestAccounts" });
       }
     } catch (err) {
-      handleConnectToMetaMaskError(err);
       this.state = reactive({ ...initState });
     }
   }
@@ -141,7 +120,6 @@ export class EthereumService implements IWalletService {
         }
       ]
     });
-    this.web3 = null;
     this.state = reactive({ ...initState });
   }
 
@@ -172,7 +150,7 @@ export class EthereumService implements IWalletService {
       );
     }
     const accounts = await this.web3.eth.getAccounts();
-    return accounts[0];
+    return accounts.length > 0 ? accounts[0] : undefined;
   }
 
   getTransactionAmount(address: string, data: string): string | undefined {
@@ -205,6 +183,10 @@ export class EthereumService implements IWalletService {
     return getTokenContract(this.web3, getTokenSaleData().usdtAddress).methods.approve(getBalancerAbiArray(this.state.networkType).address, MAX).send({from: accountFrom});
   }
 
+  async getGasPriceLimit(): Promise<string> {
+    return await this.getBalancerContract().methods.gasPriceLimit().call();
+  }
+
   async swapExactAmountInSend(tokenAmountIn: JSBI, minAmountOut: JSBI, unhashedKey: string): Promise<string> {
     const accountFrom = await this.getCurrentAccount();
     return this.getBalancerContract().methods.swapExactAmountIn(tokenAmountIn.toString(), minAmountOut.toString(), MAX, unhashedKey).send({from: accountFrom});
@@ -216,14 +198,9 @@ export class EthereumService implements IWalletService {
     return res.tokenAmountOut;
   }
 
-  async isWhitelisted(): Promise<boolean> {
-    const accountFrom = await this.getCurrentAccount();
-    return await this.getWhitelistContract().methods.isWhitelisted(accountFrom).call();
-  }
-
   async isValidKey(unhashedKey: string): Promise<boolean> {
     const accountFrom = await this.getCurrentAccount();
-    return await this.getWhitelistContract().methods.presentKey(accountFrom, unhashedKey).call();
+    return await this.getWhitelistContract().methods.validateWhitelistedUserAndKey(accountFrom, unhashedKey).call();
   }
 
   async getPoolBalances(): Promise<Balance[]> {

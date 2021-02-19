@@ -3,7 +3,7 @@ const iToken = artifacts.require("IERC20");
 const poolAddress = BPool.address;
 const { fromWei } = web3.utils;
 
-module.exports = function(cb) {
+module.exports = function (cb) {
   cashOut(cb);
 };
 
@@ -22,7 +22,10 @@ async function cashOut(cb) {
     const rowanBalance = await eRowanContract.balanceOf(controller);
     const usdtBalance = await usdtContract.balanceOf(controller);
     console.log("erowan balance in controller account:", fromWei(rowanBalance));
-    console.log("USDT balance in controller account:", fromWei(usdtBalance, "mwei"));
+    console.log(
+      "USDT balance in controller account:",
+      fromWei(usdtBalance, "mwei")
+    );
   } catch (error) {
     console.log("ERROR:", error);
   }

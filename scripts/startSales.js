@@ -1,7 +1,7 @@
 const BPool = artifacts.require("BPool");
 const poolAddress = BPool.address;
 
-module.exports = function(cb) {
+module.exports = function (cb) {
   startSales(cb);
 };
 
@@ -13,7 +13,7 @@ async function startSales(cb) {
     let finalizePoolTx = await bpool.finalize({ from: controller });
     console.log("finalize pool tx:", JSON.stringify(finalizePoolTx));
   } catch (error) {
-    console.log("ERROR:", error)
+    console.log("ERROR:", error);
   }
   cb();
 }

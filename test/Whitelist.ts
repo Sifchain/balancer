@@ -3,15 +3,15 @@ const {
   expectRevert, // Assertions for transactions that should fail
 } = require("@openzeppelin/test-helpers");
 
-
 const helpers = require("../helpers/whitelistHelper");
 
-const unhashedKey = "SuperSecretString";
-const unhashedKeyArray = helpers.genHashedKeys(unhashedKey, 4);
-
-const hashedKey = helpers.hash(unhashedKey);
+const unhashedKeyArray = [
+  "key1",
+  "key2",
+  "key3",
+  "key4"
+];
 const hashedKeyArray = unhashedKeyArray.map(e => {return helpers.hash(e) });
-
 
 contract("OwnableWhitelist", (accounts) => {
   const admin = process.env.WHITE_LIST_MANAGER;
@@ -30,45 +30,32 @@ contract("OwnableWhitelist", (accounts) => {
 
   describe("Whitelist Test", () => {
     it("Owner is whitelisted", async () => {
-      const output = await whitelist.isWhitelisted(admin);
+      const output = await whitelist.isOwner({ from: admin });
       assert.equal(output, true);
+      assert.equal(admin, await whitelist.owner());
     });
 
     it("Owner can add a user to the whitelist", async () => {
-      let output = await whitelist.isWhitelisted(user1);
+      let output = await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]);
       assert.equal(output, false);
-
-      await whitelist.whitelistUser(user1, hashedKey, { from: admin });
-      output = await whitelist.isWhitelisted(user1);
-
+      const r = await whitelist.bulkWhitelistUsers([user1], [hashedKeyArray[0]], { from: admin });
+      output = await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]);
       assert.equal(output, true);
     });
 
     it("Whitelisted user that is not owner cannot add to whitelist", async () => {
-      let output = await whitelist.isWhitelisted(user1);
+      let output = await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]);
       assert.equal(output, true);
 
       output = await whitelist.isOwner({ from: user1 });
       assert.equal(output, false);
 
       await expectRevert(
-        whitelist.whitelistUser(user2, hashedKey, { from: user1 }),
+        whitelist.bulkWhitelistUsers([user2], [hashedKeyArray[0]], { from: user1 }),
         "Ownable: caller is not the owner"
       );
     });
 
-    it("Non-whitelisted user that is not owner cannot add to whitelist", async () => {
-      let output = await whitelist.isWhitelisted(user2);
-      assert.equal(output, false);
-
-      output = await whitelist.isOwner({ from: user2 });
-      assert.equal(output, false);
-
-      await expectRevert(
-        whitelist.whitelistUser(user3, hashedKey, { from: user2 }),
-        "Ownable: caller is not the owner"
-      );
-    });
 
     it("Non owner can not bulk add users to the whitelist", async () => {
       await expectRevert(
@@ -87,35 +74,22 @@ contract("OwnableWhitelist", (accounts) => {
       assert.equal(output, false);
 
       for (let i = 0; i < whitelistArray.length; i++) {
-        const userWhitelisted = await whitelist.isWhitelisted(
-          whitelistArray[i]
+        let userWhitelisted = await whitelist.validateWhitelistedUserAndKey(
+          whitelistArray[i],
+          unhashedKeyArray[i]
         );
         assert.equal(userWhitelisted, true);
       }
     });
 
     it("Owner can check if a user is on the whitelist with the key", async () => {
-      assert.equal(await whitelist.validateWhitelistedUserAndKey(user1, unhashedKey), true);
-    });
-
-    it("Check if a user is on the whitelist by presenting the unhashed key", async () => {
-      assert.equal(await whitelist.presentKey(user1, unhashedKey), true);
-    });
-
-    it("Check if a user is on the whitelist by presenting the key hashed", async () => {
-      assert.equal(await whitelist.getToken(user1, hashedKey), true);
-    });
-
-    it("Check if the key is equal to the unhashed key", async () => {
-      assert.equal(await whitelist.checkHash(hashedKey, unhashedKey), true);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]), true);
     });
 
     it("Owner can remove a user from the whitelist", async () => {
-      assert.equal(await whitelist.isWhitelisted(user1), true);
-
-      await whitelist.removeWhitelistedUser(user1, hashedKey, { from: admin });
-
-      assert.equal(await whitelist.isWhitelisted(user1), false);
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]), true);
+      await whitelist.removeWhitelistedUser(user1, { from: admin });
+      assert.equal(await whitelist.validateWhitelistedUserAndKey(user1, unhashedKeyArray[0]), false);
     });
   });
 });

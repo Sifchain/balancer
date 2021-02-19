@@ -1,21 +1,20 @@
-<template>
-  <div class="content">
-    <Delayed />
-  </div>
-</template>
-
 <script>
-  import Delayed from "@/views/Delayed.vue";
+  import PurchaseForm from "@/views/PurchaseForm.vue";
   import { defineComponent } from "vue";
 
   export default defineComponent({
     name: "Wrapper",
-    setup() {},
     components: {
-      Delayed
+      PurchaseForm,
     },
   });
 </script>
+
+<template>
+  <div class="content">
+    <PurchaseForm />
+  </div>
+</template>
 
 <style lang="scss" scoped>
   .content {
