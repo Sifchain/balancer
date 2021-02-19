@@ -36,9 +36,7 @@ export default ({
       return await api.EthereumService.approveToken();
     },
     async validateKey(unhashedKey: string) {
-      const v: any = await actions.validateKey(unhashedKey);
-      store.wallet.whitelisted = v;
-      return v;
+      return await api.EthereumService.isValidKey(unhashedKey);
     },
     async getPoolBalances() {
       return await api.EthereumService.getPoolBalances();
