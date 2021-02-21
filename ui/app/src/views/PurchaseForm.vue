@@ -9,7 +9,7 @@
       Tooltip
     },
     async created() {
-      const { api, actions, store } = useCore();
+      const { api, store } = useCore();
       await this.initState(api);
       await this.getRowanPoolBalance(api, store);
       await this.getGasPriceLimit(api, store);
@@ -39,7 +39,11 @@
       const { actions, api, store } = useCore();
 
       function getShortenedAddress() {
-        return store.wallet.connected && store.wallet.account ? store.wallet.account.slice(0, 11) + "..." : "";
+        store.wallet.connected && store.wallet.account ?
+                store.wallet.account.slice(0, 7)
+                + "..." +
+                store.wallet.account.slice(store.wallet.account.length - 5)
+                : "";
       }
 
       async function handleConnectClicked() {
@@ -265,19 +269,21 @@
       <div v-if="store.purchase.state === PurchaseState.Disabled || store.purchase.state === PurchaseState.Enabled" class="purchase-form__body" v-bind:class="{ 'purchase-form__body-disabled': !store.wallet.connected }">
         <div>
 
-          <div class="d-flex fd-row j-center">
-            <p class="text--small text--italic text--normal color-text mb-4" v-bind:class="{ 'text-disabled': !store.wallet.connected }">
+          <div v-if="store.wallet.connected" class="d-flex fd-row j-start">
+            <p v-if="!store.purchase.validKey" class="text--small text--italic text--normal color-text mb-4">
               Please enter your 64-digit contribution code
             </p>
-            <img v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" src="../assets/circle-check.svg" class="mr-8 ml-8 mb-4">
-            <img v-else src="../assets/circle-x-disabled.svg" class="mr-8 ml-8 mb-4">
+            <p v-if="store.purchase.validKey" class="text--small text--italic text--normal color-text mb-4">
+              Contribution code is valid
+            </p>
+            <img v-if="store.purchase.validKey" src="../assets/circle-check.svg" class="mr-4 ml-4 mb-4">
           </div>
 
           <div class="confirmation-code mh-30 mb-20" v-bind:class="{ 'confirmation-code__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected" class="token-form text--small">
               <input
                 placeholder="contribution code"
-                :disabled="store.wallet.allowance <= 0 || store.purchase.validKey"
+                :disabled="store.purchase.validKey"
                 v-model="store.purchase.unhashedKey"
                 class="sif-input text-tiny"
                 type="text"
@@ -311,8 +317,8 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center mw-82">
-                  <img src="../assets/usdt-symbol.png" class="mr-4" height="18" width="18">
-                  <p class="text--medium text--bold color-text">USDT</p>
+                  <img src="../assets/usdt-symbol.png" class="mr-4 mb-3" height="18" width="18">
+                  <p class="text--medium text--bold color-text mb-3">USDT</p>
                 </div>
               </div>
             </div>
@@ -333,7 +339,7 @@
                         Minimum Received
                       </p>
                       <Tooltip message="Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete.">
-                        <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2">
+                        <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2 mb-2">
                       </Tooltip>
                     </div>
                   </div>
@@ -352,8 +358,8 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center mw-82">
-                  <img src="../assets/rwn-symbol.svg" class="ml-4 mr-4" height="18" width="18">
-                  <p class="text--medium text--bold color-text">erowan</p>
+                  <img src="../assets/rwn-symbol.svg" class="ml-4 mr-4 mb-3" height="18" width="18">
+                  <p class="text--medium text--bold color-text mb-3">erowan</p>
                 </div>
               </div>
             </div>
@@ -363,13 +369,7 @@
             <p class="text--small text--italic text--bold color-white">Connected Wallet is on a test network.</p>
           </div>
 
-          <div v-if="store.wallet.validNetwork && store.wallet.connected && !store.wallet.whitelisted" class="error-section mh-93 d-flex j-center fd-col">
-            <p class="text--small text--italic text--bold color-white">
-              Connected Wallet has not passed KYC/AML process. Check your inbox (including Spam and Promotions folders) for the registered ETH address. If you are still having issues, please email <a href="mailto: token-sale@sifchain.finance" style="color: #FFF">token-sale@sifchain.finance</a> from your registered email address.
-            </p>
-          </div>
-
-          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.wallet.whitelisted)" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.connected }">
+          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.purchase.validKey)" class="price-section mh-23" v-bind:class="{ 'price-section__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row j-between">
               <p class="text--small text--italic text--normal">
                 Price
@@ -382,7 +382,7 @@
               </div>
             </div>
           </div>
-          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.wallet.whitelisted)" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.connected }">
+          <div v-if="(!store.wallet.connected && store.wallet.validNetwork) || (store.wallet.validNetwork && store.purchase.validKey)" class="slippage-section mh-70" v-bind:class="{ 'slippage-section__disabled': !store.wallet.connected }">
             <div v-if="store.wallet.connected && store.wallet.allowance > 0 && store.purchase.validKey" class="d-flex fd-row">
               <p class="text--small text--italic text--normal" align="left">
                 Slippage tolerance
@@ -421,24 +421,24 @@
             </div>
           </div>
 
-          <div v-if="!store.wallet.connected || !store.wallet.whitelisted" class="d-flex fd-row j-center mb-4">
+          <div v-if="!store.wallet.connected" class="d-flex fd-row j-center mb-4">
             <p class="text--small">
               No wallet connected
             </p>
           </div>
 
-          <button class="btn" v-if="!store.wallet.connected || !store.wallet.whitelisted" @click="handleConnectClicked">
+          <button class="btn" v-if="!store.wallet.connected" @click="handleConnectClicked">
             Connect Wallet
           </button>
 
-          <div v-if="store.wallet.connected && store.wallet.whitelisted" class="d-flex fd-row j-center mb-4">
+          <div v-if="store.wallet.connected" class="d-flex fd-row j-center mb-4">
             <p class="text--small color-text">
               Connected to {{ getShortenedAddress() }}
             </p>
             <img src="../assets/circle-check.svg" class="mr-8 ml-8">
           </div>
 
-          <button class="btn" v-if="store.wallet.connected && store.wallet.whitelisted && store.wallet.allowance <= 0" v-bind:class="{ 'btn__disabled': store.purchase.approving }" @click="approveToken">
+          <button class="btn" v-if="store.wallet.connected && store.wallet.allowance <= 0" v-bind:class="{ 'btn__disabled': store.purchase.approving || !store.purchase.validKey }" @click="approveToken">
             {{ store.purchase.approving ? "Approving..." : "Approve Token" }}
           </button>
 
@@ -551,7 +551,7 @@
          </Tooltip>
        </span>
 
-        <span>{{ store.purchase.gasPriceLimit }} Gwei</span>
+        <span>{{ store.purchase.gasPriceLimit }} gwei</span>
       </div>
 
       <div class="details-row">
@@ -586,7 +586,7 @@
           </span>
         </div>
 
-        <span>{{ formatNumberString(store.purchase.rowanPoolBalance) }} eROWAN</span>
+        <span>{{ formatNumberString(store.purchase.rowanPoolBalance) }} erowan</span>
       </div>
     </div>
 
