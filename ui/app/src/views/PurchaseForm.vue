@@ -39,7 +39,7 @@
       const { actions, api, store } = useCore();
 
       function getShortenedAddress() {
-        store.wallet.connected && store.wallet.account ?
+        return store.wallet.connected && store.wallet.account ?
                 store.wallet.account.slice(0, 7)
                 + "..." +
                 store.wallet.account.slice(store.wallet.account.length - 5)
@@ -270,10 +270,10 @@
         <div>
 
           <div v-if="store.wallet.connected" class="d-flex fd-row j-start">
-            <p v-if="!store.purchase.validKey" class="text--small text--italic text--normal color-text mb-4">
+            <p v-if="!store.purchase.validKey" class="text--small text--italic text--normal color-text ml-4 mb-4">
               Please enter your 64-digit contribution code
             </p>
-            <p v-if="store.purchase.validKey" class="text--small text--italic text--normal color-text mb-4">
+            <p v-if="store.purchase.validKey" class="text--small text--italic text--normal color-text ml-4 mb-4">
               Contribution code is valid
             </p>
             <img v-if="store.purchase.validKey" src="../assets/circle-check.svg" class="mr-4 ml-4 mb-4">
@@ -317,8 +317,8 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center mw-82">
-                  <img src="../assets/usdt-symbol.png" class="mr-4 mb-3" height="18" width="18">
-                  <p class="text--medium text--bold color-text mb-3">USDT</p>
+                  <img src="../assets/usdt-symbol.png" class="mr-4 mb-2" height="18" width="18">
+                  <p class="text--medium text--bold color-text mb-2">USDT</p>
                 </div>
               </div>
             </div>
@@ -358,8 +358,8 @@
               </div>
               <div class="token-form__balance">
                 <div class="d-flex fd-row j-center align-center mw-82">
-                  <img src="../assets/rwn-symbol.svg" class="ml-4 mr-4 mb-3" height="18" width="18">
-                  <p class="text--medium text--bold color-text mb-3">erowan</p>
+                  <img src="../assets/rwn-symbol.svg" class="ml-4 mr-4 mb-2" height="18" width="18">
+                  <p class="text--medium text--bold color-text mb-2">erowan</p>
                 </div>
               </div>
             </div>
