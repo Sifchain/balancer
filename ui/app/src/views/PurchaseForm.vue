@@ -406,11 +406,11 @@ export default {
                 <div class="d-flex fd-row j-center align-center mw-82">
                   <img
                     src="../assets/usdt-symbol.png"
-                    class="mr-4 mb-2"
+                    class="mr-4"
                     height="18"
                     width="18"
                   />
-                  <p class="text--medium text--bold color-text mb-2">USDT</p>
+                  <p class="text--medium text--bold color-text">USDT</p>
                 </div>
               </div>
             </div>
@@ -437,7 +437,7 @@ export default {
                         Minimum Received
                       </p>
                       <Tooltip
-                        message="Minimum amount of erowan you will receive for your USDT, if this amount cannot be met, the transaction will not complete."
+                        message="Minimum amount of eROWAN you will receive for your USDT, if this amount cannot be met, the transaction will not complete."
                       >
                         <img
                           src="../assets/info-grey.svg"
@@ -463,11 +463,11 @@ export default {
                 <div class="d-flex fd-row j-center align-center mw-82">
                   <img
                     src="../assets/rwn-symbol.svg"
-                    class="ml-4 mr-4 mb-2"
+                    class="ml-4 mr-4"
                     height="18"
                     width="18"
                   />
-                  <p class="text--medium text--bold color-text mb-2">erowan</p>
+                  <p class="text--medium text--bold color-text">eROWAN</p>
                 </div>
               </div>
             </div>
@@ -505,7 +505,7 @@ export default {
               </p>
               <div class="d-flex fd-row j-center align-center">
                 <p class="text--small text--italic text--bold">
-                  {{ store.purchase.rowanPrice.toFixed(3) }} USDT per erowan
+                  {{ store.purchase.rowanPrice.toFixed(3) }} USDT per eROWAN
                 </p>
                 <img
                   src="../assets/arrows-grey.svg"
@@ -538,7 +538,7 @@ export default {
                 Slippage tolerance
               </p>
               <Tooltip
-                message="Affects the minimum amount of erowan you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much erowan as a lower tolerance. If your transaction fails, try setting a higher tolerance."
+                message="Affects the minimum amount of eROWAN you are guaranteed to receive. Higher tolerance means your transaction is more likely to be processed after submitted, but you might not receive as much eROWAN as a lower tolerance. If your transaction fails, try setting a higher tolerance."
               >
                 <img src="../assets/info-grey.svg" class="mr-4 ml-4 mt-2" />
               </Tooltip>
@@ -697,7 +697,7 @@ export default {
             <p>
               Swapping
               <span class="purchase-form__transaction__span"
-                >{{ store.purchase.rwnAmount }} erowan</span
+                >{{ store.purchase.rwnAmount }} eROWAN</span
               >
               for
               <span class="purchase-form__transaction__span"
@@ -780,7 +780,7 @@ export default {
             <p>
               Purchased
               <span class="purchase-form__transaction__span"
-                >{{ store.purchase.txAmount }} erowan</span
+                >{{ store.purchase.txAmount }} eROWAN</span
               >
               for
               <span class="purchase-form__transaction__span"
@@ -869,26 +869,35 @@ export default {
           >{{
             formatNumberString(store.purchase.rowanPoolBalance)
           }}
-          erowan</span
+          eROWAN</span
         >
       </div>
     </div>
 
     <p class="kyc-help-text">
       Please note: This app is only for users that have already been approved to
-      participate in the Sifchain Token Sale. Please remember to use the wallet
-      address you provided us in your KYC information. Your contribution code
-      was sent to your registered email address. For instructions on how to use
-      this page, go
+      participate in the Sifchain Token Sale. As a reminder, here are the
+      previously agreed upon
+      <a
+        href="https://docs.google.com/document/d/e/2PACX-1vQ8evb1zNU4K4prJDK1XqjcE18p8gMu2D2QP1orZNSUrm8pnlX1dLo4f9Q_11v7YQ/pub"
+        target="_blank"
+        style="color: #000000;"
+      >
+        Terms of Token Sale </a
+      >. Please remember to use the wallet address you provided us in your KYC
+      information. Your contribution code was sent to your registered email
+      address. For instructions on how to use this page, go
       <a
         href="https://medium.com/sifchain-finance/token-sale-purchasing-tutorial-73f9bf0f0796"
         target="_blank"
         style="color: #000000;"
-        >here</a
-      >. Still have questions? Contact
-      <a href="mailto: token-sale@sifchain.finance" style="color: #000000;"
-        >token-sale@sifchain.finance</a
       >
+        here
+      </a>
+      . Still have questions? Contact
+      <a href="mailto: token-sale@sifchain.finance" style="color: #000000;">
+        token-sale@sifchain.finance
+      </a>
       from your registered email address.
     </p>
   </div>
