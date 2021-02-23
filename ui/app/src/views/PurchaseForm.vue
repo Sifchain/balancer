@@ -331,7 +331,11 @@ export default {
               v-if="!store.purchase.validKey"
               class="text--small text--italic text--normal color-text ml-4 mb-4"
             >
-              Please enter your 64-digit contribution code
+              {{
+                store.purchase.unhashedKey.length >= 64
+                  ? "Invalid contribution code"
+                  : "Please enter your 64-digit contribution code"
+              }}
             </p>
             <p
               v-if="store.purchase.validKey"
@@ -891,10 +895,8 @@ export default {
         href="https://medium.com/sifchain-finance/token-sale-purchasing-tutorial-73f9bf0f0796"
         target="_blank"
         style="color: #000000;"
-      >
-        here
-      </a>
-      . Still have questions? Contact
+        >here</a
+      >. Still have questions? Contact
       <a href="mailto: token-sale@sifchain.finance" style="color: #000000;">
         token-sale@sifchain.finance
       </a>
