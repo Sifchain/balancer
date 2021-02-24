@@ -15,7 +15,6 @@ import { Balance } from "../../entities/Balance";
 const MAX = Web3.utils.toTwosComplement(-1);
 
 const initState = {
-  whitelisted: true,
   validNetwork: true,
   connected: false,
   networkType: "private",

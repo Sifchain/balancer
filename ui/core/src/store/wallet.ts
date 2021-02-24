@@ -2,7 +2,6 @@ import { reactive } from "@vue/reactivity";
 import { Balance } from "../entities/Balance";
 
 export type WalletStore = {
-  whitelisted: boolean;
   connected: boolean;
   validNetwork: boolean;
   account?: string;
@@ -11,8 +10,6 @@ export type WalletStore = {
 };
 
 export const wallet = reactive({
-  whitelisted: true,
-  validKey: false,
   connected: false,
   validNetwork: true,
   account: undefined,
