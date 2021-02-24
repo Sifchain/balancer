@@ -1085,7 +1085,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.1",
-  "updatedAt": "2021-02-19T02:47:42.925Z",
+  "updatedAt": "2021-02-24T10:20:46.642Z",
   "devdoc": {
     "details": "Mintable, ERC20Burnable, ERC20 compatible BankToken for use by BridgeBank*",
     "methods": {
