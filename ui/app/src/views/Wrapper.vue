@@ -1,18 +1,18 @@
 <script>
-  import PurchaseForm from "@/views/PurchaseForm.vue";
+  import Complete from "@/views/Complete.vue";
   import { defineComponent } from "vue";
 
   export default defineComponent({
     name: "Wrapper",
     components: {
-      PurchaseForm,
+      Complete,
     },
   });
 </script>
 
 <template>
   <div class="content">
-    <PurchaseForm />
+    <Complete />
   </div>
 </template>
 
